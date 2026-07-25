@@ -21,7 +21,7 @@
 | Frontend | React 19, TypeScript, Vite 6, Tailwind CSS v4 |
 | Анимации | Framer Motion / `motion` |
 | Backend | Express.js (`server.ts`) — API + раздача статики |
-| База данных | Локальные JSON-файлы в `/data/` |
+| База данных | Supabase (PostgreSQL) + Supabase Storage (ранее JSON-файлы в `/data/`) |
 | ИИ | Google Gemini API (`gemini-2.5-flash-lite`) |
 | Иконки | `lucide-react` |
 
@@ -37,16 +37,22 @@
 promptvault/
 ├── GEMINI.md               ← Ты читаешь это сейчас (контекст для агента)
 ├── server.ts               ← Express API + статика (единый backend)
+├── supabase_schema.sql     ← SQL-миграция и схема Postgres/Storage в Supabase
+├── plan_supabase.md        # План миграции на Supabase
 ├── vite.config.ts          ← Конфиг Vite (алиасы, Tailwind plugin)
 ├── tsconfig.json
 ├── package.json
 ├── .env                    ← Локальные секреты (не в git)
 ├── .env.example            ← Шаблон переменных окружения
+├── .agents/skills/         ← Установленные агентские скиллы (supabase, postgres-best-practices)
+├── scripts/
+│   └── migrateToSupabase.ts  ← Скрипт пересылки данных из JSON в Supabase
+│
 ├── Agent/
 │   ├── plan.md             ← Текущий план задач и технический долг
 │   └── project_structure.md ← Описание структуры проекта
 │
-├── data/                   ← Локальная JSON БД
+├── data/                   ← Локальная JSON БД (архив после миграции)
 │   ├── prompts.json        ← Хранилище промптов
 │   ├── categories.json     ← Категории
 │   ├── chats.json          ← История диалогов с Gemini
@@ -104,14 +110,10 @@ promptvault/
 # Gemini AI
 GEMINI_API_KEY=             # ← Ключ Google AI Studio
 
-# Firebase (если используется)
-VITE_FIREBASE_API_KEY=
-VITE_FIREBASE_AUTH_DOMAIN=
-VITE_FIREBASE_PROJECT_ID=
-VITE_FIREBASE_STORAGE_BUCKET=
-VITE_FIREBASE_MESSAGING_SENDER_ID=
-VITE_FIREBASE_APP_ID=
-VITE_FIREBASE_FIRESTORE_DATABASE_ID=
+# Supabase
+SUPABASE_URL=               # ← URL проекта в Supabase
+SUPABASE_ANON_KEY=          # ← Публичный ключ Supabase
+SUPABASE_SERVICE_ROLE_KEY=  # ← Секретный ключ для скрипта миграции
 ```
 
 > ⚠️ `.env` не коммитится в git. При первом запуске скопировать `.env.example` → `.env`.

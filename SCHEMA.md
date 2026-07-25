@@ -103,6 +103,9 @@ erDiagram
 | `promptOrigin` | `"own"` \| `"web"` | Происхождение промпта |
 | `authorName` | string | Имя автора на момент создания |
 | `authorEmail` | string | Email автора |
+| `mediaType` | string | `photo` \| `video` \| `text` \| `music` \| `skill` \| `zip_package` |
+| `filePackageUrl` | string? | URL скачивания оригинального ZIP-архива |
+| `fileStructure` | FileNode[]? | Дерево файлов папок и файлов из ZIP (skills/prompt/SKILL.md и т.д.) |
 | `usageCount` | number | Счётчик использования |
 | `usageNotes` | string? | Подсказки по шаблону |
 | `createdAt` | ISO string | Дата создания |

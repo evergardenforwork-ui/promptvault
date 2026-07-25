@@ -29,15 +29,15 @@ Express.js (server.ts, порт 3000)
 
 ```
 ┌──────────────────────────────────────┐
-│  Presentation (src/sections/, ui/)   │  React компоненты, формы, карточки
+│  Presentation (src/sections/, ui/)   │  React компоненты, формы, карточки, FileTreeViewer
 ├──────────────────────────────────────┤
-│  Services (src/services/)            │  api.ts — HTTP-клиент; gemini.ts — Gemini-клиент
+│  Services (src/services/)            │  api.ts, gemini.ts, supabaseClient.ts
 ├──────────────────────────────────────┤
-│  State (src/App.tsx)                 │  Весь глобальный state в App.tsx через useState/useEffect
+│  State (src/App.tsx)                 │  Глобальный state (prompts, categories, activePrompt)
 ├──────────────────────────────────────┤
-│  API Layer (server.ts)               │  Express роуты, auth middleware, бизнес-логика
+│  Backend / Cloud Layer               │  Supabase (PostgreSQL, Storage, Auth) + Express.js API
 ├──────────────────────────────────────┤
-│  Data Layer (data/*.json)            │  JSON-файлы как БД, helpers readJson/writeJson
+│  Data & Storage Layer                │  Supabase Postgres DB, Buckets (prompt-images, prompt-files)
 └──────────────────────────────────────┘
 ```
 

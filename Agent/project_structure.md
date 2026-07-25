@@ -12,14 +12,14 @@ promptvault/
 ├── DEPLOY_RENDER_RU.md       # Инструкция по деплою на Render.com
 ├── README_RU.md              # Документация проекта на русском языке
 ├── package.json              # Скрипты и зависимости Node.js
-├── server.ts                 # Express.js сервер для локальной БД, Gemini API проксирования и раздачи статики
+├── server.ts                 # Express.js сервер для API, Gemini API проксирования и раздачи статики
 ├── vite.config.ts            # Конфигурация сборщика Vite с поддержкой Tailwind v4
-├── data/                     # Локальная база данных (создается автоматически)
-│   ├── prompts.json          # База промптов
-│   ├── categories.json       # База категорий
-│   ├── chats.json            # База истории чатов ИИ
-│   ├── users.json            # База пользователей (логин/пароль)
-│   └── images/               # Сохраненные локально изображения
+├── supabase_schema.sql       # SQL-миграция и схема баз данных Postgres для Supabase (RLS, Buckets)
+├── plan_supabase.md          # План переноса БД и Storage на Supabase
+├── scripts/
+│   └── migrateToSupabase.ts  # Скрипт миграции локальных данных в Supabase
+├── .agents/skills/           # Интегрированные агентские скиллы (supabase, postgres-best-practices)
+├── data/                     # Локальная база данных (JSON/Images, в git ignored)
 └── src/                      # Исходный код Frontend-части
     ├── main.tsx              # Точка входа React
     ├── index.css             # Глобальные стили Tailwind CSS

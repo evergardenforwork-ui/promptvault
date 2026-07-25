@@ -1,0 +1,5 @@
+{
+  "name": "PromptVault",
+  "description": "Personal AI prompt library with image analysis and AI assistant.",
+  "requestFramePermissions": ["camera", "microphone"]
+}

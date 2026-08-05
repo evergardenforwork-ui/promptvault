@@ -351,9 +351,10 @@ export default function PhotoView({
                   <Sparkles size={32} />
                 </div>
                 <h3 className="text-xl font-black text-white mb-1 tracking-tight">ИИ-ассистент</h3>
-                <p className="text-[10px] font-black text-sky-400 uppercase tracking-widest mb-3">Раздел в разработке</p>
+                <p className="text-[10px] font-black text-sky-400 uppercase tracking-widest mb-3">В разработке</p>
                 <p className="text-sm font-medium text-zinc-500">Здесь будет умный помощник для работы с промптами</p>
               </div>
+
             </div>
           </div>
         </div>

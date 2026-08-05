@@ -1,6 +1,6 @@
 # PLAN.md — Проблемы и план доработки PromptVault
 
-> Обновлено: 2026-07-31 (Сессия 5 — Безопасность, документация, подготовка к Supabase-миграции)
+> Обновлено: 2026-08-05 (Сессия 7 — Skill Hints, Inline Editor, Vercel deploy готов)
 > Основано на ревью реального кода (App.tsx, server.ts, types.ts, PhotoForm.tsx, PhotoView.tsx)
 
 ---
@@ -331,8 +331,9 @@ npm install bcryptjs @types/bcryptjs
 ✅ Создать src/services/supabaseServer.ts
 ✅ Переписать server.ts — JSON → Supabase
 ✅ Адаптировать загрузку изображений → Supabase Storage
-❌ Создать vercel.json + api/index.ts для Vercel
-❌ Git push + подключить Vercel
+✅ Создать vercel.json + api/index.ts для Vercel
+⏳ Git push + подключить Vercel (вручную: git push, затем import repo в vercel.com)
+⏳ Supabase: выполнить scripts/create_skill_hints_table.sql
 ```
 
 ---
@@ -395,8 +396,8 @@ npm install bcryptjs @types/bcryptjs
 | Скачать выбранные файлы как ZIP | ✅ Готово | `buildSelectionZip` |
 | Скачать весь пакет (ZIP) | ✅ Готово | Кнопка на пакете |
 | Загрузить ZIP → дерево файлов | ✅ Готово | В форме создания |
-| **Редактирование файлов в браузере** | ❌ Нет | Textarea inline-редактор — план: `plan_skill_hints.md` |
-| **Skill Hints (подсказки к скиллу)** | ❌ Нет | Панель с промптами, копирование — план: `plan_skill_hints.md` |
+| **Редактирование файлов в браузере** | ✅ Готово | Inline Editor — Ctrl+S/Escape в `SpaceFilePreview.tsx` |
+| **Skill Hints (подсказки к скиллу)** | ✅ Готово | `SkillHintsPanel.tsx` — glassmorphism, copy 1-click, table: `skill_hints` |
 | **Создать файл/папку в пространстве** | ❌ Нет | |
 | **Drag & Drop перемещение файлов** | ❌ Нет | |
 | **Поиск по содержимому файлов** | ❌ Нет | |
@@ -419,13 +420,15 @@ npm install bcryptjs @types/bcryptjs
 
 ### 🎯 Приоритет следующей сессии
 
-> **🔴 ТЕКУЩИЙ ПРИОРИТЕТ**: Переписать `server.ts` с JSON на Supabase + деплой на Vercel
-> Подробный план: `Agent/plan/plan_supabase.md`
+> **✅ ТЕКУЩИЙ СТАТУС**: Supabase + Vercel конфиг готовы, git закоммичен!
 
-**После Supabase** (быстрые победы, в порядке приоритета):
+**Осталось 3 шага вручную:**
+1. 🔴 **Supabase**: выполнить `scripts/create_skill_hints_table.sql` в SQL Editor
+2. 🔴 **Git push**: `git push` (репо уже закоммичено)
+3. 🔴 **Vercel**: импортировать репо → добавить env vars → Deploy
+
+**После деплоя (быстрые победы):**
 1. 🟢 **Поиск + фильтры для скиллов** (`useSkillFilters` хук) — ~1 час
 2. 🟢 **Скачать промпт как файл** — кнопка в PhotoView — ~30 мин
-3. 🟡 **Inline-редактор файлов** в SkillSpaceView — textarea для редактирования — ~1.5 часа
-4. 🟡 **Skill Hints (Подсказки к скиллу)** — панель с промптами-подсказками, копирование — ~3 часа
-   > Подробный план: `Agent/plan/plan_skill_hints.md`
-   > Новый тип `SkillHint`, таблица `skill_hints` в Supabase, компонент `SkillHintsPanel.tsx`
+3. 🟡 **Включить Gemini ИИ-ассистент** — убрать заглушку в PhotoView.tsx — ~2 часа
+4. 🟡 **Каскадное удаление favorites** при удалении промпта — tech debt

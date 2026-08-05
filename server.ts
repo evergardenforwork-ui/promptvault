@@ -284,7 +284,12 @@ async function startServer() {
         .eq("email", email)
         .single();
 
-      if (error || !user || !bcrypt.compareSync(password, user.password)) {
+      if (error) {
+        console.error("Supabase auth query error:", error);
+        return res.status(500).json({ message: "Ошибка базы данных при авторизации" });
+      }
+
+      if (!user || !bcrypt.compareSync(password, user.password)) {
         return res.status(400).json({ message: "Неверный email или пароль" });
       }
 

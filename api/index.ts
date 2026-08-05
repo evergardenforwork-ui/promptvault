@@ -235,7 +235,11 @@ app.post("/api/auth/login", async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ message: "Email и пароль обязательны" });
     const { data: user, error } = await supabase.from("users").select("uid, name, email, password, role").eq("email", email).single();
-    if (error || !user || !bcrypt.compareSync(password, user.password)) {
+    if (error) {
+      console.error("Supabase auth query error:", error);
+      return res.status(500).json({ message: "Ошибка базы данных при авторизации" });
+    }
+    if (!user || !bcrypt.compareSync(password, user.password)) {
       return res.status(400).json({ message: "Неверный email или пароль" });
     }
     res.json({ token: user.uid, user: { uid: user.uid, displayName: user.name, email: user.email, role: user.role } });

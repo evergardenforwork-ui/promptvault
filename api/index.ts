@@ -237,20 +237,47 @@ async function getUserFavoriteIds(uid: string): Promise<{ prompts: string[]; ski
 
 // ─── API: Auth ────────────────────────────────────────────────────────────────
 
+// ─── Diagnostic: Health Check (TEMPORARY) ─────────────────────────────────────
+app.get("/api/health", (_req, res) => {
+  res.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    env: {
+      SUPABASE_URL: process.env.SUPABASE_URL ? `✅ (${process.env.SUPABASE_URL.substring(0, 25)}...)` : "❌ MISSING",
+      SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY ? `✅ (${process.env.SUPABASE_SERVICE_ROLE_KEY.substring(0, 10)}...)` : "❌ MISSING",
+      GEMINI_API_KEY: process.env.GEMINI_API_KEY ? "✅ present" : "❌ MISSING",
+    },
+    node_version: process.version,
+  });
+});
+
 app.post("/api/auth/login", async (req, res) => {
   try {
+    console.log("[LOGIN] === Login attempt ===");
+    console.log("[LOGIN] SUPABASE_URL present:", !!process.env.SUPABASE_URL);
+    console.log("[LOGIN] SUPABASE_SERVICE_ROLE_KEY present:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+    console.log("[LOGIN] req.body:", JSON.stringify(req.body));
+
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ message: "Email и пароль обязательны" });
+
+    console.log("[LOGIN] Querying Supabase for email:", email);
     const { data: user, error } = await supabase.from("users").select("uid, name, email, password, role").eq("email", email).single();
+    console.log("[LOGIN] Supabase response - data:", !!user, "error:", error ? JSON.stringify(error) : "none");
+
     if (error) {
-      console.error("Supabase auth query error:", error);
-      return res.status(500).json({ message: "Ошибка базы данных при авторизации" });
+      console.error("[LOGIN] Supabase auth query error:", JSON.stringify(error));
+      return res.status(500).json({ message: "Ошибка базы данных при авторизации", debug: error.message });
     }
     if (!user || !bcrypt.compareSync(password, user.password)) {
       return res.status(400).json({ message: "Неверный email или пароль" });
     }
+    console.log("[LOGIN] Success for user:", user.uid);
     res.json({ token: user.uid, user: { uid: user.uid, displayName: user.name, email: user.email, role: user.role } });
-  } catch (err) { console.error("Route error:", err); res.status(500).json({ error: "Внутренняя ошибка сервера" }); }
+  } catch (err: any) {
+    console.error("[LOGIN] CAUGHT ERROR:", err?.message, err?.stack);
+    res.status(500).json({ error: "Внутренняя ошибка сервера", debug: err?.message });
+  }
 });
 
 // ─── API: Prompts ─────────────────────────────────────────────────────────────

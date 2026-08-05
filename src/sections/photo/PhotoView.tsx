@@ -339,7 +339,7 @@ export default function PhotoView({
                     <p className="text-xs font-bold text-zinc-300 uppercase tracking-widest truncate">{prompt.authorName || 'Автор'}</p>
                     <p className="text-[10px] text-zinc-600 font-medium truncate">{prompt.authorEmail}</p>
                   </div>
-                  {prompt.authorEmail === 'alexey.unstam@gmail.com' && (
+                  {prompt.authorEmail === 'evergardenforwork@gmail.com' && (
                     <span className="ml-auto px-2 py-0.5 bg-sky-400/20 text-sky-400 text-[9px] font-black uppercase tracking-widest rounded shrink-0">Admin</span>
                   )}
                 </div>

@@ -208,7 +208,7 @@ AssistantConfig { systemPrompt }
 ## 🔑 Бизнес-логика
 
 ### Пользователи и Безопасность
-- **Администратор**: `alexey.unstam@gmail.com` (uid: `admin-uid`) — видит и редактирует всё.
+- **Администратор**: `evergardenforwork@gmail.com` (uid: `admin-uid`) — видит и редактирует всё.
 - Пароли: bcrypt (`$2b$` hash) в Supabase `users` table
 - Auth: Bearer токен = `uid`. Хранится в localStorage (`pv_token`/`pv_user`).
 

@@ -59,60 +59,61 @@ CREATE TABLE IF NOT EXISTS public.chats (
 );
 
 -- ==========================================
--- 5. INDEXES FOR PERFORMANCE
+-- 5. SKILLS / WORKSPACES TABLE
+-- ==========================================
+CREATE TABLE IF NOT EXISTS public.skills (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID,
+    title TEXT NOT NULL,
+    description TEXT,
+    category TEXT,
+    tags TEXT[] DEFAULT '{}',
+    file_structure JSONB DEFAULT '[]'::jsonb,
+    file_package_url TEXT,
+    is_favorite BOOLEAN DEFAULT false,
+    is_public BOOLEAN DEFAULT true,
+    author_name TEXT DEFAULT 'Alexey',
+    author_email TEXT DEFAULT 'alexey.unstam@gmail.com',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- ==========================================
+-- 6. INDEXES FOR PERFORMANCE
 -- ==========================================
 CREATE INDEX IF NOT EXISTS idx_prompts_user_id ON public.prompts(user_id);
 CREATE INDEX IF NOT EXISTS idx_prompts_is_public ON public.prompts(is_public);
 CREATE INDEX IF NOT EXISTS idx_prompts_category_id ON public.prompts(category_id);
 CREATE INDEX IF NOT EXISTS idx_prompts_media_type ON public.prompts(media_type);
 CREATE INDEX IF NOT EXISTS idx_chats_prompt_id ON public.chats(prompt_id);
+CREATE INDEX IF NOT EXISTS idx_skills_user_id ON public.skills(user_id);
 
 -- ==========================================
--- 6. ROW LEVEL SECURITY (RLS) POLICIES
+-- 7. ROW LEVEL SECURITY (RLS) POLICIES
 -- ==========================================
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.prompts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.chats ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.skills ENABLE ROW LEVEL SECURITY;
 
--- Categories RLS: Read all global or owned categories
-CREATE POLICY "Categories read policy" ON public.categories
-    FOR SELECT TO public
-    USING (user_id IS NULL OR user_id = auth.uid());
+-- Public Access Policies
+CREATE POLICY "Allow public read categories" ON public.categories FOR SELECT USING (true);
+CREATE POLICY "Allow public insert categories" ON public.categories FOR INSERT WITH CHECK (true);
 
-CREATE POLICY "Categories insert policy" ON public.categories
-    FOR INSERT TO authenticated
-    WITH CHECK (user_id = auth.uid());
+CREATE POLICY "Allow public read prompts" ON public.prompts FOR SELECT USING (true);
+CREATE POLICY "Allow public insert prompts" ON public.prompts FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update prompts" ON public.prompts FOR UPDATE USING (true);
+CREATE POLICY "Allow public delete prompts" ON public.prompts FOR DELETE USING (true);
 
-CREATE POLICY "Categories delete policy" ON public.categories
-    FOR DELETE TO authenticated
-    USING (user_id = auth.uid());
-
--- Prompts RLS: Read if public OR if author
-CREATE POLICY "Prompts read policy" ON public.prompts
-    FOR SELECT TO public
-    USING (is_public = true OR user_id = auth.uid());
-
-CREATE POLICY "Prompts insert policy" ON public.prompts
-    FOR INSERT TO authenticated
-    WITH CHECK (user_id = auth.uid());
-
-CREATE POLICY "Prompts update policy" ON public.prompts
-    FOR UPDATE TO authenticated
-    USING (user_id = auth.uid())
-    WITH CHECK (user_id = auth.uid());
-
-CREATE POLICY "Prompts delete policy" ON public.prompts
-    FOR DELETE TO authenticated
-    USING (user_id = auth.uid());
+CREATE POLICY "Allow public read skills" ON public.skills FOR SELECT USING (true);
+CREATE POLICY "Allow public insert skills" ON public.skills FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update skills" ON public.skills FOR UPDATE USING (true);
+CREATE POLICY "Allow public delete skills" ON public.skills FOR DELETE USING (true);
 
 -- Chats RLS
-CREATE POLICY "Chats policy" ON public.chats
-    FOR ALL TO authenticated
-    USING (user_id = auth.uid())
-    WITH CHECK (user_id = auth.uid());
+CREATE POLICY "Chats policy" ON public.chats FOR ALL USING (true);
 
 -- ==========================================
--- 7. STORAGE BUCKETS SETUP (Prompt Images & Prompt Files)
+-- 8. STORAGE BUCKETS SETUP (Prompt Images & Prompt Files)
 -- ==========================================
 INSERT INTO storage.buckets (id, name, public) 
 VALUES ('prompt-images', 'prompt-images', true)
@@ -127,8 +128,8 @@ CREATE POLICY "Public Read Images" ON storage.objects
     FOR SELECT TO public
     USING (bucket_id = 'prompt-images');
 
-CREATE POLICY "Authenticated Insert Images" ON storage.objects
-    FOR INSERT TO authenticated
+CREATE POLICY "Public Insert Images" ON storage.objects
+    FOR INSERT TO public
     WITH CHECK (bucket_id = 'prompt-images');
 
 -- Storage Policies for prompt-files (ZIP / MD)
@@ -136,6 +137,6 @@ CREATE POLICY "Public Read Files" ON storage.objects
     FOR SELECT TO public
     USING (bucket_id = 'prompt-files');
 
-CREATE POLICY "Authenticated Insert Files" ON storage.objects
-    FOR INSERT TO authenticated
+CREATE POLICY "Public Insert Files" ON storage.objects
+    FOR INSERT TO public
     WITH CHECK (bucket_id = 'prompt-files');

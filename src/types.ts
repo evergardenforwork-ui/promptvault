@@ -19,6 +19,15 @@ export interface SubSection {
 
 export type MediaType = 'photo' | 'video' | 'text' | 'music';
 
+export interface FileNode {
+  name: string;
+  path: string;
+  type: 'file' | 'directory';
+  content?: string;
+  size?: number;
+  children?: FileNode[];
+}
+
 export interface Prompt {
   id: string;
   userId: string;
@@ -31,6 +40,10 @@ export interface Prompt {
   mediaType?: MediaType;
   /** Подсказки для пользователей: как пользоваться шаблоном */
   usageNotes?: string;
+  /** Ссылка на загруженный оригинальный .ZIP архив пакета скиллов/файлов */
+  filePackageUrl?: string;
+  /** Дерево файлов и скиллов, распарсенное из ZIP или добавленное вручную */
+  fileStructure?: FileNode[];
   imageBefore?: string;
   imageAfter?: string;
   originalImageBefore?: string;
@@ -44,6 +57,22 @@ export interface Prompt {
   authorName: string;
   authorEmail: string;
   usageCount: number;
+  createdAt: string;
+}
+
+export interface SkillPackage {
+  id: string;
+  userId: string;
+  title: string;
+  description: string;
+  category: string;
+  tags: string[];
+  fileStructure: FileNode[];
+  filePackageUrl?: string;
+  isFavorite: boolean;
+  isPublic: boolean;
+  authorName: string;
+  authorEmail: string;
   createdAt: string;
 }
 
@@ -67,4 +96,13 @@ export interface ChatMessage {
 
 export interface AssistantConfig {
   systemPrompt: string;
+}
+
+export interface SkillHint {
+  id: string;
+  skillId: string;
+  userId: string;
+  title: string;
+  text: string;
+  createdAt: string;
 }

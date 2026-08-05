@@ -1,7 +1,7 @@
-﻿# PRD.md — Product Requirements Document
+# PRD.md — Product Requirements Document
 
 > Держит проект в рамках изначального замысла. Любой агент/ИИ, работающий над
-> задачей, должен сверяться с этим файлом, прежде чем предлагать изменения scope.
+> задачей, должен свериться с этим файлом, прежде чем предлагать изменения scope.
 
 ## Executive Summary
 
@@ -28,37 +28,47 @@ PromptVault — персональное fullstack веб-приложение �
 
 ## MVP Features
 
-- [x] Авторизация (email + password, хранение в users.json)
-- [x] CRUD промптов с поддержкой изображений
+- [x] Авторизация (email + password, Supabase `users` table)
+- [x] Админ-панель (UsersSection.tsx: CRUD пользователей, смена пароля)
+- [x] CRUD промптов с поддержкой изображений (Supabase Storage)
+- [x] Пакеты скиллов / Skill Space View (полноэкранный VS Code-подобный просмотрщик файлов)
+- [x] Inline File Editor (редактирование файлов прямо в браузере)
+- [x] Skill Hints — подсказки-промпты к скиллам (быстрое копирование)
+- [x] Личное избранное (per-user через `user_favorites` table)
 - [x] Категории и хештеги
 - [x] Фильтрация: по категории, тегу, происхождению (мой / из сети / чужой)
 - [x] Публичные/приватные промпты
 - [x] Кроппер изображений (HTML5 Canvas)
 - [x] 6 layout-макетов изображений
-- [x] Gemini ИИ-ассистент (чат в контексте промпта + анализ фото)
-- [x] Изоляция истории чатов по пользователям
+- [x] Gemini ИИ-ассистент (чат в контексте промпта + анализ фото) — ⏳ временно отключён
 
 ## Full Feature List & Prioritization
 
 | Фича | Приоритет | Статус |
 |---|---|---|
 | Авторизация email/password | P0 | ✅ Готово |
+| Админ-панель и CRUD пользователей | P1 | ✅ Готово |
 | CRUD промптов | P0 | ✅ Готово |
+| Пакеты скиллов (Skill Space View) | P1 | ✅ Готово |
+| Inline File Editor | P1 | ✅ Готово |
+| Skill Hints (подсказки к скиллу) | P1 | ✅ Готово |
+| Система личного избранного | P1 | ✅ Готово |
 | Категории и теги | P0 | ✅ Готово |
 | Layout-макеты (6 видов) | P0 | ✅ Готово |
 | Кроппер изображений | P0 | ✅ Готово |
-| Gemini чат-ассистент | P1 | ✅ Готово |
-| Анализ изображений через Gemini | P1 | ✅ Готово |
+| Supabase PostgreSQL + Storage | P0 | ✅ Готово |
+| Gemini чат-ассистент | P1 | ⏳ В разработке |
+| Анализ изображений через Gemini | P1 | ⏳ В разработке |
 | Публичные/приватные промпты | P1 | ✅ Готово |
 | Подсекции внутри промпта (SubSection) | P1 | ✅ Готово |
 | usageCount (счётчик использования) | P2 | ✅ Есть |
 | usageNotes (подсказки по шаблону) | P2 | ✅ Есть |
-| Деплой на Render | P2 | ✅ Описано в DEPLOY_RENDER_RU.md |
+| Деплой на Vercel | P1 | 🔜 Готово к деплою |
 
 ## Success Metrics
 
 - Время поиска нужного промпта < 10 сек
-- Ноль потерянных промптов (все хранятся локально в JSON)
+- Ноль потерянных промптов (все хранятся в Supabase)
 - ИИ-ассистент отвечает за < 3 сек (Gemini 2.5 Flash Lite)
 
 ## Tech Stack
@@ -73,14 +83,14 @@ PromptVault — персональное fullstack веб-приложение �
 | Backend | Express.js | 4 |
 | Runtime | Node.js + tsx | — |
 | ИИ | Google Gemini API | gemini-2.5-flash-lite |
-| БД | JSON-файлы | — |
+| БД | Supabase (PostgreSQL + Storage) | FREE tier |
 
 ## Deployment Strategy
 
 - **Dev**: `npm run dev` → `tsx server.ts` → Express + Vite dev server на порту 3000
-- **Prod**: `npm run build` → Vite собирает `dist/`, Express раздаёт статику
-- **Хостинг**: Render.com (см. `DEPLOY_RENDER_RU.md`)
-- **Секреты**: `.env` файл (не в git), обязательный `GEMINI_API_KEY`
+- **Prod (Vercel)**: `npm run build` → Vite собирает `dist/`, Vercel деплоит `api/index.ts` как Serverless Function
+- **Хостинг**: Vercel (основной), резерв — Render.com
+- **Секреты**: `.env` файл (не в git), переменные в Vercel Dashboard
 
 ## Phase Roadmap
 
@@ -88,5 +98,7 @@ PromptVault — персональное fullstack веб-приложение �
 |---|---|---|
 | Phase 1 — MVP | Auth, CRUD, категории, теги, базовые фото | ✅ Готово |
 | Phase 2 — Rich Media | Кроппер, 6 layout-макетов, SubSections | ✅ Готово |
-| Phase 3 — AI | Gemini чат + анализ изображений | ✅ Готово |
-| Phase 4 — Deploy | Render деплой, production-режим | ✅ Описано |
+| Phase 3 — AI | Gemini чат + анализ изображений | ⏳ Временно отключён |
+| Phase 4 — Cloud DB | Миграция на Supabase PostgreSQL + Storage | ✅ Готово |
+| Phase 5 — Skill Space | VS Code-подобный просмотрщик, Hints, Editor | ✅ Готово |
+| Phase 6 — Deploy | Vercel деплой, vercel.json + api/index.ts | 🔜 Готово к деплою |

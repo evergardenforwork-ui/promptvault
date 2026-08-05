@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Star, Sparkles } from 'lucide-react';
+import { X, Star, Users } from 'lucide-react';
 import { Category, Prompt } from '../../types';
 
 interface SidebarProps {
@@ -17,6 +17,7 @@ interface SidebarProps {
   onPickTag: (tag: string) => void;
   onExportBackup: () => void;
   onImportBackup: (file: File) => void;
+  onOpenAdmin?: () => void;
 }
 
 export default function Sidebar({
@@ -33,6 +34,7 @@ export default function Sidebar({
   onPickTag,
   onExportBackup,
   onImportBackup,
+  onOpenAdmin,
 }: SidebarProps) {
   const allTags = Array.from(new Set(prompts.flatMap(p => p.tags || [])));
 
@@ -122,6 +124,16 @@ export default function Sidebar({
 
             {user && user.role === 'admin' && (
               <div className="space-y-4 mt-auto pt-6 border-t border-zinc-900 shrink-0">
+                {onOpenAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => { onOpenAdmin(); onClose(); }}
+                    className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/20 hover:border-violet-500/40 text-violet-400 hover:text-violet-300 transition-all font-bold text-xs cursor-pointer"
+                  >
+                    <Users size={14} />
+                    Управление пользователями
+                  </button>
+                )}
                 <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Резервная копия</h3>
                 <div className="grid grid-cols-2 gap-2">
                   <button 

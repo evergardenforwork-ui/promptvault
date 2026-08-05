@@ -2,14 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   X, Edit, CopyPlus, Trash2, Share2,
-  Copy, ChevronLeft, ChevronRight,
+  Copy, ChevronLeft, ChevronRight, Sparkles,
 } from 'lucide-react';
 import { Prompt, User } from '../../types';
 import { cn } from '../../utils/cn';
 
 import MiniLayoutPreview from './view/MiniLayoutPreview';
 import CollapsibleText from './view/CollapsibleText';
-import AIAssistant from './view/AIAssistant';
+// import AIAssistant from './view/AIAssistant';
 
 interface PhotoViewProps {
   prompt: Prompt;
@@ -345,14 +345,15 @@ export default function PhotoView({
                 </div>
               </div>
 
-              <AIAssistant
-                prompt={prompt}
-                setPrompt={setPrompt}
-                effectiveUser={effectiveUser}
-                currentPromptText={currentText}
-                addToast={addToast}
-                canEditPrompt={!!canEdit}
-              />
+              {/* AI Assistant Placeholder */}
+              <div className="mt-8 border border-zinc-900/50 bg-zinc-900/20 backdrop-blur-md rounded-[2rem] p-8 flex flex-col items-center justify-center text-center">
+                <div className="w-16 h-16 rounded-full bg-sky-400/10 flex items-center justify-center text-sky-400 mb-4 shadow-[0_0_30px_rgba(56,189,248,0.15)]">
+                  <Sparkles size={32} />
+                </div>
+                <h3 className="text-xl font-black text-white mb-1 tracking-tight">ИИ-ассистент</h3>
+                <p className="text-[10px] font-black text-sky-400 uppercase tracking-widest mb-3">Раздел в разработке</p>
+                <p className="text-sm font-medium text-zinc-500">Здесь будет умный помощник для работы с промптами</p>
+              </div>
             </div>
           </div>
         </div>

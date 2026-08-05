@@ -1,11 +1,30 @@
+# Dependencies
 node_modules/
+
+# Build output
 build/
 dist/
+
+# Coverage
 coverage/
+
+# OS
 .DS_Store
+
+# Logs
 *.log
+
+# Secrets — никогда не коммитить!
 .env
 .env.*
 !.env.example
+
+# Local JSON data (мигрировано в Supabase)
 data/
 
+# Большие экспорты — не нужны в репо
+firestore-export/
+graphify-out/
+
+# Vercel
+.vercel/

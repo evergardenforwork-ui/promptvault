@@ -28,7 +28,12 @@ promptvault/
     ├── services/
     │   ├── api.ts            # API клиент для работы с сервером
     │   └── gemini.ts         # Перенаправление запросов к Gemini на Express прокси
-    ├── components/           # Модульные компоненты (Auth, Sidebar, Toast, и др.)
+    ├── utils/
+    │   ├── cn.ts             # Утилита объединения классов Tailwind
+    │   └── zipParser.ts      # Утилита парсинга .ZIP архивов со скиллами через JSZip
+    ├── components/           # Модульные компоненты (Auth, Sidebar, Toast, FileTreeViewer и др.)
+    │   └── ui/
+    │       └── FileTreeViewer.tsx # Дерево файлов и просмотрщик .md инструкций/скиллов
     └── sections/             # Разделы (PhotoCard, PhotoForm, PhotoView и др.)
 ```
 
@@ -56,6 +61,8 @@ promptvault/
 *   `subSections`: array of `{ title: string, text: string }` (подразделы/переменные промпта)
 *   `mainPrompt`: string (основное тело промпта)
 *   `usageNotes`: string? (инструкции/подсказки по использованию шаблона)
+*   `filePackageUrl`: string? (ссылка на оригинальный прикрепленный ZIP архив)
+*   `fileStructure`: FileNode[]? (дерево папок и содержимого текстовых скиллов `.md` / `.json` из ZIP)
 *   `imageBefore`: string? (Data URL изображения "до")
 *   `imageAfter`: string? (Data URL изображения "после")
 *   `additionalImages`: string[] (дополнительные изображения)

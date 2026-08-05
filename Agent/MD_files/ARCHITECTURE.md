@@ -13,14 +13,10 @@ Express.js (server.ts, порт 3000)
   ├─ /api/*          ← REST API (JSON)
   ├─ /uploads/*      ← Статические файлы изображений
   └─ /* (dev: Vite middleware, prod: dist/)
+        ├─ Supabase (PostgreSQL)   ← Хранилище промптов, пользователей, категорий, чатов
+        ├─ Supabase Storage        ← Загруженные изображения (bucket: prompt-images)
         │
-        ├─ data/prompts.json       ← Хранилище промптов
-        ├─ data/categories.json    ← Категории
-        ├─ data/chats.json         ← История чатов
-        ├─ data/users.json         ← Пользователи
-        └─ data/images/            ← Загруженные изображения
-        │
-        └─ Google Gemini API (gemini-2.5-flash-lite)
+        └─ Google Gemini API (gemini-2.5-flash-lite) (⏳ в разработке)
              ├─ /api/gemini/chat     ← Чат с историей
              └─ /api/gemini/analyze  ← Анализ изображения
 ```
@@ -31,7 +27,7 @@ Express.js (server.ts, порт 3000)
 ┌──────────────────────────────────────┐
 │  Presentation (src/sections/, ui/)   │  React компоненты, формы, карточки, FileTreeViewer
 ├──────────────────────────────────────┤
-│  Services (src/services/)            │  api.ts, gemini.ts, supabaseClient.ts
+│  Services (src/services/)            │  api.ts, gemini.ts
 ├──────────────────────────────────────┤
 │  State (src/App.tsx)                 │  Глобальный state (prompts, categories, activePrompt)
 ├──────────────────────────────────────┤
@@ -45,78 +41,96 @@ Express.js (server.ts, порт 3000)
 
 ```
 promptvault/
-├── server.ts               ← Единственный backend-файл (Express + Vite + Gemini)
+├── server.ts               ← Единственный backend-файл (~960 строк: Express + Vite + Gemini)
 ├── src/
 │   ├── App.tsx             ← Центральный state-контейнер + роутинг через view/mode
 │   ├── types.ts            ← Все TypeScript интерфейсы (ЕДИНЫЙ источник типов)
 │   ├── index.css           ← Tailwind v4 директивы + @theme токены
 │   ├── components/
 │   │   ├── auth/           ← LoginForm.tsx (форма входа)
-│   │   ├── layout/         ← Sidebar.tsx (фильтрация и навигация)
+│   │   ├── layout/         ← Sidebar.tsx (фильтрация и навигация, onOpenAdmin)
 │   │   └── ui/             ← Toast, CategoryForm, ImageCropper, ConfirmDialog
 │   ├── hooks/              ← Кастомные React-хуки
 │   │   ├── useHotkeys.ts          ← Ctrl+K, Ctrl+N, Escape
 │   │   └── usePromptFilters.ts    ← Фильтрация, сортировка, подсчёт
 │   ├── sections/
-│   │   └── photo/
-│   │       ├── PhotoCard.tsx      ← Карточка промпта в сетке
-│   │       ├── PhotoForm.tsx      ← Оркестратор формы (создание/редактирование)
-│   │       ├── PhotoView.tsx      ← Оркестратор просмотра промпта
-│   │       ├── form/              ← Подкомпоненты формы
-│   │       │   ├── ImageSlotsSection.tsx
-│   │       │   └── SubSectionsEditor.tsx
-│   │       └── view/              ← Подкомпоненты просмотра
-│   │           ├── MiniLayoutPreview.tsx
-│   │           ├── CollapsibleText.tsx
-│   │           └── AIAssistant.tsx
+│   │   ├── admin/
+│   │   │   └── UsersSection.tsx  ← Панель управления пользователями
+│   │   ├── photo/
+│   │   │   ├── PhotoCard.tsx      ← Карточка промпта в сетке
+│   │   │   ├── PhotoForm.tsx      ← Оркестратор формы (создание/редактирование)
+│   │   │   ├── PhotoView.tsx      ← Оркестратор просмотра промпта
+│   │   │   ├── form/              ← Подкомпоненты формы
+│   │   │   │   ├── ImageSlotsSection.tsx
+│   │   │   │   └── SubSectionsEditor.tsx
+│   │   │   └── view/              ← Подкомпоненты просмотра
+│   │   │       ├── MiniLayoutPreview.tsx
+│   │   │       ├── CollapsibleText.tsx
+│   │   │       └── AIAssistant.tsx
+│   │   └── skills/
+│   │       ├── SkillCard.tsx      ← Карточка скилла в сетке
+│   │       ├── SkillForm.tsx      ← Форма создания/редактирования пакета
+│   │       ├── SkillView.tsx      ← Старая модалка (устарела, оставлена для ref)
+│   │       ├── SkillSpaceView.tsx ← Полноэкранная страница-пространство
+│   │       └── space/             ← Подкомпоненты пространства
+│   │           ├── SpaceFileTree.tsx     ← VS Code дерево файлов + чекбоксы
+│   │           ├── SpaceFilePreview.tsx  ← Markdown/код превью + breadcrumb
+│   │           ├── SpaceContextMenu.tsx  ← ПКМ glassmorphism меню
+│   │           └── SpaceSelectionBar.tsx ← Плавающая панель выделения
 │   ├── services/
 │   │   ├── api.ts          ← fetch-обёртки для всех /api/* эндпоинтов
 │   │   └── gemini.ts       ← Клиент для /api/gemini/* эндпоинтов
 │   └── utils/              ← Вспомогательные функции
-├── data/                   ← Локальная JSON БД (в git не попадают данные)
-└── public/                 ← Статические ассеты
+├── public/                 ← Статические ассеты
 ```
 
 ## Middleware & Request Pipeline
 
 ```
 Запрос → app.use(express.json({ limit: "50mb" }))
-       → authenticate() middleware — проверяет Bearer token (uid из users.json)
-       → Route handler — читает/пишет JSON
-       → saveBase64Image() — если есть base64 фото, сохраняет в data/images/
-       → writeJson() → ответ клиенту
+       → authenticate() middleware — проверяет Bearer token (uid из Supabase users table)
+       → Route handler — делает Supabase запросы (select/insert/update/delete)
+       → saveBase64Image() — если есть base64 фото, сохраняет в Supabase Storage (bucket: prompt-images)
+       → ответ клиенту
 ```
 
-**Auth**: Простой Bearer-токен = `uid` пользователя из `users.json`. Нет JWT, нет сессий.
+**Auth**: Простой Bearer-токен = `uid` пользователя из таблицы `users` (Supabase). Нет JWT, нет сессий.
 
 ## Client-Side Architecture
 
 - **State**: Весь глобальный state в `App.tsx` через `useState`. Нет Zustand/Redux/Context.
 - **Хуки**: Переиспользуемая логика вынесена в `src/hooks/` — `useHotkeys`, `usePromptFilters`.
-- **Роутинг**: Нет react-router. Роутинг через `view` state (`'list' | 'form' | 'view'`) и `selectedPrompt`.
+- **Роутинг**: Нет react-router. Навигация через state:
+  - Промпты: `viewingPrompt`, `editingPrompt`, `isFormOpen` (boolean-флаги)
+  - Скиллы: `spacedSkill: SkillPackage | null` → полноэкранная страница-пространство; `isSkillFormOpen` → форма
+  - При `spacedSkill !== null` рендерится `SkillSpaceView` вместо основного layout
 - **Компоненты**: Props-drilling из App.tsx вниз. Компоненты тупые (presentational).
 - **Анимации**: `motion` (Framer Motion v12) — для карточек, модалок, переходов.
 - **Иконки**: `lucide-react` — только из этой библиотеки.
 
 ## Data Layer & Database Strategy
 
-- **Хранилище**: Плоские JSON-файлы. Промпты хранятся как `{ [id: string]: Prompt }`.
-- **Seed**: При отсутствии файлов — автосид из `firestore-export/` (только при первом запуске).
-- **Изображения**: base64 из клиента → `saveBase64Image()` → файл в `data/images/` → URL `/uploads/{filename}`.
-- **Нет ORM, нет миграций** — прямые `readJson`/`writeJson` хелперы.
+> 📖 Полная схема БД, SQL-эквивалент и ER-диаграмма — в [`DATABASE.md`](DATABASE.md)
 
-## Authentication Flow
+- **Хранилище**: Supabase PostgreSQL.
+- **Избранное**: Таблица `user_favorites` — `uid`, `prompts[]`, `skills[]`. Вычисляется динамически на сервере при каждом GET, не хранится в самом промпте.
+- **Изображения**: base64 из клиента → `saveBase64Image()` → файл в бакет `prompt-images` → URL (proxy) `/uploads/{filename}`.
+- **Интеграция**: `src/services/supabaseServer.ts` (используется service_role key для обхода RLS).
+
+## Authentication & Authorization Flow
 
 ```
 1. POST /api/auth/login { email, password }
-2. server.ts: ищет user в users.json по email, сравнивает пароль с помощью bcrypt.compareSync()
+2. server.ts: ищет user в таблице `users` по email, сравнивает пароль через bcrypt.compareSync()
 3. Ответ: { token: user.uid, user: { uid, displayName, email, role } }
-4. Клиент: хранит token в localStorage
+4. Клиент: хранит token в localStorage (pv_token + pv_user)
 5. Все следующие запросы: Authorization: Bearer <uid>
-6. authenticate() middleware: ищет user с uid === token в users.json
+6. authenticate() middleware: ищет user с uid === token в Supabase `users`
+7. Автовход: App.tsx читает pv_user из localStorage при загрузке
 ```
 
-🔒 Пароли хранятся в захешированном виде с использованием bcrypt (через bcryptjs для кроссплатформенности).
+**Роли**: `admin` — видит всё, управляет пользователями, вкладка "👥 Пользователи".
+**Пароли**: захешированы bcrypt. Сменяет только admin. Создание аккаунтов через `/api/users` (admin only).
 
 ## Key Data Flows & Sequence Diagrams
 
@@ -125,13 +139,13 @@ promptvault/
 ```
 User → PhotoForm → выбирает фото → ImageCropper (Canvas crop) → base64
      → api.ts: POST /api/prompts { ...data, imageBefore: "data:image/..." }
-     → server.ts: saveBase64Image() → data/images/prompt_xxx_before.jpg
-     → writeJson(PROMPTS_FILE, { [id]: newPrompt })
+     → server.ts: saveBase64Image() → upload to Supabase Storage -> return publicUrl or local proxy url
+     → Supabase insert: supabase.from('prompts').insert({ ... })
      → ответ { id, imageBefore: "/uploads/prompt_xxx_before.jpg" }
      → App.tsx: добавляет в state prompts[]
 ```
 
-### Gemini чат
+### Gemini чат (⏳ В разработке)
 
 ```
 User → PhotoView → открывает чат → вводит сообщение

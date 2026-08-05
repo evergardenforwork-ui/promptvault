@@ -1,7 +1,6 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { X, Package, Upload } from 'lucide-react';
 import { cn } from '../../../utils/cn';
-import { motion } from 'motion/react';
 
 interface ImageSlotsSectionProps {
   imageLayoutType: string;
@@ -14,6 +13,10 @@ interface ImageSlotsSectionProps {
   additionalImages: string[];
   setAdditionalImages: React.Dispatch<React.SetStateAction<string[]>>;
   extraImagesInputRef: React.RefObject<HTMLInputElement | null>;
+  zipInputRef?: React.RefObject<HTMLInputElement | null>;
+  onZipUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  fileCount?: number;
+  onClearZip?: () => void;
 }
 
 const LAYOUT_OPTIONS = [
@@ -167,3 +170,4 @@ export default function ImageSlotsSection({
     </div>
   );
 }
+

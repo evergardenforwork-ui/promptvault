@@ -150,10 +150,86 @@ export const api = {
     return res.blob();
   },
 
+  // Skills (Skill Packages)
+  async getSkills(): Promise<any[]> {
+    return request('/skills');
+  },
+
+  async createSkill(skill: any): Promise<any> {
+    return request('/skills', {
+      method: 'POST',
+      body: JSON.stringify(skill),
+    });
+  },
+
+  async updateSkill(id: string, skill: any): Promise<any> {
+    return request(`/skills/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(skill),
+    });
+  },
+
+  async deleteSkill(id: string): Promise<void> {
+    return request(`/skills/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
   async importBackup(base64Zip: string): Promise<{ message: string }> {
     return request('/import', {
       method: 'POST',
       body: JSON.stringify({ file: base64Zip }),
     });
-  }
+  },
+
+  // Favorites (personal, per-user)
+  async getFavorites(): Promise<{ prompts: string[]; skills: string[] }> {
+    return request('/favorites');
+  },
+
+  async toggleFavorite(itemId: string, itemType: 'prompt' | 'skill'): Promise<{ added: boolean; favorites: { prompts: string[]; skills: string[] } }> {
+    return request('/favorites/toggle', {
+      method: 'POST',
+      body: JSON.stringify({ itemId, itemType }),
+    });
+  },
+
+  // User Management (admin only)
+  async getUsers(): Promise<{ uid: string; name: string; email: string; role: string }[]> {
+    return request('/users');
+  },
+
+  async createUser(data: { name: string; email: string; password: string; role?: string }): Promise<{ uid: string; name: string; email: string; role: string }> {
+    return request('/users', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async deleteUser(uid: string): Promise<void> {
+    return request(`/users/${uid}`, { method: 'DELETE' });
+  },
+
+  async changeUserPassword(uid: string, password: string): Promise<{ message: string }> {
+    return request(`/users/${uid}/password`, {
+      method: 'PUT',
+      body: JSON.stringify({ password }),
+    });
+  },
+
+  // Skill Hints
+  async getSkillHints(skillId: string): Promise<import('../types').SkillHint[]> {
+    return request(`/skills/${skillId}/hints`);
+  },
+
+  async createSkillHint(skillId: string, data: { title: string; text: string }): Promise<import('../types').SkillHint> {
+    return request(`/skills/${skillId}/hints`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async deleteSkillHint(skillId: string, hintId: string): Promise<void> {
+    return request(`/skills/${skillId}/hints/${hintId}`, { method: 'DELETE' });
+  },
 };

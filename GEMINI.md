@@ -1,16 +1,18 @@
 # PromptVault — Project Context for Antigravity
 
-> Этот файл автоматически читается Antigravity (AGY) при каждом старте сессии.
-> Он заменяет необходимость каждый раз объяснять структуру проекта.
+> Этот файл автоматически читается AGY при каждом старте сессии.
+> **Последнее обновление**: 2026-08-05 (актуально на эту дату — синхронизирован с реальными файлами проекта)
 
 ---
 
 ## 🗂️ Что это за проект?
 
 **PromptVault** — персональное fullstack веб-приложение для хранения и управления промптами для нейросетей.
-Встроен ИИ-ассистент на базе Google Gemini API.
+ИИ-ассистент на базе Google Gemini API в данный момент **отключён** (в разработке).
 
-**Репозиторий**: `C:\Users\Alekin\Desktop\promptvault`
+**Репозиторий**: `C:\Users\Alekin\Desktop\Проекты\superbasetest`
+
+> ⚠️ Папка называется `superbasetest` — это рабочая директория проекта PromptVault.
 
 ---
 
@@ -19,177 +21,248 @@
 | Слой | Технология |
 |------|-----------|
 | Frontend | React 19, TypeScript, Vite 6, Tailwind CSS v4 |
-| Анимации | Framer Motion / `motion` |
-| Backend | Express.js (`server.ts`) — API + раздача статики |
-| База данных | Supabase (PostgreSQL) + Supabase Storage (ранее JSON-файлы в `/data/`) |
-| ИИ | Google Gemini API (`gemini-2.5-flash-lite`) |
+| Анимации | Framer Motion (`motion` v12) |
+| Backend | Express.js (`server.ts`) — API + Vite dev-сервер |
+| Serverless | `api/index.ts` — Express adapter для Vercel Functions |
+| База данных | Supabase (PostgreSQL) + Supabase Storage (бакеты `prompt-images`, `prompt-files`) |
+| ИИ | Google Gemini API (Временно отключён) |
 | Иконки | `lucide-react` |
+| Markdown | `react-markdown` |
+| ZIP | `jszip` (клиент) + `adm-zip` (сервер) |
+| Пароли | `bcryptjs` |
 
-**Запуск dev-сервера**: `npm run dev` → `http://localhost:3000`
+**Запуск**: `npm run dev` → `http://localhost:3000` (через `tsx server.ts`)
 **Сборка**: `npm run build`
+**Очистка**: `npm run clean` (`npx rimraf dist`)
 **Линтинг**: `npm run lint` (TypeScript `--noEmit`)
 
 ---
 
-## 📁 Структура проекта
+## ⚙️ Критическая заметка по серверу
+
+В `server.ts` Vite интегрирован с `appType: "custom"` (НЕ `"spa"`).
+Причина: `appType: "spa"` перехватывает все `/api/*` запросы и отдаёт `index.html`, ломая API.
+Ручной SPA fallback добавлен после `app.use(vite.middlewares)`.
+
+**Vercel**: `api/index.ts` — тот же Express app, но без `listen()` и без Vite middleware. Экспортирует `default app`.
+**Безопасность**: API ключи удалены из клиентской сборки (vite.config.ts). Все API роуты обёрнуты в try/catch, на POST/PUT эндпоинтах есть валидация.
+
+---
+
+## 📁 РЕАЛЬНАЯ структура проекта (актуально)
 
 ```
-promptvault/
-├── GEMINI.md               ← Ты читаешь это сейчас (контекст для агента)
-├── server.ts               ← Express API + статика (единый backend)
-├── supabase_schema.sql     ← SQL-миграция и схема Postgres/Storage в Supabase
-├── plan_supabase.md        # План миграции на Supabase
-├── vite.config.ts          ← Конфиг Vite (алиасы, Tailwind plugin)
+superbasetest/
+├── GEMINI.md               ← Ты читаешь это сейчас
+├── server.ts               ← Express API + Vite dev-сервер (единый процесс, dev only)
+├── api/
+│   └── index.ts            ← Express adapter для Vercel Serverless (production)
+├── vercel.json             ← Vercel конфиг: /api/* → api/index.ts, /* → dist/
+├── vite.config.ts          ← GEMINI_API_KEY убран из сборки
 ├── tsconfig.json
-├── package.json
+├── package.json            ← name='promptvault', dev='tsx server.ts', build='vite build'
+├── index.html              ← lang='ru', title='PromptVault'
 ├── .env                    ← Локальные секреты (не в git)
-├── .env.example            ← Шаблон переменных окружения
-├── .agents/skills/         ← Установленные агентские скиллы (supabase, postgres-best-practices)
+├── .env.example            ← Шаблон: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GEMINI_API_KEY
+├── .gitignore              ← node_modules, dist, .env, data/, firestore-export/, graphify-out/
+│
 ├── scripts/
-│   └── migrateToSupabase.ts  ← Скрипт пересылки данных из JSON в Supabase
+│   ├── migrateToSupabase.ts        ← Скрипт миграции JSON → Supabase (данные уже перенесены)
+│   └── create_skill_hints_table.sql ← SQL для создания таблицы skill_hints (выполнить в Supabase!)
 │
-├── Agent/
-│   ├── plan.md             ← Текущий план задач и технический долг
-│   └── project_structure.md ← Описание структуры проекта
+├── Agent/                  ← Документация и планирование
+│   ├── MD_files/
+│   │   ├── PRD.md          ← ✅ Актуально (2026-08-05)
+│   │   ├── DESIGN.md
+│   │   ├── ARCHITECTURE.md
+│   │   ├── SCHEMA.md       ← ✅ Актуально (2026-08-05) — snake_case колонки Supabase
+│   │   └── RULES.md
+│   └── plan/
+│       ├── plan.md         ← ✅ Актуально (2026-08-05)
+│       ├── plan_supabase.md         ← ✅ Актуально — все шаги выполнены, осталось git push
+│       ├── plan_skill_space.md      ← ✅ Завершено
+│       └── plan_skill_hints.md      ← ✅ Завершено (кроме SQL таблицы в Supabase)
 │
-├── data/                   ← Локальная JSON БД (архив после миграции)
-│   ├── prompts.json        ← Хранилище промптов
-│   ├── categories.json     ← Категории
-│   ├── chats.json          ← История диалогов с Gemini
-│   ├── users.json          ← Пользователи
-│   └── images/             ← Загруженные изображения (base64 → файлы)
-│
-├── firestore-export/       ← Дамп данных для первоначального импорта (не трогать)
-│
-├── src/
-│   ├── main.tsx            ← Точка входа React
-│   ├── App.tsx             ← Главный компонент (роутинг состояний)
-│   ├── types.ts            ← TypeScript интерфейсы (Prompt, Category, ChatMessage, User)
-│   ├── index.css           ← Глобальные стили + Tailwind директивы
-│   │
-│   ├── components/
-│   │   ├── auth/           ← LoginForm.tsx
-│   │   ├── layout/         ← Sidebar.tsx (фильтры и навигация)
-│   │   └── ui/
-│   │       ├── Toast.tsx
-│   │       ├── CategoryForm.tsx
-│   │       ├── ImageCropper.tsx
-│   │       └── ConfirmDialog.tsx  ← Модальный диалог подтверждения (вместо window.confirm)
-│   │
-│   ├── sections/
-│   │   └── photo/          ← Основной раздел промптов
-│   │       ├── PhotoCard.tsx       ← Карточка промпта в сетке
-│   │       ├── PhotoForm.tsx       ← Форма создания/редактирования (оркестратор)
-│   │       ├── PhotoView.tsx       ← Детальный просмотр промпта (оркестратор)
-│   │       ├── form/               ← Подкомпоненты формы
-│   │       │   ├── ImageSlotsSection.tsx  ← Выбор layout + слоты изображений
-│   │       │   └── SubSectionsEditor.tsx  ← Редактирование подсекций
-│   │       └── view/               ← Подкомпоненты просмотра
-│   │           ├── MiniLayoutPreview.tsx  ← Иконка-превью макета в табах
-│   │           ├── CollapsibleText.tsx    ← Сворачиваемый текст промпта с кнопкой копирования
-│   │           └── AIAssistant.tsx        ← Gemini чат внутри просмотра промпта
-│   │
-│   ├── hooks/              ← Кастомные React-хуки
-│   │   ├── useHotkeys.ts          ← Ctrl+K, Ctrl+N, Escape
-│   │   └── usePromptFilters.ts    ← Фильтрация, сортировка и теги промптов
-│   │
-│   ├── services/
-│   │   ├── api.ts          ← HTTP-клиент для Express API
-│   │   └── gemini.ts       ← Клиент для Gemini API
-│   │
-│   └── utils/              ← Вспомогательные утилиты (cn и др.)
-│
-└── public/                 ← Статические ассеты
+└── src/
+    ├── main.tsx
+    ├── App.tsx             ← центральный state + навигация
+    ├── types.ts
+    ├── index.css
+    │
+    ├── components/
+    │   ├── auth/
+    │   │   └── LoginForm.tsx
+    │   ├── layout/
+    │   │   └── Sidebar.tsx
+    │   └── ui/
+    │       ├── Toast.tsx
+    │       ├── CategoryForm.tsx
+    │       ├── ConfirmDialog.tsx
+    │       ├── ImageCropper.tsx
+    │       ├── ImageUpload.tsx
+    │       └── FileTreeViewer.tsx
+    │
+    ├── hooks/
+    │   ├── useHotkeys.ts
+    │   └── usePromptFilters.ts
+    │
+    ├── sections/
+    │   ├── admin/
+    │   │   └── UsersSection.tsx
+    │   │
+    │   ├── photo/                       ← Раздел промптов
+    │   │   ├── PhotoCard.tsx
+    │   │   ├── PhotoForm.tsx
+    │   │   ├── PhotoView.tsx            ← Включает заглушку "in development" для ИИ
+    │   │   ├── form/
+    │   │   │   ├── ImageSlotsSection.tsx
+    │   │   │   └── SubSectionsEditor.tsx
+    │   │   └── view/
+    │   │       ├── AIAssistant.tsx      ← Файл существует, но НЕ импортируется (отключён)
+    │   │       ├── CollapsibleText.tsx
+    │   │       └── MiniLayoutPreview.tsx
+    │   │
+    │   └── skills/                      ← Раздел Пространств скиллов
+    │       ├── SkillCard.tsx
+    │       ├── SkillForm.tsx
+    │       ├── SkillSpaceView.tsx
+    │       └── space/
+    │           ├── SpaceFileTree.tsx     ← VS Code дерево файлов + чекбоксы
+    │           ├── SpaceFilePreview.tsx  ← Markdown/код превью + breadcrumb + inline editor
+    │           ├── SpaceContextMenu.tsx  ← ПКМ glassmorphism меню
+    │           ├── SpaceSelectionBar.tsx ← Плавающая панель выделения
+    │           └── SkillHintsPanel.tsx   ← Панель подсказок-промптов к скиллу
+    │
+    ├── services/
+    │   ├── api.ts
+    │   └── gemini.ts
+    │
+    └── utils/
+        ├── cn.ts
+        ├── zipParser.ts
+        └── buildSelectionZip.ts
 ```
 
 ---
 
-## ⚙️ Переменные окружения (`.env`)
+## 🔑 TypeScript типы (`src/types.ts`)
 
-```env
-# Gemini AI
-GEMINI_API_KEY=             # ← Ключ Google AI Studio
-
-# Supabase
-SUPABASE_URL=               # ← URL проекта в Supabase
-SUPABASE_ANON_KEY=          # ← Публичный ключ Supabase
-SUPABASE_SERVICE_ROLE_KEY=  # ← Секретный ключ для скрипта миграции
+```typescript
+User           { uid, displayName, email, role: 'admin'|'user' }
+Prompt         { id, userId, title, category, tags, subSections[], mainPrompt,
+                 mediaType?, usageNotes?, filePackageUrl?, fileStructure?,
+                 imageBefore?, imageAfter?, originalImage*, additionalImages[],
+                 imageLayoutType?, isFavorite, isPublic, promptOrigin?,
+                 authorName, authorEmail, usageCount, createdAt }
+SkillPackage   { id, userId, title, description, category, tags,
+                 fileStructure[], filePackageUrl?, isFavorite, isPublic,
+                 authorName, authorEmail, createdAt }
+SkillHint      { id, skillId, userId, title, text, createdAt }
+SubSection     { title, text, imageBefore?, imageAfter?, originalImage*, additionalImages?, imageLayoutType? }
+FileNode       { name, path, type:'file'|'directory', content?, size?, children? }
+Category       { id, userId, name, emoji, color }
+ChatMessage    { id, promptId, userId, role:'user'|'model', content, image?, createdAt }
+MediaType      'photo' | 'video' | 'text' | 'music'
+AssistantConfig { systemPrompt }
 ```
 
-> ⚠️ `.env` не коммитится в git. При первом запуске скопировать `.env.example` → `.env`.
+---
+
+## 🌐 API Эндпоинты (`server.ts` и `api/index.ts`)
+
+Оба файла содержат идентичные роуты. `server.ts` — dev-сервер, `api/index.ts` — Vercel prod.
+
+| Метод | Путь | Описание |
+|-------|------|----------|
+| POST | `/api/auth/login` | Логин (bcrypt) |
+| GET | `/api/prompts` | Список промптов (limit/offset поддержка) |
+| POST | `/api/prompts` | Создать промпт (с валидацией) |
+| PUT | `/api/prompts/:id` | Обновить промпт (с валидацией) |
+| DELETE | `/api/prompts/:id` | Удалить промпт |
+| GET | `/api/skills` | Список пакетов скиллов |
+| POST | `/api/skills` | Создать пакет (с валидацией) |
+| PUT | `/api/skills/:id` | Обновить пакет (с валидацией) |
+| DELETE | `/api/skills/:id` | Удалить пакет |
+| GET | `/api/skills/:id/hints` | Список подсказок скилла |
+| POST | `/api/skills/:id/hints` | Создать подсказку { title, text } |
+| DELETE | `/api/skills/:id/hints/:hintId` | Удалить подсказку |
+| GET | `/api/categories` | Список категорий |
+| POST | `/api/categories` | Создать категорию |
+| DELETE | `/api/categories/:id` | Удалить категорию |
+| GET | `/api/chats` | История чатов |
+| POST | `/api/chats` | Добавить сообщение |
+| POST | `/api/chats/clear` | Очистить чат |
+| GET | `/api/export` | Скачать бэкап ZIP (admin only) |
+| POST | `/api/import` | Восстановить из ZIP (admin only) |
+| GET | `/api/favorites` | Личное избранное пользователя |
+| POST | `/api/favorites/toggle` | Добавить/убрать из избранного |
+| GET | `/api/users` | Список пользователей (admin only) |
+| POST | `/api/users` | Создать пользователя (admin only) |
+| DELETE | `/api/users/:uid` | Удалить пользователя (admin only) |
+| PUT | `/api/users/:uid/password` | Сменить пароль (admin only) |
+| POST | `/api/gemini/chat` | Чат с Gemini (временно не используется) |
+| POST | `/api/gemini/analyze` | Анализ изображения Gemini (временно не используется) |
 
 ---
 
-## 🔑 Бизнес-логика и важные детали
+## 🔑 Бизнес-логика
 
-### Пользователи и роли
-- **Администратор**: `alexey.unstam@gmail.com` — может редактировать/удалять любые промпты.
-- Все остальные пользователи — обычные (видят только свои приватные + все публичные промпты).
-- Пароли хранятся в `data/users.json` в захешированном с помощью bcrypt виде.
+### Пользователи и Безопасность
+- **Администратор**: `alexey.unstam@gmail.com` (uid: `admin-uid`) — видит и редактирует всё.
+- Пароли: bcrypt (`$2b$` hash) в Supabase `users` table
+- Auth: Bearer токен = `uid`. Хранится в localStorage (`pv_token`/`pv_user`).
 
-### Промпты — поле `promptOrigin`
-- `'own'` — авторский промпт (моя разработка)
-- `'web'` — найден в сети / скопирован
-
-### Промпты — поле `isPublic`
-- `true` — виден всем пользователям
-- `false` — только автору
-
-### Layout-макеты изображений (`imageLayoutType`)
-- `single` — 1 фото
-- `slider` — слайдер ДО/ПОСЛЕ (imageBefore + imageAfter)
-- `split-vertical` — 2 фото вертикально (сверху/снизу)
-- `split-horizontal` — 2 фото горизонтально (слева/справа)
-- `split-1-2` — 1 крупное слева + 2 маленьких справа (3 слота)
-- `merge-2-1` — 2 маленьких сверху + 1 крупное снизу (3 слота)
-
-### Подсекции (SubSection)
-Каждый промпт может иметь `subSections[]` — варианты промпта, каждый со своим текстом, заголовком и изображениями. Они отображаются как вкладки в PhotoView.
-
-### Изображения
-- Загружаются через кроппер (HTML5 Canvas → base64 → server → `/data/images/`).
-- API-эндпоинт: `POST /api/upload-image`.
-- Поля: `imageBefore`, `imageAfter`, `additionalImages[]`
-- Оригиналы (до обрезки): `originalImageBefore`, `originalImageAfter`, `originalImageSlot2`
-
-### Gemini ИИ-ассистент
-- Модель: `gemini-2.5-flash-lite`
-- История чатов изолирована по пользователям, хранится в `data/chats.json`.
-- Компонент: `src/sections/photo/view/AIAssistant.tsx`
+### Навигация в App.tsx
+- **Промпты**: `viewingPrompt: Prompt | null`, `editingPrompt`, `isFormOpen: boolean`
+- **Скиллы**: `spacedSkill: SkillPackage | null`
+- **Разделы**: `activeSection: 'prompts' | 'skills' | 'admin'`
+- Навигация реализована исключительно через state (без react-router).
 
 ---
 
-## 🚀 Как агент должен работать с этим проектом
+## 🚀 ТЕКУЩИЙ СТАТУС: ГОТОВ К ДЕПЛОЮ НА VERCEL
 
-1. **Запуск**: `npm run dev` — это и frontend (Vite), и backend (Express) одновременно через `tsx server.ts`.
-2. **Типы**: Все TypeScript-интерфейсы в `src/types.ts` — всегда смотри туда перед изменением данных.
-3. **API**: Все эндпоинты определены в `server.ts` — backend и frontend в одном процессе.
-4. **Стили**: Tailwind CSS v4 (новый синтаксис без `tailwind.config.js`, конфиг внутри CSS через `@theme`).
-5. **Данные**: JSON-файлы в `/data/` — не трогай `firestore-export/`, это только для первоначального импорта.
-6. **Категории**: Глобальные категории имеют `userId === 'admin-uid'` или `userId` отсутствует. Хардкод Firebase uid удалён.
+### ✅ Всё реализовано и работает:
+- Supabase PostgreSQL (6 таблиц: users, prompts, skills, skill_hints, categories, chats, user_favorites)
+- Supabase Storage (2 бакета: prompt-images, prompt-files)
+- `vercel.json` создан
+- `api/index.ts` создан (Vercel Serverless adapter)
+- Skill Hints + Inline File Editor реализованы
 
----
+### ❗ Осталось 3 шага (вручную):
+1. **Supabase**: выполнить `scripts/create_skill_hints_table.sql` в SQL Editor
+2. **Git**: `git add -A && git commit -m "feat: Vercel ready" && git push`
+3. **Vercel**: импортировать репо, добавить env vars (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY`)
 
-## 🧠 Инструкции для Antigravity
-
-- Всегда проверяй `src/types.ts` перед изменением структуры данных.
-- При добавлении новых API-роутов — добавляй их в `server.ts`.
-- При изменении UI — учитывай что используется Tailwind CSS v4 (синтаксис может отличаться от v3).
-- Не раскрывай содержимое `.env` в коде или логах.
-- При работе с изображениями помни про HTML5 Canvas кроппер в `src/components/ui/ImageCropper`.
-- `PhotoForm.tsx` и `PhotoView.tsx` — оркестраторы, логика вынесена в `form/` и `view/` подпапки.
-- Перед удалением — используй `ConfirmDialog.tsx`, не `window.confirm()`.
-- Перед задачей — проверь `Agent/plan.md` на актуальный статус задач.
+### Контекст Supabase (ТЕКУЩИЙ БЭКЕНД):
+- **Проект**: `evergarden` (FREE tier, PRODUCTION)
+- **URL**: `https://pubsalagmikwbdztjwhq.supabase.co`
+- **Таблицы**: `categories`, `prompts`, `chats`, `skills`, `users`, `user_favorites`, `skill_hints` (создать!)
+- **Storage Buckets (PUBLIC)**: `prompt-images`, `prompt-files`
 
 ---
 
-## 📚 Project Docs
+## 🤖 Инструкции для AGY
 
-Перед началом любой задачи в этом проекте свериться с:
+### Обязательно перед любой задачей:
+1. Проверь `src/types.ts` — единый источник типов.
+2. API роуты добавляй ОДНОВРЕМЕННО в `server.ts` И `api/index.ts`.
+3. Используй `ConfirmDialog.tsx` вместо `window.confirm()`.
+4. Стили: Tailwind CSS v4 (без `tailwind.config.js`).
+5. Используй **навыки (skills)** при работе с Supabase! Читай `.agents/skills/supabase/SKILL.md`.
+6. Не раскрывай `.env` в коде или логах.
 
-- [`PRD.md`](PRD.md) — цели, MVP, scope, метрики успеха, tech stack, roadmap
-- [`DESIGN.md`](DESIGN.md) — дизайн-система, брендинг, цвета, анимации, компоненты
-- [`ARCHITECTURE.md`](ARCHITECTURE.md) — архитектура системы, потоки данных, auth, паттерны
-- [`SCHEMA.md`](SCHEMA.md) — схема JSON-«БД» и все API-роуты с описанием
-- [`RULES.md`](RULES.md) — стандарты кода (naming, TypeScript, SOLID/DRY/KISS)
-- [`Agent/plan.md`](Agent/plan.md) — текущий план задач и технический долг
+### Vite + Express:
+- Dev: `tsx server.ts` запускает оба (Express + Vite) в одном процессе.
+- Prod (Vercel): `api/index.ts` — только API, без Vite.
+- SPA fallback в `server.ts` реализован вручную после `app.use(vite.middlewares)`.
+- В `vercel.json` SPA fallback — через `rewrites: [{ source: "/(.*)", destination: "/index.html" }]`.
+
+---
+
+## 🤖 Почему GEMINI.md устаревает и как это решить
+
+**Когда обновлять** (скажи AGY: "обнови GEMINI.md"):
+- После добавления/удаления компонентов или файлов.
+- После изменения API эндпоинтов.
+- После структурных изменений проекта.

@@ -17,12 +17,19 @@ import CategoryForm from './components/ui/CategoryForm';
 import PhotoCard from './sections/photo/PhotoCard';
 import PhotoForm from './sections/photo/PhotoForm';
 import PhotoView from './sections/photo/PhotoView';
+import SkillCard from './sections/skills/SkillCard';
+import SkillForm from './sections/skills/SkillForm';
+import SkillSpaceView from './sections/skills/SkillSpaceView';
 import ConfirmDialog from './components/ui/ConfirmDialog';
+import { SkillPackage } from './types';
+import UsersSection from './sections/admin/UsersSection';
 
 export default function App() {
+  const [activeSection, setActiveSection] = useState<'prompts' | 'skills' | 'admin'>('prompts');
   const [user, setUser] = useState<User | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [prompts, setPrompts] = useState<Prompt[]>([]);
+  const [skills, setSkills] = useState<SkillPackage[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -30,9 +37,13 @@ export default function App() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isSkillFormOpen, setIsSkillFormOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
   const [viewingPrompt, setViewingPrompt] = useState<Prompt | null>(null);
+  const [editingSkill, setEditingSkill] = useState<SkillPackage | null>(null);
+  const [viewingSkill, setViewingSkill] = useState<SkillPackage | null>(null);
+  const [spacedSkill, setSpacedSkill] = useState<SkillPackage | null>(null);
   const [toasts, setToasts] = useState<{ id: number, message: React.ReactNode, type?: 'success' | 'error' }[]>([]);
   const [sortBy, setSortBy] = useState<'date' | 'name' | 'usage'>('date');
   const [sourceFilter, setSourceFilter] = useState<'all' | 'my-own' | 'my-web' | 'others'>('all');
@@ -65,16 +76,18 @@ export default function App() {
   const loadData = useCallback(async () => {
     if (!user) return;
     try {
-      const [allPrompts, allCategories] = await Promise.all([
-        api.getPrompts(),
-        api.getCategories()
+      const [allPrompts, allCategories, allSkills] = await Promise.all([
+        api.getPrompts().catch(() => []),
+        api.getCategories().catch(() => []),
+        api.getSkills().catch(() => []),
       ]);
       setPrompts(allPrompts);
       setCategories(allCategories);
+      setSkills(allSkills);
     } catch (err: any) {
-      addToast('Ошибка загрузки данных', 'error');
+      console.error('Data load exception:', err);
     }
-  }, [user, addToast]);
+  }, [user]);
 
   // Load prompts & categories when logged in
   useEffect(() => {
@@ -127,14 +140,27 @@ export default function App() {
     [confirmDialog.promptId, addToast]
   );
 
-  const handleToggleFavorite = useCallback(
-    async (id: string, current: boolean) => {
+  const handleToggleFavoritePrompt = useCallback(
+    async (id: string) => {
       try {
-        const updated = await api.updatePrompt(id, { isFavorite: !current });
-        setPrompts(prev => prev.map(x => x.id === id ? updated : x));
-        addToast(!current ? 'Добавлено в избранное' : 'Удалено из избранного');
+        const res = await api.toggleFavorite(id, 'prompt');
+        setPrompts(prev => prev.map(x => x.id === id ? { ...x, isFavorite: res.added } : x));
+        addToast(res.added ? 'Добавлено в избранное' : 'Удалено из избранного');
       } catch (err: any) {
         addToast(err.message || 'Не удалось обновить статус', 'error');
+      }
+    },
+    [addToast]
+  );
+
+  const handleToggleFavoriteSkill = useCallback(
+    async (id: string) => {
+      try {
+        const res = await api.toggleFavorite(id, 'skill');
+        setSkills(prev => prev.map(x => x.id === id ? { ...x, isFavorite: res.added } : x));
+        addToast(res.added ? 'Добавлено в избранное' : 'Удалено из избранного');
+      } catch (err: any) {
+        addToast(err.message || 'Ошибка обновления', 'error');
       }
     },
     [addToast]
@@ -281,11 +307,42 @@ export default function App() {
     return <LoginForm onLoginSuccess={setUser} onToast={addToast} />;
   }
 
+  // Полноэкранная страница-пространство скилла
+  if (spacedSkill) {
+    return (
+      <SkillSpaceView
+        skill={spacedSkill}
+        onBack={() => setSpacedSkill(null)}
+        onEdit={() => {
+          setEditingSkill(spacedSkill);
+          setSpacedSkill(null);
+          setIsSkillFormOpen(true);
+        }}
+        onDelete={async () => {
+          try {
+            await api.deleteSkill(spacedSkill.id);
+            setSkills(prev => prev.filter(x => x.id !== spacedSkill.id));
+            setSpacedSkill(null);
+            addToast('Пакет скиллов удалён');
+          } catch (err: any) {
+            addToast(err.message || 'Ошибка удаления', 'error');
+          }
+        }}
+        onSkillUpdated={(updated) => {
+          setSpacedSkill(updated);
+          setSkills(prev => prev.map(s => s.id === updated.id ? updated : s));
+        }}
+        effectiveUser={user}
+        addToast={addToast}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-zinc-100 flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-zinc-900 px-6 py-4 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-6">
           <button 
             onClick={() => setIsSidebarOpen(true)}
             className="p-2 hover:bg-zinc-900 rounded-xl text-zinc-400 cursor-pointer"
@@ -295,6 +352,39 @@ export default function App() {
           <h1 className="text-2xl font-black tracking-tighter hidden sm:block">
             PROMPT<span className="text-sky-400">VAULT</span>
           </h1>
+
+          {/* Главное Меню Страниц */}
+          <div className="flex items-center bg-zinc-900/90 border border-zinc-800 p-1 rounded-2xl">
+            <button
+              onClick={() => setActiveSection('prompts')}
+              className={cn(
+                "px-4 py-1.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center gap-2",
+                activeSection === 'prompts' ? "bg-sky-400 text-black shadow-md shadow-sky-400/20" : "text-zinc-400 hover:text-white"
+              )}
+            >
+              <span>📷 Промпты</span>
+            </button>
+            <button
+              onClick={() => setActiveSection('skills')}
+              className={cn(
+                "px-4 py-1.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center gap-2",
+                activeSection === 'skills' ? "bg-purple-500 text-white shadow-md shadow-purple-500/20" : "text-zinc-400 hover:text-white"
+              )}
+            >
+              <span>📦 Skills & Файлы</span>
+            </button>
+            {user.role === 'admin' && (
+              <button
+                onClick={() => setActiveSection('admin')}
+                className={cn(
+                  "px-4 py-1.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center gap-2",
+                  activeSection === 'admin' ? "bg-violet-500 text-white shadow-md shadow-violet-500/20" : "text-zinc-400 hover:text-white"
+                )}
+              >
+                <span>👥 Пользователи</span>
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="flex-1 max-w-2xl relative">
@@ -311,8 +401,15 @@ export default function App() {
 
         <div className="flex items-center gap-3">
           <button 
-            onClick={() => setIsFormOpen(true)}
-            className="bg-sky-400 hover:opacity-90 text-black p-3 rounded-2xl transition-all shadow-lg shadow-sky-400/20 cursor-pointer"
+            onClick={() => {
+              if (activeSection === 'prompts') setIsFormOpen(true);
+              else setIsSkillFormOpen(true);
+            }}
+            className={cn(
+              "text-black p-3 rounded-2xl transition-all shadow-lg cursor-pointer",
+              activeSection === 'prompts' ? "bg-sky-400 shadow-sky-400/20" : "bg-purple-500 text-white shadow-purple-500/20"
+            )}
+            title={activeSection === 'prompts' ? 'Создать промпт' : 'Загрузить пакет скиллов'}
           >
             <Plus size={20} />
           </button>
@@ -514,26 +611,51 @@ export default function App() {
             </div>
           </div>
 
-          {/* Prompt Grid */}
-          <div className={cn(
-            "grid gap-6",
-            viewMode === 'grid' ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
-          )}>
-            <AnimatePresence mode="popLayout">
-              {visiblePrompts.map((prompt) => (
-                <PhotoCard 
-                  key={prompt.id} 
-                  prompt={prompt} 
-                  viewMode={viewMode}
-                  searchQuery={searchQuery}
-                  onView={() => setViewingPrompt(prompt)}
-                  onToggleFavorite={() => handleToggleFavorite(prompt.id, prompt.isFavorite)}
-                  effectiveUser={user}
-                  onPickTag={(tag) => { setSearchQuery(tag); setSelectedCategory(null); }}
-                />
-              ))}
-            </AnimatePresence>
-          </div>
+          {/* Prompt / Skill / Admin Grid */}
+          {activeSection === 'admin' ? (
+            <UsersSection addToast={addToast} />
+          ) : activeSection === 'prompts' ? (
+            <div className={cn(
+              "grid gap-6",
+              viewMode === 'grid' ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
+            )}>
+              <AnimatePresence mode="popLayout">
+                {visiblePrompts.map((prompt) => (
+                  <PhotoCard 
+                    key={prompt.id} 
+                    prompt={prompt} 
+                    viewMode={viewMode}
+                    searchQuery={searchQuery}
+                    onView={() => setViewingPrompt(prompt)}
+                    onToggleFavorite={() => handleToggleFavoritePrompt(prompt.id)}
+                    effectiveUser={user}
+                    onPickTag={(tag) => { setSearchQuery(tag); setSelectedCategory(null); }}
+                  />
+                ))}
+              </AnimatePresence>
+            </div>
+          ) : (
+            <div className={cn(
+              "grid gap-6",
+              viewMode === 'grid' ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
+            )}>
+              <AnimatePresence mode="popLayout">
+                {skills
+                  .filter((s) => !searchQuery || s.title.toLowerCase().includes(searchQuery.toLowerCase()) || s.tags?.some(t => t.toLowerCase().includes(searchQuery.toLowerCase())))
+                  .map((skill) => (
+                    <SkillCard
+                      key={skill.id}
+                      skill={skill}
+                      viewMode={viewMode}
+                      searchQuery={searchQuery}
+                      onView={() => setSpacedSkill(skill)}
+                      onToggleFavorite={async () => handleToggleFavoriteSkill(skill.id)}
+                      effectiveUser={user}
+                    />
+                  ))}
+              </AnimatePresence>
+            </div>
+          )}
 
           {/* Load More */}
           {hasMore && (
@@ -571,6 +693,7 @@ export default function App() {
         onPickTag={setSearchQuery}
         onExportBackup={handleExportBackup}
         onImportBackup={handleImportBackup}
+        onOpenAdmin={user.role === 'admin' ? () => setActiveSection('admin') : undefined}
       />
 
       {/* Modals */}
@@ -602,6 +725,17 @@ export default function App() {
             onDuplicate={() => handleDuplicate(viewingPrompt)}
             onCopy={(text) => handleCopy(text, viewingPrompt.id)}
             effectiveUser={user}
+            addToast={addToast}
+          />
+        )}
+        {isSkillFormOpen && (
+          <SkillForm
+            skill={editingSkill}
+            categories={categories}
+            onClose={() => { setIsSkillFormOpen(false); setEditingSkill(null); }}
+            onSave={() => { setIsSkillFormOpen(false); setEditingSkill(null); void loadData(); }}
+            onAddCategory={() => setIsCategoryModalOpen(true)}
+            user={user}
             addToast={addToast}
           />
         )}

@@ -7,168 +7,212 @@ import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import AdmZip from "adm-zip";
 import bcrypt from "bcryptjs";
+import { createClient } from "@supabase/supabase-js";
 
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const DATA_DIR = path.join(__dirname, "data");
-const IMAGES_DIR = path.join(DATA_DIR, "images");
-const PROMPTS_FILE = path.join(DATA_DIR, "prompts.json");
-const CATEGORIES_FILE = path.join(DATA_DIR, "categories.json");
-const CHATS_FILE = path.join(DATA_DIR, "chats.json");
-const USERS_FILE = path.join(DATA_DIR, "users.json");
-
-// Ensure directories exist
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
-if (!fs.existsSync(IMAGES_DIR)) fs.mkdirSync(IMAGES_DIR);
+// Supabase client (SERVICE_ROLE — server only, bypasses RLS)
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  { auth: { persistSession: false } }
+);
 
 // Google Gemini Setup
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 const GEMINI_MODEL = "gemini-2.5-flash-lite";
 
-// Database helpers
-function readJson(file: string, fallback: any = {}) {
-  try {
-    if (fs.existsSync(file)) {
-      return JSON.parse(fs.readFileSync(file, "utf8"));
-    }
-  } catch (e) {
-    console.error(`Error reading ${file}:`, e);
-  }
-  return fallback;
+// ─── camelCase → snake_case helpers ──────────────────────────────────────────
+
+/** Prompt из тела запроса (camelCase) → строка для Supabase (snake_case)
+ * Схема Supabase: category = TEXT (название), category_id = UUID (legacy, не используем)
+ */
+function promptToDb(data: any, userId: string) {
+  return {
+    user_id: userId,
+    title: data.title,
+    // Используем 'category' (TEXT) — название категории
+    // category_id (UUID FK) оставляем как есть (null для старых записей)
+    category: data.category || "",
+    tags: data.tags || [],
+    main_prompt: data.mainPrompt || "",
+    usage_notes: data.usageNotes || "",
+    media_type: data.mediaType || "photo",
+    prompt_origin: data.promptOrigin || "own",
+    is_public: data.isPublic ?? false,
+    image_layout_type: data.imageLayoutType || "single",
+    image_before: data.imageBefore || null,
+    image_after: data.imageAfter || null,
+    original_image_before: data.originalImageBefore || null,
+    original_image_after: data.originalImageAfter || null,
+    original_image_slot2: data.originalImageSlot2 || null,
+    additional_images: data.additionalImages || [],
+    file_package_url: data.filePackageUrl || null,
+    file_structure: data.fileStructure || [],
+    sub_sections: data.subSections || [],
+    author_name: data.authorName || "",
+    author_email: data.authorEmail || "",
+    usage_count: data.usageCount ?? 0,
+  };
 }
 
-function writeJson(file: string, data: any) {
-  try {
-    fs.writeFileSync(file, JSON.stringify(data, null, 2), "utf8");
-  } catch (e) {
-    console.error(`Error writing ${file}:`, e);
-  }
+/** Строка из Supabase (snake_case) → объект для клиента (camelCase)
+ * Поле category: берём из row.category (TEXT) если есть, иначе пустая строка
+ */
+function promptFromDb(row: any, isFavorite = false) {
+  return {
+    id: row.id,
+    userId: row.user_id || "",
+    title: row.title,
+    // Берём category как TEXT-название
+    category: row.category || "",
+    tags: row.tags || [],
+    mainPrompt: row.main_prompt || "",
+    usageNotes: row.usage_notes || "",
+    mediaType: row.media_type || "photo",
+    promptOrigin: row.prompt_origin || "own",
+    isPublic: row.is_public ?? false,
+    imageLayoutType: row.image_layout_type || "single",
+    imageBefore: row.image_before || null,
+    imageAfter: row.image_after || null,
+    originalImageBefore: row.original_image_before || null,
+    originalImageAfter: row.original_image_after || null,
+    originalImageSlot2: row.original_image_slot2 || null,
+    additionalImages: row.additional_images || [],
+    filePackageUrl: row.file_package_url || null,
+    fileStructure: row.file_structure || [],
+    subSections: row.sub_sections || [],
+    authorName: row.author_name || "",
+    authorEmail: row.author_email || "",
+    usageCount: row.usage_count || 0,
+    createdAt: row.created_at,
+    isFavorite,
+  };
 }
 
-// Seed helper (loads from firestore-export if local db is empty)
-function seedData() {
-  const exportPromptsFile = path.join(__dirname, "firestore-export", "prompts.json");
-  const exportCategoriesFile = path.join(__dirname, "firestore-export", "categories.json");
-  const exportChatsFile = path.join(__dirname, "firestore-export", "chats.json");
-
-  // Prompts seed
-  if (!fs.existsSync(PROMPTS_FILE) && fs.existsSync(exportPromptsFile)) {
-    console.log("Seeding prompts from firestore-export...");
-    const data = readJson(exportPromptsFile);
-    // Replace firestore-export local image paths to use `/uploads/` route
-    const seeded: any = {};
-    for (const [id, prompt] of Object.entries(data)) {
-      const p = prompt as any;
-      if (p.imageBefore && p.imageBefore.startsWith("images/")) {
-        p.imageBefore = p.imageBefore.replace("images/", "/uploads/");
-      }
-      if (p.imageAfter && p.imageAfter.startsWith("images/")) {
-        p.imageAfter = p.imageAfter.replace("images/", "/uploads/");
-      }
-      if (p.additionalImages) {
-        p.additionalImages = p.additionalImages.map((img: string) =>
-          img.startsWith("images/") ? img.replace("images/", "/uploads/") : img
-        );
-      }
-      seeded[id] = p;
-    }
-    writeJson(PROMPTS_FILE, seeded);
-  }
-
-  // Categories seed
-  if (!fs.existsSync(CATEGORIES_FILE) && fs.existsSync(exportCategoriesFile)) {
-    console.log("Seeding categories from firestore-export...");
-    writeJson(CATEGORIES_FILE, readJson(exportCategoriesFile));
-  }
-
-  // Chats seed
-  if (!fs.existsSync(CHATS_FILE) && fs.existsSync(exportChatsFile)) {
-    console.log("Seeding chats from firestore-export...");
-    writeJson(CHATS_FILE, readJson(exportChatsFile));
-  }
-
-  // Users seed (default admin)
-  if (!fs.existsSync(USERS_FILE)) {
-    console.log("Creating default users file...");
-    const adminEmail = process.env.ADMIN_EMAIL || "alexey.unstam@gmail.com";
-    const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
-    const hashed = bcrypt.hashSync(adminPassword, 10);
-    writeJson(USERS_FILE, {
-      [adminEmail]: {
-        uid: "admin-uid",
-        name: "Admin",
-        email: adminEmail,
-        password: hashed,
-        role: "admin",
-      },
-    });
-  } else {
-    // Migrate existing users' passwords to bcrypt hashes
-    try {
-      const users = readJson(USERS_FILE);
-      let changed = false;
-      for (const email of Object.keys(users)) {
-        const u = users[email];
-        if (u && u.password && !u.password.startsWith("$2a$") && !u.password.startsWith("$2b$") && !u.password.startsWith("$2y$")) {
-          console.log(`Hashing password for user: ${email}`);
-          u.password = bcrypt.hashSync(u.password, 10);
-          changed = true;
-        }
-      }
-      if (changed) {
-        writeJson(USERS_FILE, users);
-      }
-    } catch (err) {
-      console.error("Error migrating user passwords:", err);
-    }
-  }
+/** Skill из тела запроса (camelCase) → строка Supabase */
+function skillToDb(data: any, userId: string) {
+  return {
+    user_id: userId,
+    title: data.title,
+    description: data.description || "",
+    category: data.category || "",
+    tags: data.tags || [],
+    is_public: data.isPublic ?? false,
+    file_package_url: data.filePackageUrl || null,
+    file_structure: data.fileStructure || [],
+    author_name: data.authorName || "",
+    author_email: data.authorEmail || "",
+  };
 }
 
-seedData();
+/** Строка из Supabase → объект для клиента */
+function skillFromDb(row: any, isFavorite = false) {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    title: row.title,
+    description: row.description || "",
+    category: row.category || "",
+    tags: row.tags || [],
+    isPublic: row.is_public,
+    filePackageUrl: row.file_package_url,
+    fileStructure: row.file_structure || [],
+    authorName: row.author_name || "",
+    authorEmail: row.author_email || "",
+    createdAt: row.created_at,
+    isFavorite,
+  };
+}
 
-// Image extraction helper
-function saveBase64Image(dataUrl: string, prefix: string): string {
-  if (!dataUrl.startsWith("data:image/")) return dataUrl; // Not a base64 string
+// ─── Image upload helper ──────────────────────────────────────────────────────
+
+/**
+ * Загружает base64 изображение в Supabase Storage.
+ * Если строка уже является URL (не base64) — возвращает как есть.
+ */
+async function uploadImage(dataUrl: string, prefix: string): Promise<string> {
+  if (!dataUrl || !dataUrl.startsWith("data:image/")) return dataUrl;
+
   const matches = dataUrl.match(/^data:image\/([a-zA-Z+]+);base64,(.+)$/);
   if (!matches) return dataUrl;
 
   const ext = matches[1] === "jpeg" ? "jpg" : matches[1];
   const buffer = Buffer.from(matches[2], "base64");
   const filename = `${prefix}_${Date.now()}.${ext}`;
-  const filepath = path.join(IMAGES_DIR, filename);
 
-  fs.writeFileSync(filepath, buffer);
-  return `/uploads/${filename}`;
+  const { error } = await supabase.storage
+    .from("prompt-images")
+    .upload(filename, buffer, {
+      contentType: `image/${matches[1]}`,
+      upsert: true,
+    });
+
+  if (error) {
+    console.error("Storage upload error:", error);
+    return dataUrl; // fallback: возвращаем исходный base64
+  }
+
+  const { data } = supabase.storage.from("prompt-images").getPublicUrl(filename);
+  return data.publicUrl;
 }
 
-function saveSubSectionImages(sub: any, promptId: string, subIdx: number): any {
-  if (!sub) return sub;
-  const s = { ...sub };
-  if (s.imageBefore) {
-    s.imageBefore = saveBase64Image(s.imageBefore, `${promptId}_sub_${subIdx}_before`);
-  }
-  if (s.imageAfter) {
-    s.imageAfter = saveBase64Image(s.imageAfter, `${promptId}_sub_${subIdx}_after`);
-  }
-  if (s.originalImageBefore) {
-    s.originalImageBefore = saveBase64Image(s.originalImageBefore, `${promptId}_sub_${subIdx}_orig_before`);
-  }
-  if (s.originalImageAfter) {
-    s.originalImageAfter = saveBase64Image(s.originalImageAfter, `${promptId}_sub_${subIdx}_orig_after`);
-  }
-  if (s.originalImageSlot2) {
-    s.originalImageSlot2 = saveBase64Image(s.originalImageSlot2, `${promptId}_sub_${subIdx}_orig_slot2`);
-  }
-  if (s.additionalImages) {
-    s.additionalImages = s.additionalImages.map((img: string, idx: number) =>
-      saveBase64Image(img, `${promptId}_sub_${subIdx}_add_${idx}`)
+async function processPromptImages(promptData: any, id: string): Promise<any> {
+  const data = { ...promptData };
+
+  if (data.imageBefore?.startsWith("data:"))
+    data.imageBefore = await uploadImage(data.imageBefore, `${id}_root_before`);
+  if (data.imageAfter?.startsWith("data:"))
+    data.imageAfter = await uploadImage(data.imageAfter, `${id}_root_after`);
+  if (data.originalImageBefore?.startsWith("data:"))
+    data.originalImageBefore = await uploadImage(data.originalImageBefore, `${id}_root_orig_before`);
+  if (data.originalImageAfter?.startsWith("data:"))
+    data.originalImageAfter = await uploadImage(data.originalImageAfter, `${id}_root_orig_after`);
+  if (data.originalImageSlot2?.startsWith("data:"))
+    data.originalImageSlot2 = await uploadImage(data.originalImageSlot2, `${id}_root_slot2`);
+
+  if (Array.isArray(data.additionalImages)) {
+    data.additionalImages = await Promise.all(
+      data.additionalImages.map((img: string, idx: number) =>
+        img?.startsWith("data:") ? uploadImage(img, `${id}_root_add_${idx}`) : Promise.resolve(img)
+      )
     );
   }
-  return s;
+
+  if (Array.isArray(data.subSections)) {
+    data.subSections = await Promise.all(
+      data.subSections.map(async (sub: any, subIdx: number) => {
+        if (!sub) return sub;
+        const s = { ...sub };
+        if (s.imageBefore?.startsWith("data:"))
+          s.imageBefore = await uploadImage(s.imageBefore, `${id}_sub_${subIdx}_before`);
+        if (s.imageAfter?.startsWith("data:"))
+          s.imageAfter = await uploadImage(s.imageAfter, `${id}_sub_${subIdx}_after`);
+        if (s.originalImageBefore?.startsWith("data:"))
+          s.originalImageBefore = await uploadImage(s.originalImageBefore, `${id}_sub_${subIdx}_orig_before`);
+        if (s.originalImageAfter?.startsWith("data:"))
+          s.originalImageAfter = await uploadImage(s.originalImageAfter, `${id}_sub_${subIdx}_orig_after`);
+        if (s.originalImageSlot2?.startsWith("data:"))
+          s.originalImageSlot2 = await uploadImage(s.originalImageSlot2, `${id}_sub_${subIdx}_slot2`);
+        if (Array.isArray(s.additionalImages)) {
+          s.additionalImages = await Promise.all(
+            s.additionalImages.map((img: string, idx: number) =>
+              img?.startsWith("data:") ? uploadImage(img, `${id}_sub_${subIdx}_add_${idx}`) : Promise.resolve(img)
+            )
+          );
+        }
+        return s;
+      })
+    );
+  }
+
+  return data;
 }
+
+// ─── Server bootstrap ─────────────────────────────────────────────────────────
 
 async function startServer() {
   const app = express();
@@ -177,334 +221,874 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-  // Static uploads
-  app.use("/uploads", express.static(IMAGES_DIR));
+  // ─── Auth Middleware ──────────────────────────────────────────────────────
 
-  // Simple Auth Middleware
-  function authenticate(req: express.Request, res: express.Response, next: express.NextFunction) {
+  async function authenticate(
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) {
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!authHeader?.startsWith("Bearer ")) {
       return res.status(401).json({ message: "Unauthorized" });
     }
-    const token = authHeader.split(" ")[1];
-    const users = readJson(USERS_FILE);
-    const user = Object.values(users).find((u: any) => u.uid === token);
-    if (!user) {
+    const token = authHeader.split(" ")[1]; // token = uid
+
+    const { data: user, error } = await supabase
+      .from("users")
+      .select("uid, name, email, role")
+      .eq("uid", token)
+      .single();
+
+    if (error || !user) {
       return res.status(401).json({ message: "Invalid session token" });
     }
-    (req as any).user = user;
+
+    (req as any).user = {
+      uid: user.uid,
+      displayName: user.name,
+      email: user.email,
+      role: user.role,
+    };
     next();
   }
 
-  // --- API Routes ---
+  // ─── Helpers для избранного ───────────────────────────────────────────────
 
-  // Auth Login
-  app.post("/api/auth/login", (req, res) => {
-    const { email, password } = req.body;
-    const users = readJson(USERS_FILE);
-    const user = users[email];
-    if (!user || !bcrypt.compareSync(password, user.password)) {
-      return res.status(400).json({ message: "Неверный email или пароль" });
-    }
-    res.json({
-      token: user.uid,
-      user: {
-        uid: user.uid,
-        displayName: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    });
-  });
+  async function getUserFavoriteIds(uid: string): Promise<{ prompts: string[]; skills: string[] }> {
+    const { data, error } = await supabase
+      .from("user_favorites")
+      .select("item_id, item_type")
+      .eq("user_id", uid);
 
-  // GET Prompts
-  app.get("/api/prompts", authenticate, (req, res) => {
-    const user = (req as any).user;
-    const promptsMap = readJson(PROMPTS_FILE);
-    const promptsList = Object.entries(promptsMap).map(([id, p]: [string, any]) => ({
-      id,
-      ...p,
-    }));
+    if (error || !data) return { prompts: [], skills: [] };
 
-    const visiblePrompts = user.role === "admin"
-      ? promptsList
-      : promptsList.filter((p) => p.isPublic || p.userId === user.uid);
-
-    // Pagination support (optional — без параметров возвращает всё)
-    const limitParam = req.query.limit ? parseInt(req.query.limit as string, 10) : null;
-    const offsetParam = req.query.offset ? parseInt(req.query.offset as string, 10) : 0;
-
-    if (limitParam !== null && !isNaN(limitParam)) {
-      const total = visiblePrompts.length;
-      const items = visiblePrompts.slice(offsetParam, offsetParam + limitParam);
-      return res.json({ items, total, hasMore: offsetParam + limitParam < total });
-    }
-
-    res.json(visiblePrompts);
-  });
-
-  // POST Prompt
-  app.post("/api/prompts", authenticate, (req, res) => {
-    const user = (req as any).user;
-    const promptData = req.body;
-    const id = `prompt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-    // Process images
-    if (promptData.imageBefore) {
-      promptData.imageBefore = saveBase64Image(promptData.imageBefore, `${id}_before`);
-    }
-    if (promptData.imageAfter) {
-      promptData.imageAfter = saveBase64Image(promptData.imageAfter, `${id}_after`);
-    }
-    if (promptData.originalImageBefore) {
-      promptData.originalImageBefore = saveBase64Image(promptData.originalImageBefore, `${id}_orig_before`);
-    }
-    if (promptData.originalImageAfter) {
-      promptData.originalImageAfter = saveBase64Image(promptData.originalImageAfter, `${id}_orig_after`);
-    }
-    if (promptData.originalImageSlot2) {
-      promptData.originalImageSlot2 = saveBase64Image(promptData.originalImageSlot2, `${id}_orig_slot2`);
-    }
-    if (promptData.additionalImages) {
-      promptData.additionalImages = promptData.additionalImages.map((img: string, idx: number) =>
-        saveBase64Image(img, `${id}_add_${idx}`)
-      );
-    }
-    if (promptData.subSections) {
-      promptData.subSections = promptData.subSections.map((sub: any, idx: number) =>
-        saveSubSectionImages(sub, id, idx)
-      );
-    }
-
-    const newPrompt = {
-      ...promptData,
-      userId: user.uid,
-      authorName: user.displayName || "User",
-      authorEmail: user.email,
-      usageCount: 0,
-      createdAt: new Date().toISOString(),
+    return {
+      prompts: data.filter((r) => r.item_type === "prompt").map((r) => r.item_id),
+      skills: data.filter((r) => r.item_type === "skill").map((r) => r.item_id),
     };
+  }
 
-    const promptsMap = readJson(PROMPTS_FILE);
-    promptsMap[id] = newPrompt;
-    writeJson(PROMPTS_FILE, promptsMap);
+  // ─── API: Auth ────────────────────────────────────────────────────────────
 
-    res.status(201).json({ id, ...newPrompt });
-  });
-
-  // PUT Prompt
-  app.put("/api/prompts/:id", authenticate, (req, res) => {
-    const user = (req as any).user;
-    const { id } = req.params;
-    const promptUpdate = req.body;
-    const promptsMap = readJson(PROMPTS_FILE);
-
-    if (!promptsMap[id]) {
-      return res.status(404).json({ message: "Промпт не найден" });
-    }
-
-    const existing = promptsMap[id];
-    if (existing.userId !== user.uid && user.role !== "admin") {
-      return res.status(403).json({ message: "Нет доступа" });
-    }
-
-    // Process updated images
-    if (promptUpdate.imageBefore) {
-      promptUpdate.imageBefore = saveBase64Image(promptUpdate.imageBefore, `${id}_before`);
-    }
-    if (promptUpdate.imageAfter) {
-      promptUpdate.imageAfter = saveBase64Image(promptUpdate.imageAfter, `${id}_after`);
-    }
-    if (promptUpdate.originalImageBefore) {
-      promptUpdate.originalImageBefore = saveBase64Image(promptUpdate.originalImageBefore, `${id}_orig_before`);
-    }
-    if (promptUpdate.originalImageAfter) {
-      promptUpdate.originalImageAfter = saveBase64Image(promptUpdate.originalImageAfter, `${id}_orig_after`);
-    }
-    if (promptUpdate.originalImageSlot2) {
-      promptUpdate.originalImageSlot2 = saveBase64Image(promptUpdate.originalImageSlot2, `${id}_orig_slot2`);
-    }
-    if (promptUpdate.additionalImages) {
-      promptUpdate.additionalImages = promptUpdate.additionalImages.map((img: string, idx: number) =>
-        saveBase64Image(img, `${id}_add_${idx}`)
-      );
-    }
-    if (promptUpdate.subSections) {
-      promptUpdate.subSections = promptUpdate.subSections.map((sub: any, idx: number) =>
-        saveSubSectionImages(sub, id, idx)
-      );
-    }
-
-    const updated = {
-      ...existing,
-      ...promptUpdate,
-      // Prevent changing author/creation via client update unless admin
-      userId: existing.userId,
-      createdAt: existing.createdAt,
-    };
-
-    promptsMap[id] = updated;
-    writeJson(PROMPTS_FILE, promptsMap);
-
-    res.json({ id, ...updated });
-  });
-
-  // DELETE Prompt
-  app.delete("/api/prompts/:id", authenticate, (req, res) => {
-    const user = (req as any).user;
-    const { id } = req.params;
-    const promptsMap = readJson(PROMPTS_FILE);
-
-    if (!promptsMap[id]) {
-      return res.status(404).json({ message: "Промпт не найден" });
-    }
-
-    if (promptsMap[id].userId !== user.uid && user.role !== "admin") {
-      return res.status(403).json({ message: "Нет доступа" });
-    }
-
-    delete promptsMap[id];
-    writeJson(PROMPTS_FILE, promptsMap);
-
-    // Clean up chats for this prompt
-    const chatsMap = readJson(CHATS_FILE);
-    let chatsChanged = false;
-    for (const chatId of Object.keys(chatsMap)) {
-      if (chatsMap[chatId].promptId === id) {
-        delete chatsMap[chatId];
-        chatsChanged = true;
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email и пароль обязательны" });
       }
-    }
-    if (chatsChanged) writeJson(CHATS_FILE, chatsMap);
 
-    res.json({ message: "Промпт удален" });
-  });
+      const { data: user, error } = await supabase
+        .from("users")
+        .select("uid, name, email, password, role")
+        .eq("email", email)
+        .single();
 
-  // GET Categories
-  app.get("/api/categories", authenticate, (req, res) => {
-    const user = (req as any).user;
-    const catsMap = readJson(CATEGORIES_FILE);
-    const catsList = Object.entries(catsMap)
-      .map(([id, c]: [string, any]) => ({ id, ...c }))
-      .filter((c: any) => 
-        c.userId === user.uid || 
-        c.userId === "admin-uid" ||
-        !c.userId
-      );
-    res.json(catsList);
-  });
-
-  // POST Category
-  app.post("/api/categories", authenticate, (req, res) => {
-    const user = (req as any).user;
-    const catData = req.body;
-    const id = `cat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-    const newCat = {
-      ...catData,
-      userId: user.uid,
-    };
-
-    const catsMap = readJson(CATEGORIES_FILE);
-    catsMap[id] = newCat;
-    writeJson(CATEGORIES_FILE, catsMap);
-
-    res.status(201).json({ id, ...newCat });
-  });
-
-  // DELETE Category
-  app.delete("/api/categories/:id", authenticate, (req, res) => {
-    const user = (req as any).user;
-    const { id } = req.params;
-    const catsMap = readJson(CATEGORIES_FILE);
-
-    if (!catsMap[id]) {
-      return res.status(404).json({ message: "Категория не найдена" });
-    }
-
-    if (catsMap[id].userId !== user.uid) {
-      return res.status(403).json({ message: "Нет доступа" });
-    }
-
-    delete catsMap[id];
-    writeJson(CATEGORIES_FILE, catsMap);
-    res.json({ message: "Категория удалена" });
-  });
-
-  // GET Chats
-  app.get("/api/chats", authenticate, (req, res) => {
-    const user = (req as any).user;
-    const { promptId } = req.query;
-    const chatsMap = readJson(CHATS_FILE);
-    const chatsList = Object.entries(chatsMap)
-      .map(([id, msg]: [string, any]) => ({ id, ...msg }))
-      .filter((msg: any) => msg.promptId === promptId && msg.userId === user.uid)
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-
-    res.json(chatsList);
-  });
-
-  // POST Chat message
-  app.post("/api/chats", authenticate, (req, res) => {
-    const user = (req as any).user;
-    const { promptId, content, image } = req.body;
-    const id = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-    let savedImg = image;
-    if (image) {
-      savedImg = saveBase64Image(image, `${id}_chat`);
-    }
-
-    const newMsg = {
-      promptId,
-      userId: user.uid,
-      role: "user",
-      content,
-      image: savedImg || null,
-      createdAt: new Date().toISOString(),
-    };
-
-    const chatsMap = readJson(CHATS_FILE);
-    chatsMap[id] = newMsg;
-    writeJson(CHATS_FILE, chatsMap);
-
-    res.status(201).json({ id, ...newMsg });
-  });
-
-  // POST Clear chats
-  app.post("/api/chats/clear", authenticate, (req, res) => {
-    const user = (req as any).user;
-    const { promptId } = req.query;
-    const chatsMap = readJson(CHATS_FILE);
-
-    let changed = false;
-    for (const chatId of Object.keys(chatsMap)) {
-      if (chatsMap[chatId].promptId === promptId && chatsMap[chatId].userId === user.uid) {
-        delete chatsMap[chatId];
-        changed = true;
+      if (error || !user || !bcrypt.compareSync(password, user.password)) {
+        return res.status(400).json({ message: "Неверный email или пароль" });
       }
-    }
 
-    if (changed) {
-      writeJson(CHATS_FILE, chatsMap);
+      res.json({
+        token: user.uid,
+        user: {
+          uid: user.uid,
+          displayName: user.name,
+          email: user.email,
+          role: user.role,
+        },
+      });
+    } catch (err) {
+      console.error("Route error:", err);
+      res.status(500).json({ error: "Внутренняя ошибка сервера" });
     }
-    res.json({ message: "История чата очищена" });
   });
 
-  // GET Export Backup Zip
-  app.get("/api/export", authenticate, (req, res) => {
+  // ─── API: Favorites ───────────────────────────────────────────────────────
+
+  app.get("/api/favorites", authenticate, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      const favs = await getUserFavoriteIds(user.uid);
+      res.json(favs);
+    } catch (err) {
+      console.error("Route error:", err);
+      res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  });
+
+  app.post("/api/favorites/toggle", authenticate, async (req, res) => {
+    try {
+      const { itemId, itemType } = req.body;
+      if (!itemId || !itemType) {
+        return res.status(400).json({ error: "Поля itemId и itemType обязательны" });
+      }
+      if (!["prompt", "skill"].includes(itemType)) {
+        return res.status(400).json({ message: "itemType должен быть prompt или skill" });
+      }
+
+      const user = (req as any).user;
+
+      // Проверяем есть ли уже в избранном
+      const { data: existing } = await supabase
+        .from("user_favorites")
+        .select("user_id")
+        .eq("user_id", user.uid)
+        .eq("item_id", itemId)
+        .eq("item_type", itemType)
+        .single();
+
+      let added: boolean;
+      if (existing) {
+        await supabase
+          .from("user_favorites")
+          .delete()
+          .eq("user_id", user.uid)
+          .eq("item_id", itemId)
+          .eq("item_type", itemType);
+        added = false;
+      } else {
+        await supabase.from("user_favorites").insert({
+          user_id: user.uid,
+          item_id: itemId,
+          item_type: itemType,
+        });
+        added = true;
+      }
+
+      const favs = await getUserFavoriteIds(user.uid);
+      res.json({ added, favorites: favs });
+    } catch (err) {
+      console.error("Route error:", err);
+      res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  });
+
+  // ─── API: Users (admin only) ──────────────────────────────────────────────
+
+  app.get("/api/users", authenticate, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      if (user.role !== "admin") {
+        return res.status(403).json({ message: "Только администратор" });
+      }
+
+      const { data, error } = await supabase
+        .from("users")
+        .select("uid, name, email, role")
+        .order("email");
+
+      if (error) throw error;
+      res.json(data);
+    } catch (err) {
+      console.error("Route error:", err);
+      res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  });
+
+  app.post("/api/users", authenticate, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      if (user.role !== "admin") {
+        return res.status(403).json({ message: "Только администратор" });
+      }
+
+      const { name, email, password, role } = req.body;
+      if (!email || typeof email !== "string") {
+        return res.status(400).json({ error: "Поле email обязательно" });
+      }
+      if (!password || typeof password !== "string" || password.length < 4) {
+        return res.status(400).json({ error: "Пароль должен быть минимум 4 символа" });
+      }
+      if (!name) {
+        return res.status(400).json({ message: "Имя обязательно" });
+      }
+
+      // Проверяем уникальность email
+      const { data: existing } = await supabase
+        .from("users")
+        .select("uid")
+        .eq("email", email)
+        .single();
+      if (existing) {
+        return res.status(409).json({ message: "Пользователь с таким email уже существует" });
+      }
+
+      const uid = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const hashed = bcrypt.hashSync(password, 10);
+
+      const { error } = await supabase.from("users").insert({
+        uid,
+        name,
+        email,
+        password: hashed,
+        role: role === "admin" ? "admin" : "user",
+      });
+
+      if (error) throw error;
+      res.status(201).json({ uid, name, email, role: role === "admin" ? "admin" : "user" });
+    } catch (err) {
+      console.error("Route error:", err);
+      res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  });
+
+  app.delete("/api/users/:uid", authenticate, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      if (user.role !== "admin") {
+        return res.status(403).json({ message: "Только администратор" });
+      }
+
+      const { uid } = req.params;
+      if (uid === "admin-uid") {
+        return res.status(400).json({ message: "Нельзя удалить главного администратора" });
+      }
+
+      const { error } = await supabase.from("users").delete().eq("uid", uid);
+      if (error) throw error;
+
+      res.json({ message: "Пользователь удалён" });
+    } catch (err) {
+      console.error("Route error:", err);
+      res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  });
+
+  app.put("/api/users/:uid/password", authenticate, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      if (user.role !== "admin") {
+        return res.status(403).json({ message: "Только администратор" });
+      }
+
+      const { uid } = req.params;
+      const { password } = req.body;
+      if (!password || password.length < 4) {
+        return res.status(400).json({ message: "Пароль должен быть минимум 4 символа" });
+      }
+
+      const hashed = bcrypt.hashSync(password, 10);
+      const { error } = await supabase
+        .from("users")
+        .update({ password: hashed })
+        .eq("uid", uid);
+
+      if (error) throw error;
+      res.json({ message: "Пароль обновлён" });
+    } catch (err) {
+      console.error("Route error:", err);
+      res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  });
+
+  // ─── API: Prompts ─────────────────────────────────────────────────────────
+
+  app.get("/api/prompts", authenticate, async (req, res) => {
+    try {
+      const user = (req as any).user;
+
+      let query = supabase.from("prompts").select("*").order("created_at", { ascending: false });
+
+      // Фильтр видимости: admin видит всё, user — только свои + публичные
+      if (user.role !== "admin") {
+        query = query.or(`is_public.eq.true,user_id.eq.${user.uid}`);
+      }
+
+      // Пагинация (опционально)
+      const limitParam = req.query.limit ? parseInt(req.query.limit as string, 10) : null;
+      const offsetParam = req.query.offset ? parseInt(req.query.offset as string, 10) : 0;
+
+      if (limitParam !== null && !isNaN(limitParam)) {
+        query = query.range(offsetParam, offsetParam + limitParam - 1);
+      }
+
+      const { data, error, count } = await query;
+      if (error) throw error;
+
+      const favIds = await getUserFavoriteIds(user.uid);
+      const favSet = new Set(favIds.prompts);
+
+      const items = (data || []).map((row) => promptFromDb(row, favSet.has(row.id)));
+
+      if (limitParam !== null) {
+        // При пагинации возвращаем обёртку с total
+        const { count: total } = await supabase
+          .from("prompts")
+          .select("*", { count: "exact", head: true });
+        return res.json({ items, total: total || 0, hasMore: (offsetParam + limitParam) < (total || 0) });
+      }
+
+      res.json(items);
+    } catch (err) {
+      console.error("Route error:", err);
+      res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  });
+
+  app.post("/api/prompts", authenticate, async (req, res) => {
+    try {
+      if (!req.body.title || typeof req.body.title !== "string") {
+        return res.status(400).json({ error: "Поле title обязательно" });
+      }
+      if (typeof req.body.mainPrompt !== "string") {
+        return res.status(400).json({ error: "Поле mainPrompt обязательно" });
+      }
+
+      const user = (req as any).user;
+      // Генерируем временный ID для именования изображений
+      const tempId = `prompt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+      const processed = await processPromptImages(req.body, tempId);
+
+      const dbRow = {
+        ...promptToDb(processed, user.uid),
+        author_name: user.displayName || "User",
+        author_email: user.email,
+        usage_count: 0,
+      };
+
+      const { data, error } = await supabase
+        .from("prompts")
+        .insert(dbRow)
+        .select()
+        .single();
+
+      if (error) throw error;
+      res.status(201).json(promptFromDb(data, false));
+    } catch (err) {
+      console.error("Route error:", err);
+      res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  });
+
+  app.put("/api/prompts/:id", authenticate, async (req, res) => {
+    try {
+      if (!req.body.title || typeof req.body.title !== "string") {
+        return res.status(400).json({ error: "Поле title обязательно" });
+      }
+      if (typeof req.body.mainPrompt !== "string") {
+        return res.status(400).json({ error: "Поле mainPrompt обязательно" });
+      }
+
+      const user = (req as any).user;
+      const { id } = req.params;
+
+      // Проверяем существование и права
+      const { data: existing, error: fetchErr } = await supabase
+        .from("prompts")
+        .select("user_id, created_at, author_name, author_email")
+        .eq("id", id)
+        .single();
+
+      if (fetchErr || !existing) {
+        return res.status(404).json({ message: "Промпт не найден" });
+      }
+      if (existing.user_id !== user.uid && user.role !== "admin") {
+        return res.status(403).json({ message: "Нет доступа" });
+      }
+
+      const processed = await processPromptImages(req.body, id);
+      const dbRow = {
+        ...promptToDb(processed, existing.user_id),
+        // Сохраняем оригинального автора
+        author_name: existing.author_name,
+        author_email: existing.author_email,
+      };
+
+      const { data, error } = await supabase
+        .from("prompts")
+        .update(dbRow)
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const favIds = await getUserFavoriteIds(user.uid);
+      res.json(promptFromDb(data, favIds.prompts.includes(id)));
+    } catch (err) {
+      console.error("Route error:", err);
+      res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  });
+
+  app.delete("/api/prompts/:id", authenticate, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      const { id } = req.params;
+
+      const { data: existing, error: fetchErr } = await supabase
+        .from("prompts")
+        .select("user_id")
+        .eq("id", id)
+        .single();
+
+      if (fetchErr || !existing) {
+        return res.status(404).json({ message: "Промпт не найден" });
+      }
+      if (existing.user_id !== user.uid && user.role !== "admin") {
+        return res.status(403).json({ message: "Нет доступа" });
+      }
+
+      // CASCADE удаляет связанные chats и user_favorites (если настроены FK)
+      const { error } = await supabase.from("prompts").delete().eq("id", id);
+      if (error) throw error;
+
+      res.json({ message: "Промпт удален" });
+    } catch (err) {
+      console.error("Route error:", err);
+      res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  });
+
+  // ─── API: Skills ──────────────────────────────────────────────────────────
+
+  app.get("/api/skills", authenticate, async (req, res) => {
+    try {
+      const user = (req as any).user;
+
+      let query = supabase.from("skills").select("*").order("created_at", { ascending: false });
+
+      if (user.role !== "admin") {
+        query = query.or(`is_public.eq.true,user_id.eq.${user.uid}`);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      const favIds = await getUserFavoriteIds(user.uid);
+      const favSet = new Set(favIds.skills);
+
+      res.json((data || []).map((row) => skillFromDb(row, favSet.has(row.id))));
+    } catch (err) {
+      console.error("Route error:", err);
+      res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  });
+
+  app.post("/api/skills", authenticate, async (req, res) => {
+    try {
+      if (!req.body.title || typeof req.body.title !== "string") {
+        return res.status(400).json({ error: "Поле title обязательно" });
+      }
+
+      const user = (req as any).user;
+      const dbRow = {
+        ...skillToDb(req.body, user.uid),
+        author_name: user.displayName || "User",
+        author_email: user.email,
+      };
+
+      const { data, error } = await supabase
+        .from("skills")
+        .insert(dbRow)
+        .select()
+        .single();
+
+      if (error) throw error;
+      res.status(201).json(skillFromDb(data, false));
+    } catch (err) {
+      console.error("Route error:", err);
+      res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  });
+
+  app.put("/api/skills/:id", authenticate, async (req, res) => {
+    try {
+      if (!req.body.title || typeof req.body.title !== "string") {
+        return res.status(400).json({ error: "Поле title обязательно" });
+      }
+
+      const user = (req as any).user;
+      const { id } = req.params;
+
+      const { data: existing, error: fetchErr } = await supabase
+        .from("skills")
+        .select("user_id, author_name, author_email")
+        .eq("id", id)
+        .single();
+
+      if (fetchErr || !existing) {
+        return res.status(404).json({ message: "Пакет скиллов не найден" });
+      }
+      if (existing.user_id !== user.uid && user.role !== "admin") {
+        return res.status(403).json({ message: "Нет доступа" });
+      }
+
+      const dbRow = {
+        ...skillToDb(req.body, existing.user_id),
+        author_name: existing.author_name,
+        author_email: existing.author_email,
+      };
+
+      const { data, error } = await supabase
+        .from("skills")
+        .update(dbRow)
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const favIds = await getUserFavoriteIds(user.uid);
+      res.json(skillFromDb(data, favIds.skills.includes(id)));
+    } catch (err) {
+      console.error("Route error:", err);
+      res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  });
+
+  app.delete("/api/skills/:id", authenticate, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      const { id } = req.params;
+
+      const { data: existing, error: fetchErr } = await supabase
+        .from("skills")
+        .select("user_id")
+        .eq("id", id)
+        .single();
+
+      if (fetchErr || !existing) {
+        return res.status(404).json({ message: "Пакет скиллов не найден" });
+      }
+      if (existing.user_id !== user.uid && user.role !== "admin") {
+        return res.status(403).json({ message: "Нет доступа" });
+      }
+
+      const { error } = await supabase.from("skills").delete().eq("id", id);
+      if (error) throw error;
+
+      res.json({ message: "Пакет скиллов удален" });
+    } catch (err) {
+      console.error("Route error:", err);
+      res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  });
+
+  // ─── API: Skill Hints ────────────────────────────────────────────────────
+
+  app.get("/api/skills/:id/hints", authenticate, async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const { data, error } = await supabase
+        .from("skill_hints")
+        .select("*")
+        .eq("skill_id", id)
+        .order("created_at", { ascending: true });
+
+      if (error) throw error;
+
+      res.json(
+        (data || []).map((row: any) => ({
+          id: row.id,
+          skillId: row.skill_id,
+          userId: row.user_id,
+          title: row.title,
+          text: row.text,
+          createdAt: row.created_at,
+        }))
+      );
+    } catch (err) {
+      console.error("Route error:", err);
+      res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  });
+
+  app.post("/api/skills/:id/hints", authenticate, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      const { id } = req.params;
+      const { title, text } = req.body;
+
+      if (!title || typeof title !== "string" || !text || typeof text !== "string") {
+        return res.status(400).json({ error: "Поля title и text обязательны" });
+      }
+
+      const { data, error } = await supabase
+        .from("skill_hints")
+        .insert({
+          skill_id: id,
+          user_id: user.uid,
+          title: title.trim(),
+          text: text.trim(),
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      res.status(201).json({
+        id: data.id,
+        skillId: data.skill_id,
+        userId: data.user_id,
+        title: data.title,
+        text: data.text,
+        createdAt: data.created_at,
+      });
+    } catch (err) {
+      console.error("Route error:", err);
+      res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  });
+
+  app.delete("/api/skills/:id/hints/:hintId", authenticate, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      const { id, hintId } = req.params;
+
+      // Проверяем что подсказка принадлежит пользователю или admin
+      const { data: existing, error: fetchErr } = await supabase
+        .from("skill_hints")
+        .select("user_id")
+        .eq("id", hintId)
+        .eq("skill_id", id)
+        .single();
+
+      if (fetchErr || !existing) {
+        return res.status(404).json({ message: "Подсказка не найдена" });
+      }
+      if (existing.user_id !== user.uid && user.role !== "admin") {
+        return res.status(403).json({ message: "Нет доступа" });
+      }
+
+      const { error } = await supabase.from("skill_hints").delete().eq("id", hintId);
+      if (error) throw error;
+
+      res.json({ message: "Подсказка удалена" });
+    } catch (err) {
+      console.error("Route error:", err);
+      res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  });
+
+  // ─── API: Categories ──────────────────────────────────────────────────────
+
+  app.get("/api/categories", authenticate, async (req, res) => {
+    try {
+      const user = (req as any).user;
+
+      // После ALTER TABLE user_id в categories стал TEXT
+      // Показываем: свои + admin-uid + null
+      const { data, error } = await supabase
+        .from("categories")
+        .select("id, user_id, name, emoji, color")
+        .order("name");
+
+      if (error) throw error;
+
+      // Фильтруем на уровне JS (совместимо с любым типом user_id)
+      const filtered = (data || []).filter(
+        (c: any) => !c.user_id || c.user_id === user.uid || c.user_id === "admin-uid"
+      );
+
+      res.json(
+        filtered.map((row: any) => ({
+          id: row.id,
+          userId: row.user_id || null,
+          name: row.name,
+          emoji: row.emoji || "",
+          color: row.color || "",
+        }))
+      );
+    } catch (err) {
+      console.error("Route error:", err);
+      res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  });
+
+  app.post("/api/categories", authenticate, async (req, res) => {
+    try {
+      if (!req.body.name || typeof req.body.name !== "string") {
+        return res.status(400).json({ error: "Поле name обязательно" });
+      }
+
+      const user = (req as any).user;
+      const { name, emoji, color } = req.body;
+
+      // После ALTER TABLE user_id в categories = TEXT, вставка строки работает
+      const { data, error } = await supabase
+        .from("categories")
+        .insert({
+          user_id: user.uid, // TEXT: 'admin-uid' или 'user_xxx'
+          name,
+          emoji: emoji || "",
+          color: color || "",
+        })
+        .select("id, user_id, name, emoji, color")
+        .single();
+
+      if (error) throw error;
+
+      res.status(201).json({
+        id: data.id,
+        userId: data.user_id,
+        name: data.name,
+        emoji: data.emoji || "",
+        color: data.color || "",
+      });
+    } catch (err) {
+      console.error("Route error:", err);
+      res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  });
+
+  app.delete("/api/categories/:id", authenticate, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      const { id } = req.params;
+
+      const { data: existing, error: fetchErr } = await supabase
+        .from("categories")
+        .select("user_id")
+        .eq("id", id)
+        .single();
+
+      if (fetchErr || !existing) {
+        return res.status(404).json({ message: "Категория не найдена" });
+      }
+      if (existing.user_id !== user.uid && user.role !== "admin") {
+        return res.status(403).json({ message: "Нет доступа" });
+      }
+
+      const { error } = await supabase.from("categories").delete().eq("id", id);
+      if (error) throw error;
+
+      res.json({ message: "Категория удалена" });
+    } catch (err) {
+      console.error("Route error:", err);
+      res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  });
+
+  // ─── API: Chats ───────────────────────────────────────────────────────────
+
+  app.get("/api/chats", authenticate, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      const { promptId } = req.query;
+
+      if (!promptId) {
+        return res.status(400).json({ error: "promptId обязателен" });
+      }
+
+      const { data, error } = await supabase
+        .from("chats")
+        .select("*")
+        .eq("prompt_id", promptId as string)
+        .eq("user_id", user.uid)
+        .order("created_at", { ascending: true });
+
+      if (error) throw error;
+
+      res.json(
+        (data || []).map((row) => ({
+          id: row.id,
+          promptId: row.prompt_id,
+          userId: row.user_id,
+          role: row.role,
+          content: row.content,
+          image: row.image,
+          createdAt: row.created_at,
+        }))
+      );
+    } catch (err) {
+      console.error("Route error:", err);
+      res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  });
+
+  app.post("/api/chats", authenticate, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      const { promptId, content, image } = req.body;
+
+      let savedImg = image || null;
+      // Загружаем изображение чата в Storage если это base64
+      if (image?.startsWith("data:")) {
+        const msgId = `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        savedImg = await uploadImage(image, `${msgId}_chat`);
+      }
+
+      const { data, error } = await supabase
+        .from("chats")
+        .insert({
+          prompt_id: promptId,
+          user_id: user.uid,
+          role: "user",
+          content,
+          image: savedImg,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      res.status(201).json({
+        id: data.id,
+        promptId: data.prompt_id,
+        userId: data.user_id,
+        role: data.role,
+        content: data.content,
+        image: data.image,
+        createdAt: data.created_at,
+      });
+    } catch (err) {
+      console.error("Route error:", err);
+      res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  });
+
+  app.post("/api/chats/clear", authenticate, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      const { promptId } = req.query;
+
+      if (!promptId) {
+        return res.status(400).json({ error: "promptId обязателен" });
+      }
+
+      const { error } = await supabase
+        .from("chats")
+        .delete()
+        .eq("prompt_id", promptId as string)
+        .eq("user_id", user.uid);
+
+      if (error) throw error;
+      res.json({ message: "История чата очищена" });
+    } catch (err) {
+      console.error("Route error:", err);
+      res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  });
+
+  // ─── API: Export / Import ────────────────────────────────────────────────
+  // Экспорт теперь выгружает данные из Supabase в JSON-архив
+
+  app.get("/api/export", authenticate, async (req, res) => {
     const user = (req as any).user;
     if (user.role !== "admin") {
       return res.status(403).json({ message: "Только администратор может экспортировать данные" });
     }
 
     try {
+      const [prompts, skills, categories, users, chats, favorites] = await Promise.all([
+        supabase.from("prompts").select("*"),
+        supabase.from("skills").select("*"),
+        supabase.from("categories").select("*"),
+        supabase.from("users").select("uid, name, email, role"),
+        supabase.from("chats").select("*"),
+        supabase.from("user_favorites").select("*"),
+      ]);
+
       const zip = new AdmZip();
-      
-      if (fs.existsSync(PROMPTS_FILE)) zip.addLocalFile(PROMPTS_FILE);
-      if (fs.existsSync(CATEGORIES_FILE)) zip.addLocalFile(CATEGORIES_FILE);
-      if (fs.existsSync(CHATS_FILE)) zip.addLocalFile(CHATS_FILE);
-      if (fs.existsSync(USERS_FILE)) zip.addLocalFile(USERS_FILE);
+      zip.addFile("prompts.json", Buffer.from(JSON.stringify(prompts.data || [], null, 2)));
+      zip.addFile("skills.json", Buffer.from(JSON.stringify(skills.data || [], null, 2)));
+      zip.addFile("categories.json", Buffer.from(JSON.stringify(categories.data || [], null, 2)));
+      zip.addFile("users.json", Buffer.from(JSON.stringify(users.data || [], null, 2)));
+      zip.addFile("chats.json", Buffer.from(JSON.stringify(chats.data || [], null, 2)));
+      zip.addFile("favorites.json", Buffer.from(JSON.stringify(favorites.data || [], null, 2)));
 
       const buffer = zip.toBuffer();
       res.setHeader("Content-Type", "application/zip");
@@ -516,8 +1100,9 @@ async function startServer() {
     }
   });
 
-  // POST Import Backup Zip
-  app.post("/api/import", authenticate, (req, res) => {
+  // Import остаётся как есть — сохраняет JSON-файлы локально (не критично для деплоя)
+  // Для Vercel этот роут будет ограничен, но для локальной разработки он остаётся
+  app.post("/api/import", authenticate, async (req, res) => {
     const user = (req as any).user;
     if (user.role !== "admin") {
       return res.status(403).json({ message: "Только администратор может импортировать данные" });
@@ -529,50 +1114,61 @@ async function startServer() {
     }
 
     try {
-      const matches = file.match(/^data:application\/[a-zA-Z+-]+;base64,(.+)$/) || file.match(/^data:charset=binary;base64,(.+)$/);
+      const matches =
+        file.match(/^data:application\/[a-zA-Z+-]+;base64,(.+)$/) ||
+        file.match(/^data:charset=binary;base64,(.+)$/);
       const base64Data = matches ? matches[1] : file;
       const buffer = Buffer.from(base64Data, "base64");
 
       const zip = new AdmZip(buffer);
       const zipEntries = zip.getEntries();
 
-      // Validate JSON formatting in zip entries before extracting
-      zipEntries.forEach((entry) => {
+      // Импорт промптов в Supabase
+      for (const entry of zipEntries) {
         const entryName = entry.entryName;
-        if (entryName === "prompts.json" || entryName === "categories.json" || entryName === "chats.json" || entryName === "users.json") {
-          const content = entry.getData().toString("utf8");
-          JSON.parse(content);
+        const content = entry.getData().toString("utf8");
+
+        if (entryName === "prompts.json") {
+          const rows = JSON.parse(content);
+          if (Array.isArray(rows) && rows.length > 0) {
+            await supabase.from("prompts").upsert(rows, { onConflict: "id" });
+          }
+        } else if (entryName === "skills.json") {
+          const rows = JSON.parse(content);
+          if (Array.isArray(rows) && rows.length > 0) {
+            await supabase.from("skills").upsert(rows, { onConflict: "id" });
+          }
+        } else if (entryName === "categories.json") {
+          const rows = JSON.parse(content);
+          if (Array.isArray(rows) && rows.length > 0) {
+            await supabase.from("categories").upsert(rows, { onConflict: "id" });
+          }
         }
-      });
+      }
 
-      let importedCount = 0;
-      zipEntries.forEach((entry) => {
-        const entryName = entry.entryName;
-        const targetPath = 
-          entryName === "prompts.json" ? PROMPTS_FILE :
-          entryName === "categories.json" ? CATEGORIES_FILE :
-          entryName === "chats.json" ? CHATS_FILE :
-          entryName === "users.json" ? USERS_FILE : null;
-
-        if (targetPath) {
-          const content = entry.getData().toString("utf8");
-          const parsed = JSON.parse(content);
-          writeJson(targetPath, parsed);
-          importedCount++;
-        }
-      });
-
-      res.json({ message: `Импорт успешно завершен. Восстановлено файлов: ${importedCount}` });
+      res.json({ message: "Импорт успешно завершен" });
     } catch (e: any) {
       console.error("Import Error:", e);
-      res.status(500).json({ message: e.message || "Ошибка импорта данных. Убедитесь, что архив корректен." });
+      res.status(500).json({ message: e.message || "Ошибка импорта данных" });
     }
   });
 
-  // POST Gemini Chat
+  // ─── API: Gemini ──────────────────────────────────────────────────────────
+
+  function dataUrlToInlinePart(
+    dataUrl: string
+  ): { inlineData: { data: string; mimeType: string } } | null {
+    const m = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+    if (!m) return null;
+    return { inlineData: { mimeType: m[1] || "image/jpeg", data: m[2] } };
+  }
+
   app.post("/api/gemini/chat", authenticate, async (req, res) => {
-    const { prompt, systemInstruction, history, images } = req.body;
     try {
+      if (req.body.history && !Array.isArray(req.body.history)) {
+        return res.status(400).json({ error: "Поле history должно быть массивом" });
+      }
+      const { prompt, systemInstruction, history, images } = req.body;
       const contents = history.map((turn: any) => {
         const parts: any[] = [];
         if (turn.role === "user" && turn.image) {
@@ -589,15 +1185,16 @@ async function startServer() {
 
       contents.push({
         role: "user",
-        parts: [...attachImages, { text: prompt || (attachImages.length ? "Смотри изображения." : "") }],
+        parts: [
+          ...attachImages,
+          { text: prompt || (attachImages.length ? "Смотри изображения." : "") },
+        ],
       });
 
       const response = await ai.models.generateContent({
         model: GEMINI_MODEL,
         contents,
-        config: {
-          systemInstruction,
-        },
+        config: { systemInstruction },
       });
 
       res.json({ text: response.text ?? "" });
@@ -607,7 +1204,6 @@ async function startServer() {
     }
   });
 
-  // POST Gemini Analyze
   app.post("/api/gemini/analyze", authenticate, async (req, res) => {
     const { image, prompt } = req.body;
     try {
@@ -629,41 +1225,45 @@ async function startServer() {
     }
   });
 
-  function dataUrlToInlinePart(dataUrl: string): { inlineData: { data: string; mimeType: string } } | null {
-    // If it's a server URL (like `/uploads/...`), read it from file and convert to base64 for Gemini
-    if (dataUrl.startsWith("/uploads/")) {
-      const filename = path.basename(dataUrl);
-      const filepath = path.join(IMAGES_DIR, filename);
-      if (fs.existsSync(filepath)) {
-        const mimeType = filename.endsWith(".png") ? "image/png" : "image/jpeg";
-        const base64 = fs.readFileSync(filepath, "base64");
-        return { inlineData: { mimeType, data: base64 } };
-      }
-      return null;
-    }
+  // ─── Vite Integration ─────────────────────────────────────────────────────
 
-    const m = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
-    if (!m) return null;
-    return { inlineData: { mimeType: m[1] || "image/jpeg", data: m[2] } };
-  }
-
-  // Vite Integration
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
-      appType: "spa",
+      appType: "custom", // НЕ "spa" — иначе Vite перехватывает /api/*
     });
     app.use(vite.middlewares);
+    // SPA fallback: отдаём index.html только для не-API запросов
+    app.use("*", async (req, res, next) => {
+      if (
+        req.originalUrl.startsWith("/api/") ||
+        req.originalUrl.startsWith("/uploads/")
+      ) {
+        return next();
+      }
+      try {
+        const template = fs.readFileSync(
+          path.join(__dirname, "index.html"),
+          "utf-8"
+        );
+        const html = await vite.transformIndexHtml(req.originalUrl, template);
+        res.status(200).set({ "Content-Type": "text/html" }).end(html);
+      } catch (e) {
+        vite.ssrFixStacktrace(e as Error);
+        next(e);
+      }
+    });
   } else {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
-    app.get("*", (req, res) => {
+    app.get("*", (_req, res) => {
       res.sendFile(path.join(distPath, "index.html"));
     });
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://0.0.0.0:${PORT}`);
+    console.log(`✅ PromptVault server running on http://0.0.0.0:${PORT}`);
+    console.log(`🔗 Supabase: ${process.env.SUPABASE_URL}`);
   });
 }
 

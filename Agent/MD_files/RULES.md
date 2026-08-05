@@ -15,29 +15,31 @@
 | ID промптов | `prompt_<timestamp>_<random>` | `prompt_1234567890_abc123` |
 | ID категорий | `cat_<timestamp>_<random>` | `cat_1234567890_abc123` |
 | ID сообщений | `msg_<timestamp>_<random>` | `msg_1234567890_abc123` |
+| ID скиллов | `skill_<timestamp>_<random>` | `skill_1234567890_abc123` |
+| ID юзеров | `user_<timestamp>_<random>` | `user_1234567890_abc123` |
 
 ## SOLID Principles Application
 
-- **S (Single Responsibility)**: `server.ts` — только API и раздача статики. Бизнес-логика (фильтры видимости промптов, права) в роутах, не в хелперах.
+- **S (Single Responsibility)**: `server.ts` — API-интерфейс, транслятор запросов в Supabase. Бизнес-логика (фильтры видимости промптов, права) на уровне RLS или роутов.
 - **O (Open/Closed)**: Новые layout-типы добавляются через расширение `imageLayoutType` string и нового кейса в рендере — без изменения существующей логики.
 - **I (Interface Segregation)**: Типы в `src/types.ts` разбиты на `Prompt`, `SubSection`, `Category`, `ChatMessage`, `AssistantConfig` — не один гигантский тип.
 - **D (Dependency Inversion)**: Компоненты зависят от `api.ts` (абстракция), а не от `fetch` напрямую.
 
 ## DRY & KISS Guidelines
 
-- **DRY**: Если логика `saveBase64Image` нужна в 3+ местах в `server.ts` — уже вынесена. Не дублировать.
+- **DRY**: Работа с Supabase вынесена в `src/services/supabaseServer.ts`. Не дублировать инициализацию клиента.
 - **DRY**: Если компонент копируется 3+ раз — выносить в `src/components/ui/`.
 - **KISS**: Нет внешней state-библиотеки (Zustand, Redux). Весь domain state — `useState` в App.tsx. Повторяемая логика вынесена в `src/hooks/`. Не усложнять без явной необходимости.
 - **KISS**: Нет react-router. Роутинг через `view` state — не менять на router без обсуждения.
 
 ## Code Structure & Organization Rules
 
-- **Максимум файла**: ~300 строк. Если больше — сигнал к рефакторингу.
+- **Максимум файла**: ~300 строк. Если больше — сигнал к рефакторингу (исключения: `App.tsx`, `server.ts`, `PhotoForm.tsx`, `FileTreeViewer.tsx` - они могут быть больше, но должны быть отрефакторены при появлении возможности).
 - **Бизнес-логика**: В `server.ts` (для backend). В `src/services/` (для frontend).
 - **UI-логика**: В компонентах `src/sections/` и `src/components/`.
 - **Типы**: Только в `src/types.ts` — не объявлять inline типы в компонентах для domain entities.
-- **Новые API-роуты**: Только в `server.ts`, соблюдая паттерн `authenticate → readJson → writeJson`.
-- **Изображения**: Всегда через `saveBase64Image()` в server.ts, никогда не хранить base64 в JSON.
+- **Новые API-роуты**: Добавляются в `server.ts` или `api/index.ts` (при Vercel-деплое), соблюдая паттерн `authenticate → supabase query → response`.
+- **Изображения**: Загружать в Supabase Storage бакет `prompt-images`. Никаких локальных файлов в `data/`.
 
 ## Validation Strategy
 
@@ -49,7 +51,7 @@
 ## TypeScript Standards
 
 - **strict mode**: включён (`tsconfig.json` → `"strict": true`).
-- **`any` запрещён** в новом коде клиентской части. В `server.ts` допустим в ограниченных местах (readJson возвращает any — это ок).
+- **`any` запрещён** в новом коде клиентской части.
 - Предпочитать `interface` для объектов domain (`Prompt`, `Category`), `type` для union-типов (`'own' | 'web'`).
 - Импорты: именованные импорты, не `import * as`.
 
@@ -57,8 +59,11 @@
 
 - **Локальный state**: `useState` внутри компонента — для UI-состояния (открыт ли дропдаун, текущий слайдер).
 - **Глобальный state**: `useState` в `App.tsx`, передаётся через props — для domain данных (prompts, categories, user).
-- **Серверный state**: Нет react-query. После мутации (POST/PUT/DELETE) — refetch через `loadData()`.
+- Серверный state: Нет react-query. После мутации (POST/PUT/DELETE) — refetch через `loadData()`.
 - Не добавлять Context API или Zustand без явной необходимости.
+
+## AI Assistant Status
+> **Внимание**: Раздел ИИ-ассистента (Gemini) в данный момент находится в статусе ⏳ "В разработке"/Отключено. Не модифицировать вызовы Gemini без явного запроса.
 
 ## Error Handling & Security Practices
 

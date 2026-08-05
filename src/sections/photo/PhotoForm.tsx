@@ -145,6 +145,31 @@ export default function PhotoForm({
     }
   }, [onCloseRef, handleRequestClose]);
 
+  const [filePackageUrl, setFilePackageUrl] = useState(prompt?.filePackageUrl || '');
+  const [fileStructure, setFileStructure] = useState<any[]>(prompt?.fileStructure || []);
+  const zipInputRef = useRef<HTMLInputElement>(null);
+
+  const handleZipUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const { parseZipFile } = await import('../../utils/zipParser');
+      const { fileStructure: parsedStructure, fileCount } = await parseZipFile(file);
+      setFileStructure(parsedStructure);
+      addToast(`Архив успешно разобран (${fileCount} файлов)`, 'success');
+    } catch (err: any) {
+      console.error('Ошибка чтения ZIP:', err);
+      addToast('Не удалось распарсить .ZIP файл', 'error');
+    }
+    e.target.value = '';
+  };
+
+  const handleClearZip = () => {
+    setFileStructure([]);
+    setFilePackageUrl('');
+    addToast('Пакет скиллов удален', 'success');
+  };
+
   const extraImagesInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -427,6 +452,8 @@ export default function PhotoForm({
       mediaType,
       additionalImages: finalAdditional,
       usageNotes: usageNotes.trim(),
+      filePackageUrl,
+      fileStructure,
     };
 
     setIsSaving(true);
@@ -540,6 +567,10 @@ export default function PhotoForm({
             additionalImages={additionalImages}
             setAdditionalImages={setAdditionalImages}
             extraImagesInputRef={extraImagesInputRef}
+            zipInputRef={zipInputRef}
+            onZipUpload={handleZipUpload}
+            fileCount={fileStructure.length}
+            onClearZip={handleClearZip}
           />
 
           {/* Visibility toggle */}

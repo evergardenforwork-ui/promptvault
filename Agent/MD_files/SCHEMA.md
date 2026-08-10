@@ -149,6 +149,7 @@ erDiagram
 | `category` | TEXT | Категория (текст) |
 | `skill_types` | TEXT[] | Типы пакета (скилл, агент, mcp и т.д.) |
 | `target_ais` | TEXT[] | Поддерживаемые ИИ (universal, claude, gemini, chatgpt, deepseek, cursor) |
+| `skill_origin` | TEXT | Источник: 'own' (Авторский) или 'web' (Из сети) |
 | `tags` | TEXT[] | Хештеги |
 | `is_public` | BOOLEAN | Доступен ли всем |
 | `file_package_url` | TEXT? | Ссылка на ZIP |

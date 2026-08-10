@@ -156,7 +156,7 @@ Prompt         { id, userId, title, category, tags, subSections[], mainPrompt,
                  imageLayoutType?, isFavorite, isPublic, promptOrigin?,
                  authorName, authorEmail, usageCount, createdAt }
 SkillPackage   { id, userId, title, description, category, skillTypes: string[], targetAis?: string[],
-                 tags, fileStructure[], filePackageUrl?, isFavorite, isPublic,
+                 tags, fileStructure[], filePackageUrl?, isFavorite, isPublic, skillOrigin?: 'own' | 'web',
                  authorName, authorEmail, createdAt }
 SkillHint      { id, skillId, userId, title, text, createdAt }
 SubSection     { title, text, imageBefore?, imageAfter?, originalImage*, additionalImages?, imageLayoutType? }

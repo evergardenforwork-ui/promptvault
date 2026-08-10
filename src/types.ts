@@ -102,6 +102,7 @@ export interface SkillPackage {
   filePackageUrl?: string;
   isFavorite: boolean;
   isPublic: boolean;
+  skillOrigin?: 'own' | 'web';
   authorName: string;
   authorEmail: string;
   createdAt: string;

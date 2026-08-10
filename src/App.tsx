@@ -514,7 +514,7 @@ export default function App() {
               </div>
 
               {/* Lower row: Skill Types & Target AI filters */}
-              <div className="flex flex-col lg:flex-row gap-4 pt-2 border-t border-zinc-900/60">
+              <div className="flex flex-col gap-3 pt-3 border-t border-zinc-900/60">
                 {/* Skill Type Pills */}
                 <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
                   <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider shrink-0 mr-1">Тип:</span>

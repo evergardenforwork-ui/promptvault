@@ -19,3 +19,6 @@ ALTER TABLE public.skills ADD COLUMN IF NOT EXISTS skill_types TEXT[] DEFAULT '{
 
 -- Поле поддерживаемых ИИ платформ (targetAis)
 ALTER TABLE public.skills ADD COLUMN IF NOT EXISTS target_ais TEXT[] DEFAULT '{universal}';
+
+-- Источник скилла (свой или из сети)
+ALTER TABLE public.skills ADD COLUMN IF NOT EXISTS skill_origin TEXT DEFAULT 'own';

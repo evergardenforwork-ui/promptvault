@@ -24,10 +24,9 @@ export function useSkillFilters(skills: SkillPackage[], user: User | null) {
 
       // 2. Источник (Ownership)
       if (sourceFilter === 'my-own') {
-        if (skill.userId !== user?.uid) return false;
+        if (skill.userId !== user?.uid || skill.skillOrigin === 'web') return false;
       } else if (sourceFilter === 'my-web') {
-        // Если скилл создан текущим юзером
-        if (skill.userId !== user?.uid) return false;
+        if (skill.userId !== user?.uid || skill.skillOrigin !== 'web') return false;
       } else if (sourceFilter === 'others') {
         if (skill.userId === user?.uid) return false;
       }
@@ -56,11 +55,10 @@ export function useSkillFilters(skills: SkillPackage[], user: User | null) {
     });
   }, [skills, searchQuery, selectedSkillType, selectedTargetAi, sourceFilter, sortBy, user]);
 
-  // Счётчики по источникам
   const counts = useMemo(() => {
     const all = skills.length;
-    const own = skills.filter((s) => s.userId === user?.uid).length;
-    const web = skills.filter((s) => s.userId === user?.uid).length;
+    const own = skills.filter((s) => s.userId === user?.uid && s.skillOrigin !== 'web').length;
+    const web = skills.filter((s) => s.userId === user?.uid && s.skillOrigin === 'web').length;
     const others = skills.filter((s) => s.userId !== user?.uid).length;
     return { all, own, web, others };
   }, [skills, user]);

@@ -30,6 +30,7 @@ export default function SkillForm({
   const [fileStructure, setFileStructure] = useState<any[]>(skill?.fileStructure || []);
   const [filePackageUrl] = useState(skill?.filePackageUrl || '');
   const [isPublic, setIsPublic] = useState(skill?.isPublic ?? false);
+  const [skillOrigin, setSkillOrigin] = useState<'own' | 'web'>(skill?.skillOrigin || 'own');
   const [isSaving, setIsSaving] = useState(false);
   const [showConfirmClose, setShowConfirmClose] = useState(false);
 
@@ -121,6 +122,7 @@ export default function SkillForm({
       fileStructure,
       filePackageUrl,
       isPublic,
+      skillOrigin,
       isFavorite: skill?.isFavorite ?? false,
     };
 
@@ -360,6 +362,29 @@ export default function SkillForm({
             >
               <motion.div animate={{ x: isPublic ? 24 : 4 }} className="absolute top-1 w-6 h-6 bg-white rounded-full shadow-lg" />
             </button>
+          </div>
+          
+          <div className="flex items-center justify-between p-6 bg-zinc-900/50 rounded-2xl border border-zinc-800/50">
+            <div>
+              <h3 className="text-sm font-bold text-white mb-1">Источник скилла</h3>
+              <p className="text-xs text-zinc-400">Укажите, вы ли автор этого скилла, или он найден в сети</p>
+            </div>
+            <div className="flex bg-zinc-950 p-1 rounded-xl border border-zinc-800 shrink-0">
+              <button
+                type="button"
+                onClick={() => setSkillOrigin('own')}
+                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${skillOrigin === 'own' ? 'bg-purple-500 text-white shadow-md shadow-purple-500/20' : 'text-zinc-400 hover:text-white'}`}
+              >
+                Авторский
+              </button>
+              <button
+                type="button"
+                onClick={() => setSkillOrigin('web')}
+                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${skillOrigin === 'web' ? 'bg-purple-500 text-white shadow-md shadow-purple-500/20' : 'text-zinc-400 hover:text-white'}`}
+              >
+                Из сети
+              </button>
+            </div>
           </div>
         </form>
 

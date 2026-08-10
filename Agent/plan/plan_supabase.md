@@ -1,6 +1,6 @@
 # Plan: Миграция кода PromptVault на Supabase + деплой Vercel
 
-> Обновлено: 2026-08-05  
+> Обновлено: 2026-08-10  
 > Статус: ✅ **ВСЁ ЗАВЕРШЕНО** — Supabase + Vercel конфиг готовы
 
 ---
@@ -26,8 +26,8 @@
 - [x] **`vercel.json`** — роутинг API + SPA fallback
 - [x] **`api/index.ts`** — Express adapter для Vercel Serverless
 - [x] **`.gitignore`** — обновлён (firestore-export, graphify-out, .vercel)
+- [x] **Git push** — изменения закомичены и отправлены в master
 - [ ] **Supabase: создать таблицу `skill_hints`** → выполнить `scripts/create_skill_hints_table.sql`
-- [ ] **Git push** → `git add -A && git commit -m "feat: Vercel deploy ready" && git push`
 - [ ] **Подключить Vercel** → импортировать репо, задать env vars
 
 ---

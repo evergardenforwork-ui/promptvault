@@ -1,7 +1,7 @@
 # PLAN.md — Проблемы и план доработки PromptVault
 
-> Обновлено: 2026-08-05 (Сессия 7 — Skill Hints, Inline Editor, Vercel deploy готов)
-> Основано на ревью реального кода (App.tsx, server.ts, types.ts, PhotoForm.tsx, PhotoView.tsx)
+> Обновлено: 2026-08-10 (Сессия 8 — Фильтры источников, Fixed IDE viewport SkillSpaceView, Vercel ready)
+> Основано на ревью реального кода (App.tsx, server.ts, types.ts, SkillSpaceView.tsx, usePromptFilters.ts, useSkillFilters.ts)
 
 ---
 

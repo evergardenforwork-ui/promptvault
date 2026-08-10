@@ -1,6 +1,8 @@
 # Структура и компоненты проекта PromptVault
 
-PromptVault — это веб-приложение для хранения, организации и тестирования промптов нейросетей, оснащенное встроенным ИИ-ассистентом на базе Google Gemini API и локальной базой данных на JSON-файлах.
+PromptVault — это веб-приложение для хранения, организации и тестирования промптов нейросетей, а также пакетов скиллов, субагентов и MCP (Skills & Agent Hub), работающее на базе React 19, Express.js / Vercel Serverless и облачной базы данных Supabase (PostgreSQL + Storage).
+
+> **Последнее обновление**: 2026-08-10
 
 ---
 
@@ -8,101 +10,82 @@ PromptVault — это веб-приложение для хранения, ор
 
 ```
 promptvault/
-├── .env.example              # Пример файла переменных окружения
-├── DEPLOY_RENDER_RU.md       # Инструкция по деплою на Render.com
-├── README_RU.md              # Документация проекта на русском языке
+├── .env.example              # Шаблон переменных окружения (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GEMINI_API_KEY)
+├── vercel.json               # Конфигурация Vercel Serverless деплоя
+├── api/
+│   └── index.ts              # Express Serverless Adapter для Vercel Functions
 ├── package.json              # Скрипты и зависимости Node.js
-├── server.ts                 # Express.js сервер для API, Gemini API проксирования и раздачи статики
-├── vite.config.ts            # Конфигурация сборщика Vite с поддержкой Tailwind v4
-├── supabase_schema.sql       # SQL-миграция и схема баз данных Postgres для Supabase (RLS, Buckets)
-├── plan_supabase.md          # План переноса БД и Storage на Supabase
+├── server.ts                 # Express.js dev-сервер для API + Vite middleware
+├── vite.config.ts            # Конфигурация сборщика Vite
+├── tsconfig.json             # TypeScript конфигурация
 ├── scripts/
-│   └── migrateToSupabase.ts  # Скрипт миграции локальных данных в Supabase
-├── .agents/skills/           # Интегрированные агентские скиллы (supabase, postgres-best-practices)
-├── data/                     # Локальная база данных (JSON/Images, в git ignored)
+│   ├── migrateToSupabase.ts  # Скрипт миграции локальных данных в Supabase
+│   ├── create_skill_hints_table.sql # DDL создания таблицы skill_hints в Supabase
+│   └── manageUsers.ts        # CLI утилита управления пользователями и сброса паролей
+├── Agent/                    # Системная документация и планы
+│   ├── MD_files/             # PRD, DESIGN, ARCHITECTURE, SCHEMA, RULES, DATABASE, USER_MANAGEMENT, project_structure
+│   └── plan/                 # План реализации фич (plan.md, plan_supabase.md, plan_skill_space.md, plan_skill_hints.md, plan_file_system.md)
 └── src/                      # Исходный код Frontend-части
     ├── main.tsx              # Точка входа React
-    ├── index.css             # Глобальные стили Tailwind CSS
-    ├── App.tsx               # Основное приложение (содержит интерфейс и роутинг)
-    ├── types.ts              # Описание типов TypeScript (Prompt, Category, ChatMessage и др.)
+    ├── index.css             # Стили Tailwind CSS v4 (@theme)
+    ├── App.tsx               # Основное приложение (состояние, навигация, фильтры ownership)
+    ├── types.ts              # Единый источник TypeScript типов
     ├── services/
-    │   ├── api.ts            # API клиент для работы с сервером
-    │   └── gemini.ts         # Перенаправление запросов к Gemini на Express прокси
+    │   ├── api.ts            # API клиент для взаимодействия с бэкендом
+    │   ├── gemini.ts         # Клиент Gemini AI (временно отключён)
+    │   └── supabaseServer.ts # Инициализация Supabase клиента
+    ├── hooks/
+    │   ├── useHotkeys.ts     # Глобальные горячие клавиши
+    │   ├── usePromptFilters.ts # Фильтрация и подсчёт промптов (all, my-all, my-own, my-web, others)
+    │   └── useSkillFilters.ts  # Фильтрация и подсчёт скиллов (all, my-all, my-own, my-web, others, targetAis)
     ├── utils/
     │   ├── cn.ts             # Утилита объединения классов Tailwind
-    │   └── zipParser.ts      # Утилита парсинга .ZIP архивов со скиллами через JSZip
-    ├── components/           # Модульные компоненты (Auth, Sidebar, Toast, FileTreeViewer и др.)
-    │   └── ui/
-    │       └── FileTreeViewer.tsx # Дерево файлов и просмотрщик .md инструкций/скиллов
-    └── sections/             # Разделы (PhotoCard, PhotoForm, PhotoView и др.)
+    │   ├── zipParser.ts      # Утилита парсинга .ZIP архивов со скиллами
+    │   └── buildSelectionZip.ts # Клиентская генерация кастомных ZIP архивов на лету
+    ├── components/
+    │   ├── auth/             # LoginForm.tsx
+    │   ├── layout/           # Sidebar.tsx
+    │   └── ui/               # Toast, CategoryForm, ImageCropper, ConfirmDialog, FileTreeViewer
+    └── sections/
+        ├── admin/            # UsersSection.tsx
+        ├── photo/            # PhotoCard, PhotoForm, PhotoView, ImageSlotsSection, SubSectionsEditor
+        └── skills/           # SkillCard, SkillForm, SkillSpaceView, SpaceFileTree, SpaceFilePreview, SpaceContextMenu, SpaceSelectionBar, SkillHintsPanel
 ```
 
 ---
 
 ## 🛠 Технологический стек
 
-*   **Frontend**: React (v19), Vite (v6), Tailwind CSS (v4), Framer Motion, Lucide React, React Markdown.
-*   **Backend / DB**: Node.js + Express.js + Локальная JSON БД.
-*   **ИИ**: Google Gemini SDK (на сервере через `@google/genai`), модель `gemini-2.5-flash-lite` для чата и анализа изображений.
+*   **Frontend**: React (v19), Vite (v6), Tailwind CSS (v4), Framer Motion (`motion` v12), Lucide React, React Markdown.
+*   **Backend / DB**: Node.js + Express.js (`server.ts` dev, `api/index.ts` prod) + Supabase (PostgreSQL + Supabase Storage).
+*   **ИИ**: Google Gemini SDK (`@google/genai`), модель `gemini-2.5-flash-lite` (в разработке).
 
 ---
 
-## 🗄 Структура Базы Данных (Локальные JSON)
+## 🗄 Структура Базы Данных (Supabase Cloud PostgreSQL)
 
-В базе данных используются следующие структуры:
-
-### 1. `prompts` (Промпты)
-Содержит шаблоны промптов, созданные пользователями.
-*   `id`: string (идентификатор документа)
-*   `userId`: string (ID создателя)
-*   `title`: string (название промпта)
-*   `category`: string (ID категории)
-*   `tags`: string[] (теги промпта)
-*   `subSections`: array of `{ title: string, text: string }` (подразделы/переменные промпта)
-*   `mainPrompt`: string (основное тело промпта)
-*   `usageNotes`: string? (инструкции/подсказки по использованию шаблона)
-*   `filePackageUrl`: string? (ссылка на оригинальный прикрепленный ZIP архив)
-*   `fileStructure`: FileNode[]? (дерево папок и содержимого текстовых скиллов `.md` / `.json` из ZIP)
-*   `imageBefore`: string? (Data URL изображения "до")
-*   `imageAfter`: string? (Data URL изображения "после")
-*   `additionalImages`: string[] (дополнительные изображения)
-*   `isFavorite`: boolean (добавлен ли в избранное текущим пользователем)
-*   `isPublic`: boolean (доступен ли всем пользователям или приватный)
-*   `authorName`: string (имя автора)
-*   `authorEmail`: string (email автора)
-*   `usageCount`: number (счетчик использований)
-*   `createdAt`: Timestamp (время создания)
-
-### 2. `categories` (Категории)
-Пользовательские категории для группировки промптов.
-*   `id`: string
-*   `userId`: string
-*   `name`: string (название)
-*   `emoji`: string (иконка-эмодзи)
-*   `color`: string (цвет категории в HEX или Tailwind-классе)
-
-### 3. `chats` (ИИ-ассистент / Сообщения)
-Логи общения с Gemini в контексте конкретного промпта.
-*   `id`: string
-*   `promptId`: string (связанный промпт)
-*   `userId`: string (владелец чата)
-*   `role`: `'user' | 'model'`
-*   `content`: string (текст сообщения)
-*   `image`: string? (Data URL прикрепленного изображения)
-*   `createdAt`: Timestamp
+1. **`users`** — аккаунты, роли (`admin`, `user`), bcrypt-хэши паролей.
+2. **`prompts`** — шаблоны промптов, макеты изображений (6 layout-типов), подсекции, теги, счетчик использований.
+3. **`skills`** — наборы скиллов, субагентов и MCP, дерево файлов (`file_structure`), поддерживаемые типы ИИ (`target_ais`).
+4. **`skill_hints`** — готовые подсказки-промпты для быстрого применения конкретного скилла в ИИ.
+5. **`categories`** — пользовательские и системные категории для группировки.
+6. **`chats`** — история диалогов с Gemini.
+7. **`user_favorites`** — полиморфная таблица личного избранного.
+8. **Storage Buckets**: `prompt-images` (изображения), `prompt-files` (ZIP-архивы).
 
 ---
 
 ## 🛡 Безопасность и роли
-*   **Администратор**: Пользователь с email `alexey.unstam@gmail.com` имеет полные права администратора (может видеть и изменять все промпты, включая приватные).
-*   **Промпты**: Публичные промпты (`isPublic == true`) доступны для чтения всем. Приватные промпты доступны только создателю (`userId`) или админу.
-*   **Категории & Чаты**: Изолированы по `userId`. Пользователи видят и изменяют только свои собственные данные.
+
+*   **Администратор**: `evergardenforwork@gmail.com` (`admin-uid`) имеет полные права администратора (видит и редактирует всё, управляет пользователями).
+*   **Промпты и Скиллы**: Публичные (`is_public == true`) доступны всем авторизованным. Приватные (`is_public == false`) доступны только автору (`user_id`) или админу.
+*   **Категории**: Категории админа общие для всех, пользовательские изолированы по `user_id`.
 
 ---
 
 ## 🏃‍♂️ Скрипты запуска
 
-*   `npm run dev` — Запуск локального сервера разработки через `tsx server.ts` (порт 3000).
-*   `npm run build` — Сборка React-приложения в папку `dist` с помощью Vite.
-*   `npm run start` — Запуск Express сервера для раздачи собранного приложения в production.
-
+*   `npm run dev` — Запуск dev-сервера через `tsx server.ts` (порт 3000, единый процесс API + Vite).
+*   `npm run build` — Сборка клиентского SPA в папку `dist` с помощью Vite.
+*   `npm run lint` — Проверка TypeScript типов (`tsc --noEmit`).
+*   `npm run clean` — Очистка директории `dist`.

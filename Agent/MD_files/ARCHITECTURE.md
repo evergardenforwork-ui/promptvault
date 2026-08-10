@@ -2,19 +2,26 @@
 
 > Высокоуровневая карта системы. Перед любым структурным изменением кода
 > ИИ должен свериться с этим файлом, чтобы не нарушить существующие паттерны.
+> **Последнее обновление**: 2026-08-10
 
 ## System Overview & High-Level Diagram
 
 ```
-Browser (React SPA)
-        │  HTTP (fetch)
+Browser (React 19 SPA)
+        │  HTTP (fetch) + Authorization: Bearer <uid>
         ▼
-Express.js (server.ts, порт 3000)
-  ├─ /api/*          ← REST API (JSON)
-  ├─ /uploads/*      ← Статические файлы изображений
-  └─ /* (dev: Vite middleware, prod: dist/)
-        ├─ Supabase (PostgreSQL)   ← Хранилище промптов, пользователей, категорий, чатов
-        ├─ Supabase Storage        ← Загруженные изображения (bucket: prompt-images)
+[ Dev: Express.js (server.ts, порт 3000) / Prod: Vercel Serverless Function (api/index.ts) ]
+  ├─ /api/auth/*     ← Авторизация (bcrypt)
+  ├─ /api/prompts/*  ← CRUD промптов + пагинация
+  ├─ /api/skills/*   ← CRUD пакетов скиллов + /hints
+  ├─ /api/categories ← Управление категориями
+  ├─ /api/favorites  ← Личное избранное
+  ├─ /api/users/*    ← Управление пользователями (admin only)
+  ├─ /api/chats/*    ← История чатов
+  ├─ /api/export     ← Резервная копия (ZIP)
+  └─ /api/import     ← Восстановление из ZIP
+        ├─ Supabase (PostgreSQL)   ← Таблицы users, prompts, skills, skill_hints, categories, chats, user_favorites
+        ├─ Supabase Storage        ← Бакеты prompt-images, prompt-files
         │
         └─ Google Gemini API (gemini-2.5-flash-lite) (⏳ в разработке)
              ├─ /api/gemini/chat     ← Чат с историей
@@ -25,13 +32,15 @@ Express.js (server.ts, порт 3000)
 
 ```
 ┌──────────────────────────────────────┐
-│  Presentation (src/sections/, ui/)   │  React компоненты, формы, карточки, FileTreeViewer
+│  Presentation (src/sections/, ui/)   │  React компоненты, формы, карточки, SkillSpaceView
+├──────────────────────────────────────┤
+│  Hooks & Filters (src/hooks/)        │  usePromptFilters, useSkillFilters, useHotkeys
 ├──────────────────────────────────────┤
 │  Services (src/services/)            │  api.ts, gemini.ts
 ├──────────────────────────────────────┤
-│  State (src/App.tsx)                 │  Глобальный state (prompts, categories, activePrompt)
+│  State (src/App.tsx)                 │  Глобальный state (prompts, skills, categories, user)
 ├──────────────────────────────────────┤
-│  Backend / Cloud Layer               │  Supabase (PostgreSQL, Storage, Auth) + Express.js API
+│  Backend / Serverless Layer          │  Express.js (server.ts dev / api/index.ts Vercel prod)
 ├──────────────────────────────────────┤
 │  Data & Storage Layer                │  Supabase Postgres DB, Buckets (prompt-images, prompt-files)
 └──────────────────────────────────────┘
@@ -41,7 +50,10 @@ Express.js (server.ts, порт 3000)
 
 ```
 promptvault/
-├── server.ts               ← Единственный backend-файл (~960 строк: Express + Vite + Gemini)
+├── server.ts               ← Dev backend: Express + Vite dev server
+├── api/
+│   └── index.ts            ← Prod backend: Vercel Serverless Function adapter
+├── vercel.json             ← Vercel конфигурация
 ├── src/
 │   ├── App.tsx             ← Центральный state-контейнер + роутинг через view/mode
 │   ├── types.ts            ← Все TypeScript интерфейсы (ЕДИНЫЙ источник типов)
@@ -49,10 +61,11 @@ promptvault/
 │   ├── components/
 │   │   ├── auth/           ← LoginForm.tsx (форма входа)
 │   │   ├── layout/         ← Sidebar.tsx (фильтрация и навигация, onOpenAdmin)
-│   │   └── ui/             ← Toast, CategoryForm, ImageCropper, ConfirmDialog
+│   │   └── ui/             ← Toast, CategoryForm, ImageCropper, ConfirmDialog, FileTreeViewer
 │   ├── hooks/              ← Кастомные React-хуки
 │   │   ├── useHotkeys.ts          ← Ctrl+K, Ctrl+N, Escape
-│   │   └── usePromptFilters.ts    ← Фильтрация, сортировка, подсчёт
+│   │   ├── usePromptFilters.ts    ← Фильтрация промптов (all, my-all, my-own, my-web, others)
+│   │   └── useSkillFilters.ts     ← Фильтрация скиллов (all, my-all, my-own, my-web, others, ИИ)
 │   ├── sections/
 │   │   ├── admin/
 │   │   │   └── UsersSection.tsx  ← Панель управления пользователями
@@ -60,27 +73,17 @@ promptvault/
 │   │   │   ├── PhotoCard.tsx      ← Карточка промпта в сетке
 │   │   │   ├── PhotoForm.tsx      ← Оркестратор формы (создание/редактирование)
 │   │   │   ├── PhotoView.tsx      ← Оркестратор просмотра промпта
-│   │   │   ├── form/              ← Подкомпоненты формы
-│   │   │   │   ├── ImageSlotsSection.tsx
-│   │   │   │   └── SubSectionsEditor.tsx
-│   │   │   └── view/              ← Подкомпоненты просмотра
-│   │   │       ├── MiniLayoutPreview.tsx
-│   │   │       ├── CollapsibleText.tsx
-│   │   │       └── AIAssistant.tsx
+│   │   │   ├── form/              ← ImageSlotsSection, SubSectionsEditor
+│   │   │   └── view/              ← MiniLayoutPreview, CollapsibleText, AIAssistant
 │   │   └── skills/
 │   │       ├── SkillCard.tsx      ← Карточка скилла в сетке
 │   │       ├── SkillForm.tsx      ← Форма создания/редактирования пакета
-│   │       ├── SkillView.tsx      ← Старая модалка (устарела, оставлена для ref)
-│   │       ├── SkillSpaceView.tsx ← Полноэкранная страница-пространство
-│   │       └── space/             ← Подкомпоненты пространства
-│   │           ├── SpaceFileTree.tsx     ← VS Code дерево файлов + чекбоксы
-│   │           ├── SpaceFilePreview.tsx  ← Markdown/код превью + breadcrumb
-│   │           ├── SpaceContextMenu.tsx  ← ПКМ glassmorphism меню
-│   │           └── SpaceSelectionBar.tsx ← Плавающая панель выделения
+│   │       ├── SkillSpaceView.tsx ← Полноэкранный IDE-лейаут (h-screen, fixed viewport)
+│   │       └── space/             ← SpaceFileTree, SpaceFilePreview, SpaceContextMenu, SpaceSelectionBar, SkillHintsPanel
 │   ├── services/
 │   │   ├── api.ts          ← fetch-обёртки для всех /api/* эндпоинтов
 │   │   └── gemini.ts       ← Клиент для /api/gemini/* эндпоинтов
-│   └── utils/              ← Вспомогательные функции
+│   └── utils/              ← zipParser.ts, buildSelectionZip.ts, cn.ts
 ├── public/                 ← Статические ассеты
 ```
 
@@ -90,47 +93,29 @@ promptvault/
 Запрос → app.use(express.json({ limit: "50mb" }))
        → authenticate() middleware — проверяет Bearer token (uid из Supabase users table)
        → Route handler — делает Supabase запросы (select/insert/update/delete)
-       → saveBase64Image() — если есть base64 фото, сохраняет в Supabase Storage (bucket: prompt-images)
+       → uploadImage() — если есть base64 фото, сохраняет в Supabase Storage (bucket: prompt-images)
        → ответ клиенту
 ```
 
-**Auth**: Простой Bearer-токен = `uid` пользователя из таблицы `users` (Supabase). Нет JWT, нет сессий.
+**Auth**: Простой Bearer-токен = `uid` пользователя из таблицы `users` (Supabase). Пароли захэшированы с помощью bcrypt.
 
 ## Client-Side Architecture
 
-- **State**: Весь глобальный state в `App.tsx` через `useState`. Нет Zustand/Redux/Context.
-- **Хуки**: Переиспользуемая логика вынесена в `src/hooks/` — `useHotkeys`, `usePromptFilters`.
-- **Роутинг**: Нет react-router. Навигация через state:
+- **State**: Весь глобальный state в `App.tsx` через `useState`.
+- **Хуки**: Переиспользуемая логика вынесена в `src/hooks/` — `useHotkeys`, `usePromptFilters`, `useSkillFilters`.
+- **Роутинг**: Навигация через state (без react-router):
   - Промпты: `viewingPrompt`, `editingPrompt`, `isFormOpen` (boolean-флаги)
-  - Скиллы: `spacedSkill: SkillPackage | null` → полноэкранная страница-пространство; `isSkillFormOpen` → форма
+  - Скиллы: `spacedSkill: SkillPackage | null` → полноэкранная страница-пространство (`SkillSpaceView`); `isSkillFormOpen` → форма
   - При `spacedSkill !== null` рендерится `SkillSpaceView` вместо основного layout
-- **Компоненты**: Props-drilling из App.tsx вниз. Компоненты тупые (presentational).
 - **Анимации**: `motion` (Framer Motion v12) — для карточек, модалок, переходов.
-- **Иконки**: `lucide-react` — только из этой библиотеки.
+- **Иконки**: `lucide-react`.
 
 ## Data Layer & Database Strategy
 
-> 📖 Полная схема БД, SQL-эквивалент и ER-диаграмма — в [`DATABASE.md`](DATABASE.md)
-
 - **Хранилище**: Supabase PostgreSQL.
-- **Избранное**: Таблица `user_favorites` — `uid`, `prompts[]`, `skills[]`. Вычисляется динамически на сервере при каждом GET, не хранится в самом промпте.
-- **Изображения**: base64 из клиента → `saveBase64Image()` → файл в бакет `prompt-images` → URL (proxy) `/uploads/{filename}`.
-- **Интеграция**: `src/services/supabaseServer.ts` (используется service_role key для обхода RLS).
-
-## Authentication & Authorization Flow
-
-```
-1. POST /api/auth/login { email, password }
-2. server.ts: ищет user в таблице `users` по email, сравнивает пароль через bcrypt.compareSync()
-3. Ответ: { token: user.uid, user: { uid, displayName, email, role } }
-4. Клиент: хранит token в localStorage (pv_token + pv_user)
-5. Все следующие запросы: Authorization: Bearer <uid>
-6. authenticate() middleware: ищет user с uid === token в Supabase `users`
-7. Автовход: App.tsx читает pv_user из localStorage при загрузке
-```
-
-**Роли**: `admin` — видит всё, управляет пользователями, вкладка "👥 Пользователи".
-**Пароли**: захешированы bcrypt. Сменяет только admin. Создание аккаунтов через `/api/users` (admin only).
+- **Избранное**: Таблица `user_favorites` — полиморфный составной PK (`user_id`, `item_id`, `item_type`).
+- **Изображения**: base64 из клиента → `uploadImage()` → загрузка в бакет `prompt-images` Supabase Storage.
+- **Интеграция**: `server.ts` / `api/index.ts` используют `SUPABASE_SERVICE_ROLE_KEY` для серверных операций.
 
 ## Key Data Flows & Sequence Diagrams
 
@@ -139,36 +124,26 @@ promptvault/
 ```
 User → PhotoForm → выбирает фото → ImageCropper (Canvas crop) → base64
      → api.ts: POST /api/prompts { ...data, imageBefore: "data:image/..." }
-     → server.ts: saveBase64Image() → upload to Supabase Storage -> return publicUrl or local proxy url
+     → server: uploadImage() → Supabase Storage (prompt-images) -> publicUrl
      → Supabase insert: supabase.from('prompts').insert({ ... })
-     → ответ { id, imageBefore: "/uploads/prompt_xxx_before.jpg" }
+     → ответ { id, imageBefore: "https://...supabase.co/.../prompt_xxx.jpg" }
      → App.tsx: добавляет в state prompts[]
 ```
 
-### Gemini чат (⏳ В разработке)
+### Пространство скилла (SkillSpaceView)
 
 ```
-User → PhotoView → открывает чат → вводит сообщение
-     → POST /api/chats { promptId, content } → сохраняет сообщение user
-     → gemini.ts: POST /api/gemini/chat { prompt, history, systemInstruction }
-     → server.ts: GoogleGenAI.generateContent() → Gemini API
-     → ответ { text } → POST /api/chats { role: "model", content: text }
-     → UI: обновляет список сообщений
+User → Клик на карточку скилла → spacedSkill = skill
+     → Отображение дерева файлов (SpaceFileTree) + Превью (SpaceFilePreview)
+     → Редактирование файла (SpaceFilePreview Inline Editor) → Ctrl+S
+     → api.ts: PUT /api/skills/:id { fileStructure } → Сохранение в Supabase
+     → Выбор файлов / папок → buildSelectionZip() → Генерация ZIP на клиенте
+     → Подсказки (SkillHintsPanel) → GET /api/skills/:id/hints → Быстрое копирование
 ```
-
-## Domain Logic Highlights
-
-- **Видимость промптов**: `isPublic: true` → виден всем; `isPublic: false` → только автору. Админ видит всё.
-- **promptOrigin**: `'own'` | `'web'` — определяет бейдж на карточке и вкладку фильтрации.
-- **imageLayoutType**: 6 вариантов — `single`, `slider`, `split-vertical`, `split-horizontal`, `split-1-2`, `merge-2-1` — влияют на рендер в PhotoCard и PhotoView.
-- **SubSections**: Промпт может содержать подсекции с отдельными текстами и изображениями.
-- **Категории**: Видны только создателю + категории от admin-uid (общие для всех).
 
 ## Cross-Cutting Concerns
 
-- **Error Handling**: try/catch в server.ts роутах → `res.status(500).json({ message })`. На клиенте — Toast компонент.
-- **Validation**: Минимальная — только наличие обязательных полей в роутах. Нет библиотек валидации.
-- **Security**: CORS не настроен (только localhost). Нет rate limiting. Пароли захешированы с помощью bcrypt. Доступ к резервному копированию и восстановлению закрыт авторизацией для роли admin.
-- **Performance**: Лимит тела запроса `50mb` для передачи base64 изображений. Vite HMR в dev.
-U p d a t e d  
- 
+- **Error Handling**: try/catch во всех API роутах → `res.status(500).json({ error })`. На клиенте — Toast-уведомления.
+- **Validation**: Проверка обязательных полей на стороне сервера и клиента.
+- **Security**: Токены хранятся в localStorage. Доступ к админ-панели и бэкапам строго для роли admin. Пароли захешированы bcrypt.
+- **Performance**: Лимит тела запроса `50mb` для передачи base64 изображений и файлов. Fixed IDE viewport без лишних reflows.

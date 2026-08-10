@@ -1,13 +1,13 @@
 # PromptVault — Project Context for Antigravity
 
 > Этот файл автоматически читается AGY при каждом старте сессии.
-> **Последнее обновление**: 2026-08-05 (актуально на эту дату — синхронизирован с реальными файлами проекта)
+> **Последнее обновление**: 2026-08-10 (актуально на эту дату — синхронизирован с реальными файлами проекта)
 
 ---
 
 ## 🗂️ Что это за проект?
 
-**PromptVault** — персональное fullstack веб-приложение для хранения и управления промптами для нейросетей.
+**PromptVault** — персональное fullstack веб-приложение для хранения и управления промптами для нейросетей, а также пакетами скиллов, агентов и MCP-серверов (Skills & AI Hub).
 ИИ-ассистент на базе Google Gemini API в данный момент **отключён** (в разработке).
 
 **Репозиторий**: `C:\Users\Alekin\Desktop\Проекты\superbasetest`
@@ -68,24 +68,29 @@ superbasetest/
 │
 ├── scripts/
 │   ├── migrateToSupabase.ts        ← Скрипт миграции JSON → Supabase (данные уже перенесены)
-│   └── create_skill_hints_table.sql ← SQL для создания таблицы skill_hints (выполнить в Supabase!)
+│   ├── create_skill_hints_table.sql ← SQL для создания таблицы skill_hints (выполнить в Supabase!)
+│   └── supabase_fix_schema.sql     ← SQL для адаптации типов и RLS
 │
 ├── Agent/                  ← Документация и планирование
 │   ├── MD_files/
-│   │   ├── PRD.md          ← ✅ Актуально (2026-08-05)
-│   │   ├── DESIGN.md
-│   │   ├── ARCHITECTURE.md
-│   │   ├── SCHEMA.md       ← ✅ Актуально (2026-08-05) — snake_case колонки Supabase
-│   │   └── RULES.md
+│   │   ├── PRD.md          ← ✅ Актуально (2026-08-10)
+│   │   ├── DESIGN.md       ← ✅ Актуально (2026-08-10)
+│   │   ├── ARCHITECTURE.md ← ✅ Актуально (2026-08-10)
+│   │   ├── SCHEMA.md       ← ✅ Актуально (2026-08-10) — snake_case колонки Supabase
+│   │   ├── RULES.md        ← ✅ Актуально (2026-08-10)
+│   │   ├── DATABASE.md     ← ✅ Актуально (2026-08-10)
+│   │   ├── USER_MANAGEMENT.md ← ✅ Актуально (2026-08-10)
+│   │   └── project_structure.md ← ✅ Актуально (2026-08-10)
 │   └── plan/
-│       ├── plan.md         ← ✅ Актуально (2026-08-05)
-│       ├── plan_supabase.md         ← ✅ Актуально — все шаги выполнены, осталось git push
+│       ├── plan.md         ← ✅ Актуально (2026-08-10)
+│       ├── plan_supabase.md         ← ✅ Завершено
 │       ├── plan_skill_space.md      ← ✅ Завершено
-│       └── plan_skill_hints.md      ← ✅ Завершено (кроме SQL таблицы в Supabase)
+│       ├── plan_skill_hints.md      ← ✅ Завершено
+│       └── plan_file_system.md      ← ✅ Завершено
 │
 └── src/
     ├── main.tsx
-    ├── App.tsx             ← центральный state + навигация
+    ├── App.tsx             ← центральный state + навигация + табы ownership фильтров
     ├── types.ts
     ├── index.css
     │
@@ -104,8 +109,8 @@ superbasetest/
     │
     ├── hooks/
     │   ├── useHotkeys.ts
-    │   ├── usePromptFilters.ts
-    │   └── useSkillFilters.ts          ← Выделенная фильтрация для скиллов, типов ИИ и авторов
+    │   ├── usePromptFilters.ts         ← Фильтрация промптов (all, my-all, my-own, my-web, others)
+    │   └── useSkillFilters.ts          ← Фильтрация скиллов (all, my-all, my-own, my-web, others, ИИ платформы)
     │
     ├── sections/
     │   ├── admin/
@@ -126,17 +131,18 @@ superbasetest/
     │   └── skills/                      ← Раздел Пространств скиллов
     │       ├── SkillCard.tsx
     │       ├── SkillForm.tsx
-    │       ├── SkillSpaceView.tsx
+    │       ├── SkillSpaceView.tsx       ← IDE лейаут (h-screen), без скролла окна, сворачиваемое описание
     │       └── space/
     │           ├── SpaceFileTree.tsx     ← VS Code дерево файлов + чекбоксы
-    │           ├── SpaceFilePreview.tsx  ← Markdown/код превью + breadcrumb + inline editor
+    │           ├── SpaceFilePreview.tsx  ← Markdown/код превью + breadcrumb + inline editor (Ctrl+S)
     │           ├── SpaceContextMenu.tsx  ← ПКМ glassmorphism меню
     │           ├── SpaceSelectionBar.tsx ← Плавающая панель выделения
     │           └── SkillHintsPanel.tsx   ← Панель подсказок-промптов к скиллу
     │
     ├── services/
     │   ├── api.ts
-    │   └── gemini.ts
+    │   ├── gemini.ts
+    │   └── supabaseServer.ts
     │
     └── utils/
         ├── cn.ts
@@ -164,6 +170,7 @@ FileNode       { name, path, type:'file'|'directory', content?, size?, children?
 Category       { id, userId, name, emoji, color }
 ChatMessage    { id, promptId, userId, role:'user'|'model', content, image?, createdAt }
 MediaType      'photo' | 'video' | 'text' | 'music'
+SourceFilter   'all' | 'my-all' | 'my-own' | 'my-web' | 'others'
 AssistantConfig { systemPrompt }
 ```
 
@@ -213,9 +220,16 @@ AssistantConfig { systemPrompt }
 - Пароли: bcrypt (`$2b$` hash) в Supabase `users` table
 - Auth: Bearer токен = `uid`. Хранится в localStorage (`pv_token`/`pv_user`).
 
+### Фильтры источников (Ownership)
+- **Все (+ чужие)** (`'all'`): все записи в базе данных.
+- **Все мои** (`'my-all'`): все материалы текущего пользователя (Авторские + Из сети).
+- **Мои (Авторские)** (`'my-own'`): материалы пользователя со статусом `promptOrigin !== 'web'` / `skillOrigin !== 'web'`.
+- **Мои (Из сети)** (`'my-web'`): материалы пользователя со статусом `web`.
+- **Чужие (Публичные)** (`'others'`): публичные материалы других пользователей (`userId !== currentUser.uid`).
+
 ### Навигация в App.tsx
 - **Промпты**: `viewingPrompt: Prompt | null`, `editingPrompt`, `isFormOpen: boolean`
-- **Скиллы**: `spacedSkill: SkillPackage | null`
+- **Скиллы**: `spacedSkill: SkillPackage | null`, `viewingSkill`, `editingSkill`
 - **Разделы**: `activeSection: 'prompts' | 'skills' | 'admin'`
 - Навигация реализована исключительно через state (без react-router).
 
@@ -228,7 +242,8 @@ AssistantConfig { systemPrompt }
 - Supabase Storage (2 бакета: prompt-images, prompt-files)
 - `vercel.json` создан
 - `api/index.ts` создан (Vercel Serverless adapter)
-- Skill Hints + Inline File Editor реализованы
+- Skill Hints + Inline File Editor + Fixed IDE Layout реализованы
+- Расширенная система фильтров источников (Все + чужие, Все мои, Авторские, Из сети, Чужие)
 
 ### ❗ Осталось 3 шага (вручную):
 1. **Supabase**: выполнить `scripts/create_skill_hints_table.sql` в SQL Editor
@@ -238,7 +253,7 @@ AssistantConfig { systemPrompt }
 ### Контекст Supabase (ТЕКУЩИЙ БЭКЕНД):
 - **Проект**: `evergarden` (FREE tier, PRODUCTION)
 - **URL**: `https://pubsalagmikwbdztjwhq.supabase.co`
-- **Таблицы**: `categories`, `prompts`, `chats`, `skills`, `users`, `user_favorites`, `skill_hints` (создать!)
+- **Таблицы**: `categories`, `prompts`, `chats`, `skills`, `users`, `user_favorites`, `skill_hints`
 - **Storage Buckets (PUBLIC)**: `prompt-images`, `prompt-files`
 
 ---

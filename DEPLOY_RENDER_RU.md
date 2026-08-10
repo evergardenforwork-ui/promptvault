@@ -1,35 +1,36 @@
-# 🚀 Развертывание PromptVault на Render.com
+# 🚀 Развертывание PromptVault на Render.com / Vercel
 
-Этот проект полностью подготовлен для деплоя на платформе Render. В нем уже настроен Express-сервер (`server.ts`), который будет раздавать собранное React-приложение.
+> 💡 **Рекомендация**: Основной платформой развертывания проекта является **Vercel** (Serverless Function через `api/index.ts` и `vercel.json`). Инструкция ниже сохранена для альтернативного деплоя на Render.com в виде Node.js веб-сервиса.
 
-## Шаг 1: Подготовка репозитория
-1. Скачайте проект (кнопка Export -> Download ZIP или Export to GitHub).
-2. Если скачали ZIP, распакуйте его, инициализируйте git (`git init`), сделайте коммит и запушьте в свой репозиторий на GitHub.
+---
 
-## Шаг 2: Создание Web Service на Render
-1. Зарегистрируйтесь или войдите на [Render.com](https://render.com).
-2. Нажмите **"New"** -> **"Web Service"**.
-3. Выберите **"Build and deploy from a Git repository"** и подключите свой репозиторий GitHub с проектом PromptVault.
+## Вариант 1: Деплой на Vercel (Основной)
 
-## Шаг 3: Настройка сервиса
-Заполните настройки следующим образом:
-* **Name**: `promptvault` (или любое другое)
-* **Region**: Выберите ближайший к вам (например, Frankfurt)
-* **Branch**: `main` (или ваша основная ветка)
-* **Runtime**: `Node`
-* **Build Command**: `npm install && npm run build`
-* **Start Command**: `npm run start` (или `node server.ts`)
+1. Зайдите на [vercel.com](https://vercel.com) и нажмите **Add New Project**.
+2. Импортируйте репозиторий GitHub `promptvault` (или `superbasetest`).
+3. Vercel автоматически применит настройки из `vercel.json`:
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+4. В разделе **Environment Variables** добавьте:
+   - `SUPABASE_URL`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `GEMINI_API_KEY`
+5. Нажмите **Deploy**.
 
-## Шаг 4: Переменные окружения (Environment Variables)
-Прокрутите вниз до раздела **Environment Variables** и добавьте следующие ключи (ключ для Gemini можно получить в Google AI Studio):
+---
 
-| Key | Value |
-| :--- | :--- |
-| `NODE_ENV` | `production` |
-| `GEMINI_API_KEY` | Ваш ключ от Google Gemini API |
+## Вариант 2: Деплой на Render.com (Резервный)
 
-*(Примечание: `PORT` Render подставит автоматически, его указывать не обязательно. База данных хранится локально в файлах в директории `/data`, поэтому никаких дополнительных баз данных настраивать не нужно).*
-
-## Шаг 5: Деплой
-Нажмите кнопку **"Create Web Service"**.
-Render начнет установку зависимостей, сборку проекта (Vite build) и запуск сервера. Через несколько минут ваше приложение будет доступно по ссылке вида `https://promptvault-xxxx.onrender.com`.
+1. Зарегистрируйтесь на [Render.com](https://render.com).
+2. Нажмите **New** -> **Web Service** и подключите репозиторий GitHub.
+3. Настройки:
+   - **Name**: `promptvault`
+   - **Runtime**: `Node`
+   - **Build Command**: `npm install && npm run build`
+   - **Start Command**: `npm run dev` (или `npx tsx server.ts`)
+4. **Environment Variables**:
+   - `NODE_ENV`: `production`
+   - `SUPABASE_URL`: URL вашего проекта Supabase
+   - `SUPABASE_SERVICE_ROLE_KEY`: Service role ключ Supabase
+   - `GEMINI_API_KEY`: API ключ Google Gemini
+5. Нажмите **Create Web Service**.

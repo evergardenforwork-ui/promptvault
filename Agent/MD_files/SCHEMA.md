@@ -1,7 +1,7 @@
 # SCHEMA.md — Database & API Schema
 
 > Полностью соответствует реальным данным проекта. Обновлять при изменении types.ts или server.ts.
-> **Последнее обновление**: 2026-08-05
+> **Последнее обновление**: 2026-08-10
 
 ## Database Tables & Relationships (ER Diagram)
 
@@ -47,6 +47,9 @@ erDiagram
         text title
         text description
         text category
+        text[] skill_types
+        text[] target_ais
+        text skill_origin
         text[] tags
         boolean is_public
         text file_package_url

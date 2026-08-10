@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FileText, Copy, Check, Download, ChevronRight, Edit, Eye, Save, X } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkFrontmatter from 'remark-frontmatter';
 import { FileNode } from '../../../types';
 import { cn } from '../../../utils/cn';
 import { downloadSingleFile } from '../../../utils/buildSelectionZip';
@@ -97,7 +98,7 @@ export default function SpaceFilePreview({ file, canEdit, onSaveFile }: SpaceFil
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Заголовок превью */}
-      <div className="px-5 py-3 border-b border-zinc-800/80 flex items-center justify-between gap-3 shrink-0 bg-zinc-950/50">
+      <div className="px-5 py-3 border-b border-zinc-800/80 flex items-center justify-between gap-3 shrink-0 bg-zinc-950/50 relative z-20">
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           {getFileIcon(file.name)}
           <div className="min-w-0">
@@ -195,22 +196,26 @@ export default function SpaceFilePreview({ file, canEdit, onSaveFile }: SpaceFil
         ) : hasContent ? (
           /* VIEW MODE */
           isMarkdown ? (
-            <div className="prose prose-invert prose-base max-w-none p-6 text-zinc-300
-              prose-p:leading-relaxed prose-p:mb-4
-              prose-headings:text-white prose-headings:font-bold prose-headings:tracking-tight prose-headings:mt-8 prose-headings:mb-4
-              prose-h1:text-2xl prose-h1:border-b prose-h1:border-zinc-800 prose-h1:pb-3
-              prose-h2:text-xl prose-h2:text-violet-200
-              prose-code:bg-zinc-800 prose-code:text-violet-300 prose-code:rounded prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm
-              prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-zinc-800 prose-pre:rounded-xl prose-pre:p-4
-              prose-a:text-violet-400 prose-a:no-underline hover:prose-a:underline
-              prose-strong:text-white
-              prose-blockquote:border-violet-500/50 prose-blockquote:bg-violet-950/20 prose-blockquote:rounded-r-xl prose-blockquote:py-2 prose-blockquote:px-4
-              prose-table:w-full prose-table:border-collapse prose-table:my-6
-              prose-th:border prose-th:border-zinc-700 prose-th:bg-zinc-900 prose-th:p-3 prose-th:text-left
-              prose-td:border prose-td:border-zinc-800 prose-td:p-3
-              prose-hr:border-zinc-800 prose-hr:my-8
-            ">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{file.content!}</ReactMarkdown>
+            <div className="w-full flex justify-center pb-12">
+              <div className="prose prose-invert prose-base max-w-3xl w-full p-6 text-zinc-300 font-sans antialiased
+                prose-p:leading-relaxed prose-p:mb-5
+                prose-headings:text-white prose-headings:font-bold prose-headings:tracking-tight
+                prose-h1:text-3xl prose-h1:border-b prose-h1:border-zinc-800 prose-h1:pb-4 prose-h1:mb-6 prose-h1:mt-8
+                prose-h2:text-2xl prose-h2:text-violet-100 prose-h2:mb-4 prose-h2:mt-10
+                prose-h3:text-lg prose-h3:text-violet-200 prose-h3:mb-3 prose-h3:mt-8
+                prose-code:bg-zinc-800/80 prose-code:text-violet-300 prose-code:font-mono prose-code:rounded prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-code:border prose-code:border-zinc-700/50
+                prose-pre:bg-[#1a1b26] prose-pre:border prose-pre:border-zinc-800 prose-pre:rounded-xl prose-pre:p-5 prose-pre:font-mono
+                prose-a:text-violet-400 prose-a:no-underline hover:prose-a:underline
+                prose-strong:text-white prose-strong:font-semibold
+                prose-blockquote:border-l-4 prose-blockquote:border-violet-500/60 prose-blockquote:bg-violet-500/5 prose-blockquote:rounded-r-xl prose-blockquote:py-3 prose-blockquote:px-5 prose-blockquote:my-6 prose-blockquote:not-italic
+                prose-table:w-full prose-table:border-collapse prose-table:my-8 prose-table:text-sm
+                prose-th:border prose-th:border-zinc-700 prose-th:bg-zinc-900 prose-th:p-3 prose-th:text-left prose-th:font-semibold
+                prose-td:border prose-td:border-zinc-800/80 prose-td:p-3
+                prose-hr:border-zinc-800/80 prose-hr:my-10
+                prose-li:my-1
+              ">
+                <ReactMarkdown remarkPlugins={[remarkGfm, remarkFrontmatter]}>{file.content!}</ReactMarkdown>
+              </div>
             </div>
           ) : (
             <pre className="text-xs font-mono text-zinc-300 bg-zinc-950/50 p-6 overflow-x-auto whitespace-pre-wrap leading-relaxed">

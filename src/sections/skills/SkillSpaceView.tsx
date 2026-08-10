@@ -86,6 +86,7 @@ export default function SkillSpaceView({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showHints, setShowHints] = useState(false);
   const [hintsCount, setHintsCount] = useState(0);
+  const [isDescExpanded, setIsDescExpanded] = useState(false);
 
   const canEdit = effectiveUser &&
     (effectiveUser.uid === skill.userId || effectiveUser.role === 'admin');
@@ -103,6 +104,7 @@ export default function SkillSpaceView({
     setSelectedPaths(new Set());
     setContextMenu(null);
     setShowHints(false);
+    setIsDescExpanded(false);
     const findFirst = (nodes: FileNode[]): FileNode | null => {
       for (const n of nodes) {
         if (n.type === 'file') return n;
@@ -265,11 +267,11 @@ export default function SkillSpaceView({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 8 }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
-      className="min-h-screen bg-[#09090b] flex flex-col"
+      className="h-screen max-h-screen overflow-hidden bg-[#09090b] flex flex-col"
       onClick={() => setContextMenu(null)}
     >
       {/* ШАПКА */}
-      <header className="sticky top-0 z-40 bg-gradient-to-r from-violet-950/30 via-zinc-950/80 to-zinc-950/80 backdrop-blur-xl border-b border-zinc-800/60 px-6 py-4">
+      <header className="shrink-0 bg-gradient-to-r from-violet-950/30 via-zinc-950/80 to-zinc-950/80 backdrop-blur-xl border-b border-zinc-800/60 px-6 py-3">
         <div className="max-w-[1800px] mx-auto flex items-center justify-between gap-4">
           {/* Левая часть: назад + мета */}
           <div className="flex items-center gap-4 min-w-0 flex-1">
@@ -288,7 +290,7 @@ export default function SkillSpaceView({
                 <Package className="w-5 h-5 text-violet-400" />
               </div>
               <div className="min-w-0 flex-1">
-                <h1 className="text-lg font-black tracking-tight text-white truncate" title={skill.title}>
+                <h1 className="text-base sm:text-lg font-black tracking-tight text-white truncate" title={skill.title}>
                   {skill.title}
                 </h1>
                 <div className="flex items-center gap-3 text-[11px] text-zinc-500 flex-wrap">
@@ -396,16 +398,34 @@ export default function SkillSpaceView({
           </div>
         </div>
 
-        {/* Описание */}
+        {/* Описание — компактное с кнопкой разворачивания */}
         {skill.description && (
-          <div className="max-w-[1800px] mx-auto mt-2 pl-[3.5rem]">
-            <p className="text-xs text-zinc-500 leading-relaxed max-w-3xl">{skill.description}</p>
+          <div className="max-w-[1800px] mx-auto mt-2 pl-0 sm:pl-[3.5rem] flex items-start gap-2">
+            <p
+              onClick={() => setIsDescExpanded(!isDescExpanded)}
+              className={cn(
+                "text-xs text-zinc-400 leading-relaxed max-w-4xl transition-all cursor-pointer select-none",
+                isDescExpanded ? "line-clamp-none max-h-36 overflow-y-auto pr-2" : "line-clamp-1"
+              )}
+              title={isDescExpanded ? "Нажмите, чтобы скрыть" : "Нажмите, чтобы развернуть"}
+            >
+              {skill.description}
+            </p>
+            {skill.description.length > 80 && (
+              <button
+                type="button"
+                onClick={() => setIsDescExpanded(!isDescExpanded)}
+                className="text-[10px] font-bold text-violet-400 hover:text-violet-300 shrink-0 cursor-pointer pt-0.5"
+              >
+                {isDescExpanded ? 'Свернуть' : 'Подробнее'}
+              </button>
+            )}
           </div>
         )}
       </header>
 
       {/* ТЕЛО: панели */}
-      <div className="flex flex-1 overflow-hidden" style={{ height: 'calc(100vh - 80px)' }}>
+      <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Левая панель — дерево файлов */}
         <div className="w-72 shrink-0 border-r border-zinc-800/60 bg-zinc-950/60 flex flex-col overflow-hidden">
           <div className="px-4 py-3 border-b border-zinc-800/60 flex items-center justify-between shrink-0">

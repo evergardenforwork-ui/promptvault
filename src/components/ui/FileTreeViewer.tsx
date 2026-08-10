@@ -5,6 +5,8 @@ import {
   Plus, FilePlus, FolderPlus, Trash2, Edit3, Save, Eye
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkFrontmatter from 'remark-frontmatter';
 import { downloadFile } from '../../utils/zipParser';
 
 interface FileTreeViewerProps {
@@ -619,8 +621,28 @@ export const FileTreeViewer: React.FC<FileTreeViewerProps> = ({
                 />
               ) : selectedFile.content !== undefined ? (
                 selectedFile.name.toLowerCase().endsWith('.md') ? (
-                  <div className="prose prose-invert prose-sm max-w-none text-gray-300">
-                    <ReactMarkdown>{selectedFile.content}</ReactMarkdown>
+                  <div className="w-full flex justify-center pb-8">
+                    <div className="prose prose-invert prose-base max-w-3xl w-full text-zinc-300 font-sans antialiased
+                      prose-p:leading-relaxed prose-p:mb-5
+                      prose-headings:text-white prose-headings:font-bold prose-headings:tracking-tight
+                      prose-h1:text-3xl prose-h1:border-b prose-h1:border-zinc-800 prose-h1:pb-4 prose-h1:mb-6 prose-h1:mt-8
+                      prose-h2:text-2xl prose-h2:text-violet-100 prose-h2:mb-4 prose-h2:mt-10
+                      prose-h3:text-lg prose-h3:text-violet-200 prose-h3:mb-3 prose-h3:mt-8
+                      prose-code:bg-zinc-800/80 prose-code:text-violet-300 prose-code:font-mono prose-code:rounded prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-code:border prose-code:border-zinc-700/50
+                      prose-pre:bg-[#1a1b26] prose-pre:border prose-pre:border-zinc-800 prose-pre:rounded-xl prose-pre:p-5 prose-pre:font-mono
+                      prose-a:text-violet-400 prose-a:no-underline hover:prose-a:underline
+                      prose-strong:text-white prose-strong:font-semibold
+                      prose-blockquote:border-l-4 prose-blockquote:border-violet-500/60 prose-blockquote:bg-violet-500/5 prose-blockquote:rounded-r-xl prose-blockquote:py-3 prose-blockquote:px-5 prose-blockquote:my-6 prose-blockquote:not-italic
+                      prose-table:w-full prose-table:border-collapse prose-table:my-8 prose-table:text-sm
+                      prose-th:border prose-th:border-zinc-700 prose-th:bg-zinc-900 prose-th:p-3 prose-th:text-left prose-th:font-semibold
+                      prose-td:border prose-td:border-zinc-800/80 prose-td:p-3
+                      prose-hr:border-zinc-800/80 prose-hr:my-10
+                      prose-ul:list-disc prose-ul:pl-6 prose-ul:my-5
+                      prose-ol:list-decimal prose-ol:pl-6 prose-ol:my-5
+                      prose-li:my-2 prose-li:pl-2
+                    ">
+                      <ReactMarkdown remarkPlugins={[remarkGfm, remarkFrontmatter]}>{selectedFile.content}</ReactMarkdown>
+                    </div>
                   </div>
                 ) : (
                   <pre className="text-xs font-mono text-gray-300 bg-gray-950 p-4 rounded-xl border border-gray-800 overflow-x-auto whitespace-pre-wrap">

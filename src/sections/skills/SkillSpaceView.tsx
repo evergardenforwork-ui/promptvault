@@ -97,7 +97,7 @@ export default function SkillSpaceView({
     if (!selectionMode) setSelectedPaths(new Set());
   }, [selectionMode]);
 
-  // Сброс при смене пакета
+  // Сброс при смене пакета и загрузка счетчика подсказок
   useEffect(() => {
     setSelectionMode(false);
     setSelectedPaths(new Set());
@@ -114,6 +114,18 @@ export default function SkillSpaceView({
       return null;
     };
     setActiveFile(findFirst(skill.fileStructure || []));
+
+    // Подгружаем кол-во подсказок
+    let isMounted = true;
+    api.getSkillHints(skill.id)
+      .then(hints => {
+        if (isMounted) setHintsCount(hints.length);
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
   }, [skill.id]);
 
   const handleFileClick = useCallback((node: FileNode) => {
@@ -157,19 +169,31 @@ export default function SkillSpaceView({
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      addToast(`Скачано ${selectedPaths.size} файлов`);
+      addToast(`Скачан архив с ${selectedPaths.size} элементами`);
     } catch {
-      addToast('Ошибка создания ZIP', 'error');
+      addToast('Ошибка при создании архива', 'error');
     }
   };
 
   const handleDownloadAll = async () => {
-    if (!skill.filePackageUrl) {
+    if (skill.filePackageUrl) {
+      const a = document.createElement('a');
+      a.href = skill.filePackageUrl;
+      a.download = `${skill.title}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      addToast('Архив скачан');
+    } else {
+      const allPaths = new Set(
+        (skill.fileStructure || []).flatMap(getAllPathsInFolder)
+      );
+      if (allPaths.size === 0) {
+        addToast('В пакете нет файлов для скачивания', 'error');
+        return;
+      }
       try {
-        const blob = await buildSelectionZip(
-          skill.fileStructure || [],
-          new Set(getAllAllPaths(skill.fileStructure || []))
-        );
+        const blob = await buildSelectionZip(skill.fileStructure || [], allPaths);
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -180,23 +204,16 @@ export default function SkillSpaceView({
         URL.revokeObjectURL(url);
         addToast('Архив скачан');
       } catch {
-        addToast('Ошибка создания ZIP', 'error');
+        addToast('Ошибка при создании архива', 'error');
       }
-    } else {
-      window.open(skill.filePackageUrl, '_blank');
     }
   };
 
-  function getAllAllPaths(nodes: FileNode[]): string[] {
-    return nodes.flatMap(n => n.type === 'file' ? [n.path] : getAllAllPaths(n.children || []));
-  }
-
-  // ─── Inline File Editor ────────────────────────────────────────────────────
-
+  // Сохранение отредактированного файла
   const handleSaveFile = async (path: string, newContent: string) => {
-    const updatedStructure = updateFileContent(skill.fileStructure || [], path, newContent);
     try {
-      const updated = await api.updateSkill(skill.id, { fileStructure: updatedStructure });
+      const updatedStructure = updateFileContent(skill.fileStructure || [], path, newContent);
+      await api.updateSkill(skill.id, { fileStructure: updatedStructure });
       onSkillUpdated({ ...skill, fileStructure: updatedStructure });
       // Обновляем активный файл локально
       setActiveFile(prev => prev?.path === path ? { ...prev, content: newContent } : prev);
@@ -253,9 +270,9 @@ export default function SkillSpaceView({
     >
       {/* ШАПКА */}
       <header className="sticky top-0 z-40 bg-gradient-to-r from-violet-950/30 via-zinc-950/80 to-zinc-950/80 backdrop-blur-xl border-b border-zinc-800/60 px-6 py-4">
-        <div className="max-w-[1800px] mx-auto flex flex-wrap items-center justify-between gap-4">
+        <div className="max-w-[1800px] mx-auto flex items-center justify-between gap-4">
           {/* Левая часть: назад + мета */}
-          <div className="flex items-center gap-4 min-w-0">
+          <div className="flex items-center gap-4 min-w-0 flex-1">
             <button
               onClick={onBack}
               className="flex items-center gap-2 px-3 py-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-xl transition-all cursor-pointer shrink-0"
@@ -266,12 +283,14 @@ export default function SkillSpaceView({
 
             <div className="w-px h-6 bg-zinc-800 shrink-0" />
 
-            <div className="flex items-center gap-3 min-w-0">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
               <div className="p-2 bg-violet-500/10 border border-violet-500/20 rounded-xl shrink-0">
                 <Package className="w-5 h-5 text-violet-400" />
               </div>
-              <div className="min-w-0">
-                <h1 className="text-lg font-black tracking-tight text-white truncate">{skill.title}</h1>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg font-black tracking-tight text-white truncate" title={skill.title}>
+                  {skill.title}
+                </h1>
                 <div className="flex items-center gap-3 text-[11px] text-zinc-500 flex-wrap">
                   <span className="flex items-center gap-1">
                     <Tag className="w-3 h-3" />{skill.category}
@@ -295,8 +314,8 @@ export default function SkillSpaceView({
 
             {/* Теги */}
             {skill.tags?.length > 0 && (
-              <div className="hidden lg:flex items-center gap-1.5 flex-wrap">
-                {skill.tags.slice(0, 4).map(t => (
+              <div className="hidden xl:flex items-center gap-1.5 flex-wrap shrink-0">
+                {skill.tags.slice(0, 3).map(t => (
                   <span key={t} className="px-2 py-0.5 bg-zinc-800/80 text-zinc-500 text-[10px] font-semibold rounded-full border border-zinc-700/40">
                     #{t}
                   </span>
@@ -311,14 +330,16 @@ export default function SkillSpaceView({
             <button
               onClick={() => setShowHints(true)}
               className={cn(
-                'flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer',
-                'bg-amber-500/10 text-amber-400 border-amber-500/25 hover:bg-amber-500/20 hover:border-amber-400/40'
+                'flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer',
+                showHints
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                  : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-amber-300 hover:border-amber-500/30 hover:bg-amber-500/10'
               )}
             >
-              <Lightbulb className="w-3.5 h-3.5" />
-              Подсказки
+              <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
+              <span>Подсказки</span>
               {hintsCount > 0 && (
-                <span className="bg-amber-500/30 text-amber-300 text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
                   {hintsCount}
                 </span>
               )}
@@ -327,29 +348,29 @@ export default function SkillSpaceView({
             <button
               onClick={() => setSelectionMode(!selectionMode)}
               className={cn(
-                'flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer',
+                'flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer',
                 selectionMode
                   ? 'bg-violet-500/20 text-violet-300 border-violet-500/40 hover:bg-violet-500/30'
                   : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white hover:border-zinc-700'
               )}
             >
               <CheckSquare className="w-3.5 h-3.5" />
-              {selectionMode ? 'Выход из выбора' : 'Выбрать файлы'}
+              <span>{selectionMode ? 'Выход из выбора' : 'Выбрать файлы'}</span>
             </button>
 
             <button
               onClick={handleDownloadAll}
-              className="flex items-center gap-2 px-4 py-2 text-xs font-bold bg-zinc-900 text-zinc-400 border border-zinc-800 hover:text-white hover:border-zinc-700 rounded-xl transition-all cursor-pointer"
+              className="flex items-center gap-2 px-3.5 py-2 text-xs font-bold bg-zinc-900 text-zinc-400 border border-zinc-800 hover:text-white hover:border-zinc-700 rounded-xl transition-all cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
-              Скачать всё
+              <span>Скачать всё</span>
             </button>
 
             {canEdit && (
               <>
                 <button
                   onClick={onEdit}
-                  className="p-2.5 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-xl transition-all cursor-pointer"
+                  className="p-2.5 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-xl transition-all cursor-pointer border border-transparent hover:border-zinc-700"
                   title="Редактировать"
                 >
                   <Edit className="w-4 h-4" />
@@ -364,7 +385,7 @@ export default function SkillSpaceView({
                 ) : (
                   <button
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="p-2.5 text-zinc-500 hover:text-red-400 hover:bg-red-950/30 rounded-xl transition-all cursor-pointer"
+                    className="p-2.5 text-zinc-500 hover:text-red-400 hover:bg-red-950/30 rounded-xl transition-all cursor-pointer border border-transparent hover:border-red-500/20"
                     title="Удалить"
                   >
                     <Trash2 className="w-4 h-4" />

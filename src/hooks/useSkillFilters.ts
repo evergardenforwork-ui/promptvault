@@ -3,7 +3,7 @@ import { SkillPackage, User, SKILL_TYPE_OPTIONS, TARGET_AI_OPTIONS } from '../ty
 
 export function useSkillFilters(skills: SkillPackage[], user: User | null) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSkillType, setSelectedSkillType] = useState<string>('all');
+  const [selectedSkillTypes, setSelectedSkillTypes] = useState<string[]>([]);
   const [selectedTargetAi, setSelectedTargetAi] = useState<string>('all');
   const [sourceFilter, setSourceFilter] = useState<'all' | 'my-own' | 'my-web' | 'others'>('all');
   const [sortBy, setSortBy] = useState<'date' | 'name'>('date');
@@ -31,10 +31,11 @@ export function useSkillFilters(skills: SkillPackage[], user: User | null) {
         if (skill.userId === user?.uid) return false;
       }
 
-      // 3. Тип скилла
-      if (selectedSkillType !== 'all') {
-        if (!skill.skillTypes || !skill.skillTypes.includes(selectedSkillType)) {
-          return false;
+      // 3. Тип скилла (AND логика: должны присутствовать все выбранные типы)
+      if (selectedSkillTypes.length > 0) {
+        if (!skill.skillTypes) return false;
+        for (const reqType of selectedSkillTypes) {
+          if (!skill.skillTypes.includes(reqType)) return false;
         }
       }
 
@@ -53,7 +54,7 @@ export function useSkillFilters(skills: SkillPackage[], user: User | null) {
         return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
       }
     });
-  }, [skills, searchQuery, selectedSkillType, selectedTargetAi, sourceFilter, sortBy, user]);
+  }, [skills, searchQuery, selectedSkillTypes, selectedTargetAi, sourceFilter, sortBy, user]);
 
   const counts = useMemo(() => {
     const all = skills.length;
@@ -83,18 +84,18 @@ export function useSkillFilters(skills: SkillPackage[], user: User | null) {
 
   const resetFilters = () => {
     setSearchQuery('');
-    setSelectedSkillType('all');
+    setSelectedSkillTypes([]);
     setSelectedTargetAi('all');
     setSourceFilter('all');
   };
 
-  const isFiltered = searchQuery !== '' || selectedSkillType !== 'all' || selectedTargetAi !== 'all' || sourceFilter !== 'all';
+  const isFiltered = searchQuery !== '' || selectedSkillTypes.length > 0 || selectedTargetAi !== 'all' || sourceFilter !== 'all';
 
   return {
     searchQuery,
     setSearchQuery,
-    selectedSkillType,
-    setSelectedSkillType,
+    selectedSkillTypes,
+    setSelectedSkillTypes,
     selectedTargetAi,
     setSelectedTargetAi,
     sourceFilter,

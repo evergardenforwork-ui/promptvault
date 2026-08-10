@@ -519,10 +519,10 @@ export default function App() {
                 <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
                   <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider shrink-0 mr-1">Тип:</span>
                   <button
-                    onClick={() => skillFilters.setSelectedSkillType('all')}
+                    onClick={() => skillFilters.setSelectedSkillTypes([])}
                     className={cn(
                       "px-3 py-1.5 text-xs font-bold rounded-xl border shrink-0 transition-all cursor-pointer flex items-center gap-1",
-                      skillFilters.selectedSkillType === 'all'
+                      skillFilters.selectedSkillTypes.length === 0
                         ? "bg-purple-600 text-white border-purple-500 font-black shadow-md shadow-purple-500/20"
                         : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-zinc-200"
                     )}
@@ -532,11 +532,15 @@ export default function App() {
                   </button>
                   {SKILL_TYPE_OPTIONS.map((opt) => {
                     const count = skillFilters.skillTypeCounts[opt.value] || 0;
-                    const active = skillFilters.selectedSkillType === opt.value;
+                    const active = skillFilters.selectedSkillTypes.includes(opt.value);
                     return (
                       <button
                         key={opt.value}
-                        onClick={() => skillFilters.setSelectedSkillType(active ? 'all' : opt.value)}
+                        onClick={() => skillFilters.setSelectedSkillTypes(
+                          active 
+                            ? skillFilters.selectedSkillTypes.filter((t) => t !== opt.value)
+                            : [...skillFilters.selectedSkillTypes, opt.value]
+                        )}
                         className={cn(
                           "px-3 py-1.5 text-xs font-bold rounded-xl border shrink-0 transition-all cursor-pointer flex items-center gap-1.5",
                           active

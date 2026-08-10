@@ -21,14 +21,14 @@ export type MediaType = 'photo' | 'video' | 'text' | 'music';
 
 /** Предустановленные типы скилл-пакетов (мультиселект) */
 export const SKILL_TYPE_OPTIONS = [
-  { value: 'skill',       label: 'Скилл',         emoji: '🧠' },
+  { value: 'skill',       label: 'Скилл',          emoji: '🧠' },
   { value: 'agent',       label: 'Агент',          emoji: '🤖' },
   { value: 'mcp',         label: 'MCP',            emoji: '🔌' },
-  { value: 'skill+agent', label: 'Скилл + Агент',  emoji: '⚡' },
-  { value: 'skill+mcp',   label: 'Скилл + MCP',    emoji: '🧩' },
-  { value: 'toolkit',     label: 'Toolkit',        emoji: '🛠️' },
+  { value: 'config',      label: 'Конфиг',         emoji: '⚙️' },
+  { value: 'rules',       label: 'Правила',        emoji: '📜' },
   { value: 'template',    label: 'Шаблон',         emoji: '📋' },
-  { value: 'other',       label: 'Другое',         emoji: '📦' },
+  { value: 'hooks',       label: 'Хуки',           emoji: '🪝' },
+  { value: 'other',       label: 'Разное',         emoji: '📦' },
 ] as const;
 
 export type SkillType = typeof SKILL_TYPE_OPTIONS[number]['value'];

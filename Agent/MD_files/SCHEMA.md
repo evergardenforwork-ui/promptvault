@@ -147,7 +147,7 @@ erDiagram
 | `title` | TEXT | Название набора |
 | `description` | TEXT | Описание |
 | `category` | TEXT | Категория (текст) |
-| `skill_types` | TEXT[] | Типы пакета (скилл, агент, mcp и т.д.) |
+| `skill_types` | TEXT[] | Типы пакета (Скилл, Агент, MCP, Конфиг, Правила, Шаблон, Хуки, Разное) |
 | `target_ais` | TEXT[] | Поддерживаемые ИИ (universal, claude, gemini, chatgpt, deepseek, cursor) |
 | `skill_origin` | TEXT | Источник: 'own' (Авторский) или 'web' (Из сети) |
 | `tags` | TEXT[] | Хештеги |

@@ -1,7 +1,7 @@
 # Plan: Skill Hints (Подсказки к скиллу) + Inline File Editor
 
 > Создано: 2026-08-04  
-> Статус: 📋 Запланировано — делать ПОСЛЕ миграции на Supabase
+> Статус: ✅ Завершено — (Supabase SQL миграция, Hints UI, Inline Editor готовы)
 
 ---
 

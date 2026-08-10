@@ -104,7 +104,8 @@ superbasetest/
     │
     ├── hooks/
     │   ├── useHotkeys.ts
-    │   └── usePromptFilters.ts
+    │   ├── usePromptFilters.ts
+    │   └── useSkillFilters.ts          ← Выделенная фильтрация для скиллов, типов ИИ и авторов
     │
     ├── sections/
     │   ├── admin/
@@ -154,8 +155,8 @@ Prompt         { id, userId, title, category, tags, subSections[], mainPrompt,
                  imageBefore?, imageAfter?, originalImage*, additionalImages[],
                  imageLayoutType?, isFavorite, isPublic, promptOrigin?,
                  authorName, authorEmail, usageCount, createdAt }
-SkillPackage   { id, userId, title, description, category, tags,
-                 fileStructure[], filePackageUrl?, isFavorite, isPublic,
+SkillPackage   { id, userId, title, description, category, skillTypes: string[], targetAis?: string[],
+                 tags, fileStructure[], filePackageUrl?, isFavorite, isPublic,
                  authorName, authorEmail, createdAt }
 SkillHint      { id, skillId, userId, title, text, createdAt }
 SubSection     { title, text, imageBefore?, imageAfter?, originalImage*, additionalImages?, imageLayoutType? }

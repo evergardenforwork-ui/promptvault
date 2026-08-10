@@ -13,3 +13,9 @@ CREATE TABLE IF NOT EXISTS public.skill_hints (
 -- Индексы для быстрого поиска
 CREATE INDEX IF NOT EXISTS idx_skill_hints_skill_id ON skill_hints(skill_id);
 CREATE INDEX IF NOT EXISTS idx_skill_hints_user_id ON skill_hints(user_id);
+
+-- Поле типов скилла (мультиселект: skill, agent, mcp и т.д.)
+ALTER TABLE public.skills ADD COLUMN IF NOT EXISTS skill_types TEXT[] DEFAULT '{}';
+
+-- Поле поддерживаемых ИИ платформ (targetAis)
+ALTER TABLE public.skills ADD COLUMN IF NOT EXISTS target_ais TEXT[] DEFAULT '{universal}';

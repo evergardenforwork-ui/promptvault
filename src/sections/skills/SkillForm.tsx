@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'motion/react';
-import { X, Package, Upload, Plus } from 'lucide-react';
-import { Category, SkillPackage, User } from '../../types';
+import { X, Package, Upload, Cpu } from 'lucide-react';
+import { Category, SkillPackage, User, SKILL_TYPE_OPTIONS, TARGET_AI_OPTIONS } from '../../types';
 import { parseZipFile } from '../../utils/zipParser';
 import { api } from '../../services/api';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
@@ -9,25 +9,22 @@ import { FileTreeViewer } from '../../components/ui/FileTreeViewer';
 
 interface SkillFormProps {
   skill: SkillPackage | null;
-  categories: Category[];
   onClose: () => void;
   onSave: () => void;
-  onAddCategory: () => void;
   user: User;
   addToast: (message: React.ReactNode, type?: 'success' | 'error') => void;
 }
 
 export default function SkillForm({
   skill,
-  categories,
   onClose,
   onSave,
-  onAddCategory,
   addToast,
 }: SkillFormProps) {
   const [title, setTitle] = useState(skill?.title || '');
   const [description, setDescription] = useState(skill?.description || '');
-  const [category, setCategory] = useState(skill?.category || categories[0]?.name || '');
+  const [skillTypes, setSkillTypes] = useState<string[]>(skill?.skillTypes || []);
+  const [targetAis, setTargetAis] = useState<string[]>(skill?.targetAis && skill.targetAis.length > 0 ? skill.targetAis : ['universal']);
   const [tags, setTags] = useState<string[]>(skill?.tags || []);
   const [tagInput, setTagInput] = useState('');
   const [fileStructure, setFileStructure] = useState<any[]>(skill?.fileStructure || []);
@@ -37,6 +34,25 @@ export default function SkillForm({
   const [showConfirmClose, setShowConfirmClose] = useState(false);
 
   const zipInputRef = useRef<HTMLInputElement>(null);
+
+  const toggleSkillType = (value: string) => {
+    setSkillTypes((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+    );
+  };
+
+  const toggleTargetAi = (value: string) => {
+    setTargetAis((prev) => {
+      if (value === 'universal') return ['universal'];
+      const filtered = prev.filter((v) => v !== 'universal');
+      if (filtered.includes(value)) {
+        const next = filtered.filter((v) => v !== value);
+        return next.length === 0 ? ['universal'] : next;
+      } else {
+        return [...filtered, value];
+      }
+    });
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -52,7 +68,6 @@ export default function SkillForm({
         addToast('Не удалось распарсить .ZIP файл', 'error');
       }
     } else {
-      // Это отдельный .md, .txt, .json или код файл
       try {
         const text = await file.text();
         const newFileNode: any = {
@@ -99,7 +114,9 @@ export default function SkillForm({
     const data = {
       title,
       description,
-      category,
+      category: skillTypes.length > 0 ? skillTypes.join(', ') : 'other',
+      skillTypes,
+      targetAis,
       tags,
       fileStructure,
       filePackageUrl,
@@ -153,7 +170,6 @@ export default function SkillForm({
         </div>
 
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6">
-          {/* Файловый конструктор Пространства */}
           <div className="p-6 bg-purple-950/20 border border-purple-800/40 rounded-3xl space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <label className="text-sm font-bold text-purple-300 uppercase tracking-wider flex items-center gap-2">
@@ -189,7 +205,6 @@ export default function SkillForm({
               onChange={handleFileUpload}
             />
 
-            {/* Встроенный интерактивный FileTreeViewer */}
             <div className="mt-2">
               <FileTreeViewer
                 files={fileStructure}
@@ -221,47 +236,115 @@ export default function SkillForm({
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-zinc-400">Категория</label>
-                <button type="button" onClick={onAddCategory} className="text-[10px] font-bold text-purple-400 hover:text-purple-300 uppercase tracking-widest cursor-pointer">
-                  + Создать
-                </button>
-              </div>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl py-4 px-6 focus:outline-none focus:border-purple-400 transition-all font-bold text-white cursor-pointer"
-              >
-                {categories.map((c) => (
-                  <option key={c.id} value={c.name}>
-                    {c.emoji} {c.name}
-                  </option>
-                ))}
-              </select>
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-zinc-400">
+              Тип пакета
+              {skillTypes.length > 0 && (
+                <span className="ml-2 text-purple-400 font-bold">
+                  ({skillTypes.length} выбрано)
+                </span>
+              )}
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {SKILL_TYPE_OPTIONS.map((opt) => {
+                const selected = skillTypes.includes(opt.value);
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => toggleSkillType(opt.value)}
+                    className={`
+                      relative flex items-center gap-2.5 px-4 py-3 rounded-2xl border text-sm font-bold
+                      transition-all duration-150 cursor-pointer text-left
+                      ${selected
+                        ? 'bg-purple-900/60 border-purple-500/80 text-purple-200 shadow-[0_0_12px_rgba(147,51,234,0.2)]'
+                        : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-purple-700/50 hover:text-white'
+                      }
+                    `}
+                  >
+                    <span className={`
+                      w-4 h-4 rounded-md border-2 flex items-center justify-center shrink-0 transition-all
+                      ${selected ? 'bg-purple-500 border-purple-500' : 'border-zinc-600'}
+                    `}>
+                      {selected && (
+                        <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 10 8" fill="none">
+                          <path d="M1 4l3 3 5-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      )}
+                    </span>
+                    <span className="text-base leading-none">{opt.emoji}</span>
+                    <span className="leading-tight">{opt.label}</span>
+                  </button>
+                );
+              })}
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-400">Теги</label>
-              <div className="min-h-[56px] bg-zinc-900 border border-zinc-800 rounded-2xl p-3 flex flex-wrap gap-2 content-start">
-                {tags.map((t) => (
-                  <span key={t} className="px-3 py-1 bg-purple-900/40 text-purple-300 border border-purple-700/50 text-xs font-bold rounded-full flex items-center gap-1.5">
-                    #{t}
-                    <button type="button" onClick={() => removeTag(t)} className="hover:text-white cursor-pointer">
-                      <X size={12} />
-                    </button>
-                  </span>
-                ))}
-                <input
-                  type="text"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={handleTagKeyDown}
-                  placeholder="Добавить тег..."
-                  className="bg-transparent border-none focus:outline-none text-sm font-medium flex-1 min-w-[80px] text-white"
-                />
-              </div>
+          {/* Поддерживаемый ИИ / Платформа */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-zinc-400 flex items-center gap-2">
+              <Cpu size={16} className="text-sky-400" />
+              <span>Поддерживаемый ИИ / Платформа</span>
+              {targetAis.length > 0 && (
+                <span className="ml-1 text-sky-400 font-bold">
+                  ({targetAis.includes('universal') ? 'Универсальный' : `${targetAis.length} выбрано`})
+                </span>
+              )}
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {TARGET_AI_OPTIONS.map((opt) => {
+                const selected = targetAis.includes(opt.value);
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => toggleTargetAi(opt.value)}
+                    className={`
+                      relative flex items-center gap-2.5 px-4 py-3 rounded-2xl border text-sm font-bold
+                      transition-all duration-150 cursor-pointer text-left
+                      ${selected
+                        ? 'bg-sky-950/60 border-sky-500/80 text-sky-200 shadow-[0_0_12px_rgba(56,189,248,0.2)]'
+                        : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-sky-700/50 hover:text-white'
+                      }
+                    `}
+                  >
+                    <span className={`
+                      w-4 h-4 rounded-md border-2 flex items-center justify-center shrink-0 transition-all
+                      ${selected ? 'bg-sky-400 border-sky-400 text-black' : 'border-zinc-600'}
+                    `}>
+                      {selected && (
+                        <svg className="w-2.5 h-2.5 text-black" viewBox="0 0 10 8" fill="none">
+                          <path d="M1 4l3 3 5-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      )}
+                    </span>
+                    <span className="text-base leading-none">{opt.emoji}</span>
+                    <span className="leading-tight">{opt.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-zinc-400">Теги</label>
+            <div className="min-h-[56px] bg-zinc-900 border border-zinc-800 rounded-2xl p-3 flex flex-wrap gap-2 content-start">
+              {tags.map((t) => (
+                <span key={t} className="px-3 py-1 bg-purple-900/40 text-purple-300 border border-purple-700/50 text-xs font-bold rounded-full flex items-center gap-1.5">
+                  #{t}
+                  <button type="button" onClick={() => removeTag(t)} className="hover:text-white cursor-pointer">
+                    <X size={12} />
+                  </button>
+                </span>
+              ))}
+              <input
+                type="text"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={handleTagKeyDown}
+                placeholder="Добавить тег..."
+                className="bg-transparent border-none focus:outline-none text-sm font-medium flex-1 min-w-[80px] text-white"
+              />
             </div>
           </div>
 

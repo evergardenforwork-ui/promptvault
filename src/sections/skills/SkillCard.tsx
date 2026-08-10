@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Package, Star, Calendar, User as UserIcon } from 'lucide-react';
-import { SkillPackage } from '../../types';
+import { Package, Star, Calendar, User as UserIcon, Cpu } from 'lucide-react';
+import { SkillPackage, SKILL_TYPE_OPTIONS, TARGET_AI_OPTIONS } from '../../types';
 import { cn } from '../../utils/cn';
 
 interface SkillCardProps {
@@ -52,11 +52,34 @@ export default function SkillCard({
       )}
     >
       <div className="space-y-3 min-w-0 flex-1">
-        <div className="flex items-center justify-between gap-2">
-          <span className="px-2.5 py-1 bg-purple-950/80 text-purple-300 border border-purple-800/40 text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center gap-1.5 shrink-0">
-            <Package className="w-3.5 h-3.5" />
-            <span>{skill.category}</span>
-          </span>
+        <div className="flex items-start justify-between gap-2 flex-wrap">
+          <div className="flex flex-wrap gap-1.5">
+            {skill.skillTypes && skill.skillTypes.length > 0 ? (
+              skill.skillTypes.map((st) => {
+                const opt = SKILL_TYPE_OPTIONS.find((o) => o.value === st);
+                return (
+                  <span key={st} className="px-2.5 py-1 bg-purple-950/80 text-purple-300 border border-purple-800/40 text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center gap-1.5 shrink-0">
+                    <span>{opt?.emoji ?? '📦'}</span>
+                    <span>{opt?.label ?? st}</span>
+                  </span>
+                );
+              })
+            ) : (
+              <span className="px-2.5 py-1 bg-purple-950/80 text-purple-300 border border-purple-800/40 text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center gap-1.5 shrink-0">
+                <Package className="w-3.5 h-3.5" />
+                <span>{skill.category || 'Скилл'}</span>
+              </span>
+            )}
+            {skill.targetAis && skill.targetAis.length > 0 && skill.targetAis.map((ai) => {
+              const opt = TARGET_AI_OPTIONS.find((o) => o.value === ai);
+              return (
+                <span key={ai} className="px-2.5 py-1 bg-sky-950/80 text-sky-300 border border-sky-800/40 text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center gap-1 shrink-0">
+                  <span>{opt?.emoji ?? '⚙️'}</span>
+                  <span>{opt?.label ?? ai}</span>
+                </span>
+              );
+            })}
+          </div>
           {effectiveUser && (
             <button
               onClick={(e) => {

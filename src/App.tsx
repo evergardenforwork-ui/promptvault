@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
-  Search, Plus, Menu, X, LayoutGrid, List, ChevronRight, ChevronDown as ChevronDownIcon
+  Search, Plus, Menu, X, LayoutGrid, List, ChevronRight, ChevronDown as ChevronDownIcon, Cpu
 } from 'lucide-react';
 import { AnimatePresence } from 'motion/react';
 import { api } from './services/api';
-import { Prompt, Category, User, MediaType } from './types';
+import { Prompt, Category, User, MediaType, SKILL_TYPE_OPTIONS, TARGET_AI_OPTIONS } from './types';
 import { cn } from './utils/cn';
 import { useHotkeys } from './hooks/useHotkeys';
 import { usePromptFilters } from './hooks/usePromptFilters';
+import { useSkillFilters } from './hooks/useSkillFilters';
 
 // Modular Component Imports
 import LoginForm from './components/auth/LoginForm';
@@ -283,6 +284,8 @@ export default function App() {
     sortBy,
   });
 
+  const skillFilters = useSkillFilters(skills, user);
+
   // Сброс пагинации при смене любого фильтра
   const prevFilterKey = useRef('');
   const filterKey = `${searchQuery}|${selectedCategory}|${showFavoritesOnly}|${sourceFilter}|${mediaFilter}|${sortBy}`;
@@ -392,9 +395,12 @@ export default function App() {
           <input 
             ref={searchInputRef}
             type="text" 
-            placeholder="Поиск промптов... (Ctrl+K)"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={activeSection === 'prompts' ? "Поиск промптов... (Ctrl+K)" : "Поиск скиллов, агентов, MCP... (Ctrl+K)"}
+            value={activeSection === 'prompts' ? searchQuery : skillFilters.searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              skillFilters.setSearchQuery(e.target.value);
+            }}
             className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl py-3 pl-12 pr-4 focus:outline-none focus:border-sky-400 transition-all text-sm text-white placeholder-zinc-500"
           />
         </div>
@@ -427,189 +433,358 @@ export default function App() {
       <main className="flex-1 px-6 py-8 overflow-y-auto">
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Filters Bar */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-zinc-900 pb-4">
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Left group: Layout and Sort */}
-              <div className="flex items-center gap-2 shrink-0">
-                <button 
-                  onClick={() => setViewMode('grid')}
-                  className={cn("p-2.5 rounded-xl transition-all cursor-pointer", viewMode === 'grid' ? "bg-sky-400 text-black font-bold" : "bg-zinc-900 text-zinc-500 hover:text-zinc-300")}
-                  title="Сетка"
-                >
-                  <LayoutGrid size={18} />
-                </button>
-                <button 
-                  onClick={() => setViewMode('list')}
-                  className={cn("p-2.5 rounded-xl transition-all cursor-pointer", viewMode === 'list' ? "bg-sky-400 text-black font-bold" : "bg-zinc-900 text-zinc-500 hover:text-zinc-300")}
-                  title="Список"
-                >
-                  <List size={18} />
-                </button>
-                <div className="h-6 w-px bg-zinc-800 mx-1" />
-                <select 
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
-                  className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm text-zinc-400 focus:outline-none focus:border-sky-400 cursor-pointer"
-                >
-                  <option value="date" className="bg-zinc-900">Сначала новые</option>
-                  <option value="name" className="bg-zinc-900">По алфавиту</option>
-                  <option value="usage" className="bg-zinc-900">По популярности</option>
-                </select>
+          {activeSection === 'skills' ? (
+            <div className="flex flex-col gap-4 border-b border-zinc-900 pb-4">
+              {/* Upper row: Grid/List, Sort, Ownership Tabs, Reset */}
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  {/* View Mode & Sort */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button 
+                      onClick={() => setViewMode('grid')}
+                      className={cn("p-2.5 rounded-xl transition-all cursor-pointer", viewMode === 'grid' ? "bg-purple-500 text-white font-bold" : "bg-zinc-900 text-zinc-500 hover:text-zinc-300")}
+                      title="Сетка"
+                    >
+                      <LayoutGrid size={18} />
+                    </button>
+                    <button 
+                      onClick={() => setViewMode('list')}
+                      className={cn("p-2.5 rounded-xl transition-all cursor-pointer", viewMode === 'list' ? "bg-purple-500 text-white font-bold" : "bg-zinc-900 text-zinc-500 hover:text-zinc-300")}
+                      title="Список"
+                    >
+                      <List size={18} />
+                    </button>
+                    <div className="h-6 w-px bg-zinc-800 mx-1" />
+                    <select 
+                      value={skillFilters.sortBy}
+                      onChange={(e) => skillFilters.setSortBy(e.target.value as any)}
+                      className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm text-zinc-400 focus:outline-none focus:border-purple-500 cursor-pointer"
+                    >
+                      <option value="date" className="bg-zinc-900">Сначала новые</option>
+                      <option value="name" className="bg-zinc-900">По алфавиту</option>
+                    </select>
+                  </div>
+
+                  {/* Ownership Tabs */}
+                  <div className="flex bg-zinc-900/50 p-1 rounded-2xl border border-zinc-800 shrink-0">
+                    {[
+                      { id: 'all', name: 'Все', count: skillFilters.counts.all },
+                      { id: 'my-own', name: 'Мои (Авторские)', count: skillFilters.counts.own },
+                      { id: 'my-web', name: 'Мои (Из сети)', count: skillFilters.counts.web },
+                      { id: 'others', name: 'Чужие (Публичные)', count: skillFilters.counts.others }
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => skillFilters.setSourceFilter(tab.id as any)}
+                        className={cn(
+                          "px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5",
+                          skillFilters.sourceFilter === tab.id 
+                            ? "bg-purple-500 text-white font-black shadow-md shadow-purple-500/20" 
+                            : "text-zinc-400 hover:text-zinc-200"
+                        )}
+                      >
+                        <span>{tab.name}</span>
+                        <span className={cn(
+                          "text-[10px] px-1.5 py-0.5 rounded-md font-bold transition-colors",
+                          skillFilters.sourceFilter === tab.id
+                            ? "bg-white/20 text-white"
+                            : "bg-zinc-850 text-zinc-500"
+                        )}>
+                          {tab.count}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="text-sm text-zinc-550 font-medium shrink-0 flex items-center gap-3">
+                  {skillFilters.isFiltered && (
+                    <button
+                      onClick={() => {
+                        skillFilters.resetFilters();
+                        setSearchQuery('');
+                      }}
+                      className="flex items-center gap-1 text-purple-400 hover:text-purple-300 font-bold transition-colors cursor-pointer"
+                    >
+                      Сбросить фильтр <X size={12} />
+                    </button>
+                  )}
+                  <span>Найдено скиллов: <span className="text-white font-bold">{skillFilters.filteredSkills.length}</span></span>
+                </div>
               </div>
 
-              {/* Middle group: Ownership / Source Tabs */}
-              <div className="flex bg-zinc-900/50 p-1 rounded-2xl border border-zinc-800 shrink-0">
-                {[
-                  { id: 'all', name: 'Все', count: counts.all },
-                  { id: 'my-own', name: 'Мои (Авторские)', count: counts.own },
-                  { id: 'my-web', name: 'Мои (Из сети)', count: counts.web },
-                  { id: 'others', name: 'Чужие (Публичные)', count: counts.others }
-                ].map((tab) => (
+              {/* Lower row: Skill Types & Target AI filters */}
+              <div className="flex flex-col lg:flex-row gap-4 pt-2 border-t border-zinc-900/60">
+                {/* Skill Type Pills */}
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+                  <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider shrink-0 mr-1">Тип:</span>
                   <button
-                    key={tab.id}
-                    onClick={() => setSourceFilter(tab.id as any)}
+                    onClick={() => skillFilters.setSelectedSkillType('all')}
                     className={cn(
-                      "px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5",
-                      sourceFilter === tab.id 
-                        ? "bg-sky-400 text-black font-black shadow-md shadow-sky-400/10" 
-                        : "text-zinc-400 hover:text-zinc-200"
+                      "px-3 py-1.5 text-xs font-bold rounded-xl border shrink-0 transition-all cursor-pointer flex items-center gap-1",
+                      skillFilters.selectedSkillType === 'all'
+                        ? "bg-purple-600 text-white border-purple-500 font-black shadow-md shadow-purple-500/20"
+                        : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-zinc-200"
                     )}
                   >
-                    <span>{tab.name}</span>
-                    <span className={cn(
-                      "text-[10px] px-1.5 py-0.5 rounded-md font-bold transition-colors",
-                      sourceFilter === tab.id
-                        ? "bg-black/25 text-black"
-                        : "bg-zinc-850 text-zinc-500"
-                    )}>
-                      {tab.count}
-                    </span>
+                    <span>Все</span>
+                    <span className="text-[10px] bg-black/30 px-1.5 py-0.5 rounded-md">{skillFilters.skillTypeCounts.all}</span>
                   </button>
-                ))}
-              </div>
+                  {SKILL_TYPE_OPTIONS.map((opt) => {
+                    const count = skillFilters.skillTypeCounts[opt.value] || 0;
+                    const active = skillFilters.selectedSkillType === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        onClick={() => skillFilters.setSelectedSkillType(active ? 'all' : opt.value)}
+                        className={cn(
+                          "px-3 py-1.5 text-xs font-bold rounded-xl border shrink-0 transition-all cursor-pointer flex items-center gap-1.5",
+                          active
+                            ? "bg-purple-600 text-white border-purple-500 font-black shadow-md shadow-purple-500/20"
+                            : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-zinc-200"
+                        )}
+                      >
+                        <span>{opt.emoji}</span>
+                        <span>{opt.label}</span>
+                        {count > 0 && (
+                          <span className={cn("text-[10px] px-1.5 py-0.5 rounded-md", active ? "bg-white/20 text-white" : "bg-zinc-800 text-zinc-500")}>
+                            {count}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
 
-              {/* Media Type Tabs */}
-              <div className="flex bg-zinc-900/50 p-1 rounded-2xl border border-zinc-800 shrink-0">
-                {[
-                  { id: 'all', label: 'Все', count: mediaCounts.all },
-                  { id: 'photo', label: '📷', count: mediaCounts.photo },
-                  { id: 'video', label: '🎬', count: mediaCounts.video },
-                  { id: 'text', label: '📝', count: mediaCounts.text },
-                  { id: 'music', label: '🎵', count: mediaCounts.music },
-                ].map((tab) => (
+                {/* Target AI Pills */}
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+                  <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
+                    <Cpu size={13} className="text-sky-400" /> ИИ:
+                  </span>
                   <button
-                    key={tab.id}
-                    onClick={() => setMediaFilter(tab.id as any)}
-                    title={tab.id === 'all' ? 'Все типы' : tab.id === 'photo' ? 'Фото' : tab.id === 'video' ? 'Видео' : tab.id === 'text' ? 'Текст' : 'Музыка'}
+                    onClick={() => skillFilters.setSelectedTargetAi('all')}
                     className={cn(
-                      "px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1",
-                      mediaFilter === tab.id
-                        ? "bg-indigo-500 text-white font-black shadow-md shadow-indigo-500/20"
-                        : "text-zinc-400 hover:text-zinc-200"
+                      "px-3 py-1.5 text-xs font-bold rounded-xl border shrink-0 transition-all cursor-pointer flex items-center gap-1",
+                      skillFilters.selectedTargetAi === 'all'
+                        ? "bg-sky-500 text-black border-sky-400 font-black shadow-md shadow-sky-400/20"
+                        : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-zinc-200"
                     )}
                   >
-                    <span>{tab.label}</span>
-                    <span className={cn(
-                      "text-[10px] px-1.5 py-0.5 rounded-md font-bold transition-colors",
-                      mediaFilter === tab.id
-                        ? "bg-white/20 text-white"
-                        : "bg-zinc-850 text-zinc-500"
-                    )}>
-                      {tab.count}
-                    </span>
+                    <span>Все</span>
+                    <span className="text-[10px] bg-black/30 px-1.5 py-0.5 rounded-md">{skillFilters.targetAiCounts.all}</span>
                   </button>
-                ))}
+                  {TARGET_AI_OPTIONS.map((opt) => {
+                    const count = skillFilters.targetAiCounts[opt.value] || 0;
+                    const active = skillFilters.selectedTargetAi === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        onClick={() => skillFilters.setSelectedTargetAi(active ? 'all' : opt.value)}
+                        className={cn(
+                          "px-3 py-1.5 text-xs font-bold rounded-xl border shrink-0 transition-all cursor-pointer flex items-center gap-1.5",
+                          active
+                            ? "bg-sky-500 text-black border-sky-400 font-black shadow-md shadow-sky-400/20"
+                            : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-zinc-200"
+                        )}
+                      >
+                        <span>{opt.emoji}</span>
+                        <span>{opt.label}</span>
+                        {count > 0 && (
+                          <span className={cn("text-[10px] px-1.5 py-0.5 rounded-md", active ? "bg-black/25 text-black" : "bg-zinc-800 text-zinc-500")}>
+                            {count}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
+          ) : (
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-zinc-900 pb-4">
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Left group: Layout and Sort */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <button 
+                    onClick={() => setViewMode('grid')}
+                    className={cn("p-2.5 rounded-xl transition-all cursor-pointer", viewMode === 'grid' ? "bg-sky-400 text-black font-bold" : "bg-zinc-900 text-zinc-500 hover:text-zinc-300")}
+                    title="Сетка"
+                  >
+                    <LayoutGrid size={18} />
+                  </button>
+                  <button 
+                    onClick={() => setViewMode('list')}
+                    className={cn("p-2.5 rounded-xl transition-all cursor-pointer", viewMode === 'list' ? "bg-sky-400 text-black font-bold" : "bg-zinc-900 text-zinc-500 hover:text-zinc-300")}
+                    title="Список"
+                  >
+                    <List size={18} />
+                  </button>
+                  <div className="h-6 w-px bg-zinc-800 mx-1" />
+                  <select 
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as any)}
+                    className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm text-zinc-400 focus:outline-none focus:border-sky-400 cursor-pointer"
+                  >
+                    <option value="date" className="bg-zinc-900">Сначала новые</option>
+                    <option value="name" className="bg-zinc-900">По алфавиту</option>
+                    <option value="usage" className="bg-zinc-900">По популярности</option>
+                  </select>
+                </div>
 
-            {/* Right group: Categories Pills (Horizontal Scrolling container) */}
-            <div className="flex-1 min-w-0 flex items-center gap-2 justify-end lg:max-w-xl">
-              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth py-1 w-full" id="categories-scroll-container">
-                <button
-                  onClick={() => { setSelectedCategory(null); setSearchQuery(''); }}
-                  className={cn(
-                    "px-4 py-2 text-xs font-bold rounded-xl border shrink-0 transition-all cursor-pointer",
-                    (selectedCategory === null && !allTags.includes(searchQuery))
-                      ? "bg-sky-400 text-black border-sky-400 font-extrabold"
-                      : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-zinc-200"
-                  )}
-                >
-                  Все
-                </button>
-                {categories.map((cat) => (
+                {/* Middle group: Ownership / Source Tabs */}
+                <div className="flex bg-zinc-900/50 p-1 rounded-2xl border border-zinc-800 shrink-0">
+                  {[
+                    { id: 'all', name: 'Все', count: counts.all },
+                    { id: 'my-own', name: 'Мои (Авторские)', count: counts.own },
+                    { id: 'my-web', name: 'Мои (Из сети)', count: counts.web },
+                    { id: 'others', name: 'Чужие (Публичные)', count: counts.others }
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setSourceFilter(tab.id as any)}
+                      className={cn(
+                        "px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5",
+                        sourceFilter === tab.id 
+                          ? "bg-sky-400 text-black font-black shadow-md shadow-sky-400/10" 
+                          : "text-zinc-400 hover:text-zinc-200"
+                      )}
+                    >
+                      <span>{tab.name}</span>
+                      <span className={cn(
+                        "text-[10px] px-1.5 py-0.5 rounded-md font-bold transition-colors",
+                        sourceFilter === tab.id
+                          ? "bg-black/25 text-black"
+                          : "bg-zinc-850 text-zinc-500"
+                      )}>
+                        {tab.count}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Media Type Tabs */}
+                <div className="flex bg-zinc-900/50 p-1 rounded-2xl border border-zinc-800 shrink-0">
+                  {[
+                    { id: 'all', label: 'Все', count: mediaCounts.all },
+                    { id: 'photo', label: '📷', count: mediaCounts.photo },
+                    { id: 'video', label: '🎬', count: mediaCounts.video },
+                    { id: 'text', label: '📝', count: mediaCounts.text },
+                    { id: 'music', label: '🎵', count: mediaCounts.music },
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setMediaFilter(tab.id as any)}
+                      title={tab.id === 'all' ? 'Все типы' : tab.id === 'photo' ? 'Фото' : tab.id === 'video' ? 'Видео' : tab.id === 'text' ? 'Текст' : 'Музыка'}
+                      className={cn(
+                        "px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1",
+                        mediaFilter === tab.id
+                          ? "bg-indigo-500 text-white font-black shadow-md shadow-indigo-500/20"
+                          : "text-zinc-400 hover:text-zinc-200"
+                      )}
+                    >
+                      <span>{tab.label}</span>
+                      <span className={cn(
+                        "text-[10px] px-1.5 py-0.5 rounded-md font-bold transition-colors",
+                        mediaFilter === tab.id
+                          ? "bg-white/20 text-white"
+                          : "bg-zinc-850 text-zinc-500"
+                      )}>
+                        {tab.count}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right group: Categories Pills (Horizontal Scrolling container) */}
+              <div className="flex-1 min-w-0 flex items-center gap-2 justify-end lg:max-w-xl">
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth py-1 w-full" id="categories-scroll-container">
                   <button
-                    key={cat.id}
-                    onClick={() => { setSelectedCategory(cat.name); setSearchQuery(''); }}
+                    onClick={() => { setSelectedCategory(null); setSearchQuery(''); }}
                     className={cn(
                       "px-4 py-2 text-xs font-bold rounded-xl border shrink-0 transition-all cursor-pointer",
-                      selectedCategory === cat.name
-                        ? "bg-sky-400 text-black border-sky-400 font-extrabold shadow-md shadow-sky-400/10"
+                      (selectedCategory === null && !allTags.includes(searchQuery))
+                        ? "bg-sky-400 text-black border-sky-400 font-extrabold"
                         : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-zinc-200"
                     )}
                   >
-                    <span>{cat.emoji}</span> <span className="ml-1">{cat.name}</span>
+                    Все
                   </button>
-                ))}
+                  {categories.map((cat) => (
+                    <button
+                      key={cat.id}
+                      onClick={() => { setSelectedCategory(cat.name); setSearchQuery(''); }}
+                      className={cn(
+                        "px-4 py-2 text-xs font-bold rounded-xl border shrink-0 transition-all cursor-pointer",
+                        selectedCategory === cat.name
+                          ? "bg-sky-400 text-black border-sky-400 font-extrabold shadow-md shadow-sky-400/10"
+                          : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-zinc-200"
+                      )}
+                    >
+                      <span>{cat.emoji}</span> <span className="ml-1">{cat.name}</span>
+                    </button>
+                  ))}
 
-                {allTags.length > 0 && <div className="h-5 w-px bg-zinc-800 mx-1 shrink-0" />}
+                  {allTags.length > 0 && <div className="h-5 w-px bg-zinc-800 mx-1 shrink-0" />}
 
-                {allTags.map((tag) => (
+                  {allTags.map((tag) => (
+                    <button
+                      key={tag}
+                      onClick={() => { setSearchQuery(tag); setSelectedCategory(null); }}
+                      className={cn(
+                        "px-3.5 py-2 text-xs font-bold rounded-xl border shrink-0 transition-all cursor-pointer",
+                        searchQuery === tag
+                          ? "bg-indigo-400 text-black border-indigo-400 font-extrabold shadow-md shadow-indigo-400/10"
+                          : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-zinc-200"
+                      )}
+                    >
+                      #{tag}
+                    </button>
+                  ))}
+
                   <button
-                    key={tag}
-                    onClick={() => { setSearchQuery(tag); setSelectedCategory(null); }}
-                    className={cn(
-                      "px-3.5 py-2 text-xs font-bold rounded-xl border shrink-0 transition-all cursor-pointer",
-                      searchQuery === tag
-                        ? "bg-indigo-400 text-black border-indigo-400 font-extrabold shadow-md shadow-indigo-400/10"
-                        : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-zinc-200"
-                    )}
+                    onClick={() => setIsCategoryModalOpen(true)}
+                    className="px-3 py-2 text-xs font-bold rounded-xl border border-dashed border-zinc-800 hover:border-sky-400 hover:text-sky-400 text-zinc-500 shrink-0 transition-all cursor-pointer flex items-center gap-1.5 bg-zinc-900/40"
+                    title="Создать новую категорию"
                   >
-                    #{tag}
+                    <Plus size={13} /> Категория
                   </button>
-                ))}
-
-                <button
-                  onClick={() => setIsCategoryModalOpen(true)}
-                  className="px-3 py-2 text-xs font-bold rounded-xl border border-dashed border-zinc-800 hover:border-sky-400 hover:text-sky-400 text-zinc-500 shrink-0 transition-all cursor-pointer flex items-center gap-1.5 bg-zinc-900/40"
-                  title="Создать новую категорию"
-                >
-                  <Plus size={13} /> Категория
-                </button>
-              </div>
-              
-              <button
-                onClick={() => {
-                  const el = document.getElementById('categories-scroll-container');
-                  if (el) {
-                    const isEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 10;
-                    el.scrollTo({ left: isEnd ? 0 : el.scrollLeft + 150, behavior: 'smooth' });
-                  }
-                }}
-                className="p-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-zinc-400 hover:text-white shrink-0 cursor-pointer"
-                title="Прокрутить дальше"
-              >
-                <ChevronRight size={16} />
-              </button>
-            </div>
-
-            <div className="text-sm text-zinc-550 font-medium shrink-0 flex items-center gap-3">
-              {(searchQuery || selectedCategory || showFavoritesOnly || sourceFilter !== 'all' || mediaFilter !== 'all') && (
+                </div>
+                
                 <button
                   onClick={() => {
-                    setSearchQuery('');
-                    setSelectedCategory(null);
-                    setShowFavoritesOnly(false);
-                    setSourceFilter('all');
-                    setMediaFilter('all');
+                    const el = document.getElementById('categories-scroll-container');
+                    if (el) {
+                      const isEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 10;
+                      el.scrollTo({ left: isEnd ? 0 : el.scrollLeft + 150, behavior: 'smooth' });
+                    }
                   }}
-                  className="flex items-center gap-1 text-sky-400 hover:text-sky-300 font-bold transition-colors cursor-pointer"
+                  className="p-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-zinc-400 hover:text-white shrink-0 cursor-pointer"
+                  title="Прокрутить дальше"
                 >
-                  Сбросить фильтр <X size={12} />
+                  <ChevronRight size={16} />
                 </button>
-              )}
-              <span>Найдено: <span className="text-white font-bold">{filteredPrompts.length}</span></span>
+              </div>
+
+              <div className="text-sm text-zinc-550 font-medium shrink-0 flex items-center gap-3">
+                {(searchQuery || selectedCategory || showFavoritesOnly || sourceFilter !== 'all' || mediaFilter !== 'all') && (
+                  <button
+                    onClick={() => {
+                      setSearchQuery('');
+                      setSelectedCategory(null);
+                      setShowFavoritesOnly(false);
+                      setSourceFilter('all');
+                      setMediaFilter('all');
+                    }}
+                    className="flex items-center gap-1 text-sky-400 hover:text-sky-300 font-bold transition-colors cursor-pointer"
+                  >
+                    Сбросить фильтр <X size={12} />
+                  </button>
+                )}
+                <span>Найдено: <span className="text-white font-bold">{filteredPrompts.length}</span></span>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Prompt / Skill / Admin Grid */}
           {activeSection === 'admin' ? (
@@ -640,19 +815,17 @@ export default function App() {
               viewMode === 'grid' ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
             )}>
               <AnimatePresence mode="popLayout">
-                {skills
-                  .filter((s) => !searchQuery || s.title.toLowerCase().includes(searchQuery.toLowerCase()) || s.tags?.some(t => t.toLowerCase().includes(searchQuery.toLowerCase())))
-                  .map((skill) => (
-                    <SkillCard
-                      key={skill.id}
-                      skill={skill}
-                      viewMode={viewMode}
-                      searchQuery={searchQuery}
-                      onView={() => setSpacedSkill(skill)}
-                      onToggleFavorite={async () => handleToggleFavoriteSkill(skill.id)}
-                      effectiveUser={user}
-                    />
-                  ))}
+                {skillFilters.filteredSkills.map((skill) => (
+                  <SkillCard
+                    key={skill.id}
+                    skill={skill}
+                    viewMode={viewMode}
+                    searchQuery={skillFilters.searchQuery}
+                    onView={() => setSpacedSkill(skill)}
+                    onToggleFavorite={async () => handleToggleFavoriteSkill(skill.id)}
+                    effectiveUser={user}
+                  />
+                ))}
               </AnimatePresence>
             </div>
           )}
@@ -731,11 +904,9 @@ export default function App() {
         {isSkillFormOpen && (
           <SkillForm
             skill={editingSkill}
-            categories={categories}
             onClose={() => { setIsSkillFormOpen(false); setEditingSkill(null); }}
             onSave={() => { setIsSkillFormOpen(false); setEditingSkill(null); void loadData(); }}
-            onAddCategory={() => setIsCategoryModalOpen(true)}
-            user={user}
+            user={user!}
             addToast={addToast}
           />
         )}

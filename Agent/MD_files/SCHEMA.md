@@ -147,6 +147,8 @@ erDiagram
 | `title` | TEXT | Название набора |
 | `description` | TEXT | Описание |
 | `category` | TEXT | Категория (текст) |
+| `skill_types` | TEXT[] | Типы пакета (скилл, агент, mcp и т.д.) |
+| `target_ais` | TEXT[] | Поддерживаемые ИИ (universal, claude, gemini, chatgpt, deepseek, cursor) |
 | `tags` | TEXT[] | Хештеги |
 | `is_public` | BOOLEAN | Доступен ли всем |
 | `file_package_url` | TEXT? | Ссылка на ZIP |
@@ -294,6 +296,8 @@ erDiagram
 | `subSections` | `sub_sections` |
 | `authorName` | `author_name` |
 | `authorEmail` | `author_email` |
+| `skillTypes` | `skill_types` |
+| `targetAis` | `target_ais` |
 | `usageCount` | `usage_count` |
 | `createdAt` | `created_at` |
 | `isFavorite` | *(вычисляется из user_favorites)* |

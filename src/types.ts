@@ -19,6 +19,33 @@ export interface SubSection {
 
 export type MediaType = 'photo' | 'video' | 'text' | 'music';
 
+/** Предустановленные типы скилл-пакетов (мультиселект) */
+export const SKILL_TYPE_OPTIONS = [
+  { value: 'skill',       label: 'Скилл',         emoji: '🧠' },
+  { value: 'agent',       label: 'Агент',          emoji: '🤖' },
+  { value: 'mcp',         label: 'MCP',            emoji: '🔌' },
+  { value: 'skill+agent', label: 'Скилл + Агент',  emoji: '⚡' },
+  { value: 'skill+mcp',   label: 'Скилл + MCP',    emoji: '🧩' },
+  { value: 'toolkit',     label: 'Toolkit',        emoji: '🛠️' },
+  { value: 'template',    label: 'Шаблон',         emoji: '📋' },
+  { value: 'other',       label: 'Другое',         emoji: '📦' },
+] as const;
+
+export type SkillType = typeof SKILL_TYPE_OPTIONS[number]['value'];
+
+/** Предустановленные поддерживаемые ИИ / Платформы для скилла (мультиселект) */
+export const TARGET_AI_OPTIONS = [
+  { value: 'universal', label: 'Универсальный', emoji: '🌐' },
+  { value: 'claude',    label: 'Claude',        emoji: '🧡' },
+  { value: 'gemini',    label: 'Gemini',        emoji: '✨' },
+  { value: 'chatgpt',   label: 'ChatGPT',       emoji: '🟢' },
+  { value: 'deepseek',  label: 'DeepSeek',      emoji: '🐋' },
+  { value: 'cursor',    label: 'Cursor / IDE',  emoji: '💻' },
+  { value: 'other',     label: 'Другое',         emoji: '⚙️' },
+] as const;
+
+export type TargetAi = typeof TARGET_AI_OPTIONS[number]['value'];
+
 export interface FileNode {
   name: string;
   path: string;
@@ -66,6 +93,10 @@ export interface SkillPackage {
   title: string;
   description: string;
   category: string;
+  /** Типы пакета: skill, agent, mcp и т.д. (мультиселект) */
+  skillTypes: string[];
+  /** Поддерживаемые ИИ платформы: universal, claude, gemini, chatgpt, deepseek, cursor (мультиселект) */
+  targetAis?: string[];
   tags: string[];
   fileStructure: FileNode[];
   filePackageUrl?: string;

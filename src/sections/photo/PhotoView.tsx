@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
-  X, Edit, CopyPlus, Trash2, Share2,
+  X, Edit, CopyPlus, Trash2, Share2, Download,
   Copy, ChevronLeft, ChevronRight, Sparkles,
 } from 'lucide-react';
 import { Prompt, User } from '../../types';
@@ -58,6 +58,34 @@ export default function PhotoView({
     window.addEventListener('mouseup', onUp);
     return () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
   }, [sliderDragging]);
+
+  const handleDownloadMd = () => {
+    let mdContent = `# ${prompt.title}\n\n`;
+    if (prompt.category) mdContent += `**Категория**: ${prompt.category}\n`;
+    if (prompt.tags?.length) mdContent += `**Теги**: ${prompt.tags.join(', ')}\n`;
+    mdContent += `\n## Основной промпт\n\n${prompt.mainPrompt}\n`;
+
+    if (prompt.subSections && prompt.subSections.length > 0) {
+      prompt.subSections.forEach((s, i) => {
+        mdContent += `\n## ${s.title?.trim() || `Вариант ${i + 1}`}\n\n${s.text}\n`;
+      });
+    }
+
+    if (prompt.usageNotes) {
+      mdContent += `\n## Заметки\n\n${prompt.usageNotes}\n`;
+    }
+
+    const blob = new Blob([mdContent], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${prompt.title.replace(/[^a-zа-яё0-9]/gi, '_')}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    addToast('Файл .md скачан', 'success');
+  };
 
   const currentText = activeTab === 'main'
     ? prompt.mainPrompt
@@ -243,6 +271,7 @@ export default function PhotoView({
                     <button type="button" title="Удалить" onClick={() => setShowDeleteConfirm(true)} className="p-3 hover:bg-zinc-900 rounded-2xl text-zinc-400 hover:text-red-400 transition-all cursor-pointer"><Trash2 size={20} /></button>
                   </>
                 )}
+                <button type="button" title="Скачать как .md" onClick={handleDownloadMd} className="p-3 hover:bg-zinc-900 rounded-2xl text-zinc-400 hover:text-white transition-all cursor-pointer"><Download size={20} /></button>
                 <button type="button" title="Поделиться (JSON)" onClick={() => void shareJson()} className="p-3 hover:bg-zinc-900 rounded-2xl text-zinc-400 hover:text-white transition-all cursor-pointer"><Share2 size={20} /></button>
               </>
             )}

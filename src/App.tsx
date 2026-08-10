@@ -47,7 +47,7 @@ export default function App() {
   const [spacedSkill, setSpacedSkill] = useState<SkillPackage | null>(null);
   const [toasts, setToasts] = useState<{ id: number, message: React.ReactNode, type?: 'success' | 'error' }[]>([]);
   const [sortBy, setSortBy] = useState<'date' | 'name' | 'usage'>('date');
-  const [sourceFilter, setSourceFilter] = useState<'all' | 'my-own' | 'my-web' | 'others'>('all');
+  const [sourceFilter, setSourceFilter] = useState<'all' | 'my-all' | 'my-own' | 'my-web' | 'others'>('all');
   const [mediaFilter, setMediaFilter] = useState<'all' | MediaType>('all');
   const [visibleCount, setVisibleCount] = useState(24);
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -466,9 +466,10 @@ export default function App() {
                   </div>
 
                   {/* Ownership Tabs */}
-                  <div className="flex bg-zinc-900/50 p-1 rounded-2xl border border-zinc-800 shrink-0">
+                  <div className="flex bg-zinc-900/50 p-1 rounded-2xl border border-zinc-800 shrink-0 overflow-x-auto max-w-full">
                     {[
-                      { id: 'all', name: 'Все', count: skillFilters.counts.all },
+                      { id: 'all', name: 'Все (+ чужие)', count: skillFilters.counts.all },
+                      { id: 'my-all', name: 'Все мои', count: skillFilters.counts.myAll },
                       { id: 'my-own', name: 'Мои (Авторские)', count: skillFilters.counts.own },
                       { id: 'my-web', name: 'Мои (Из сети)', count: skillFilters.counts.web },
                       { id: 'others', name: 'Чужие (Публичные)', count: skillFilters.counts.others }
@@ -477,7 +478,7 @@ export default function App() {
                         key={tab.id}
                         onClick={() => skillFilters.setSourceFilter(tab.id as any)}
                         className={cn(
-                          "px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5",
+                          "px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shrink-0 whitespace-nowrap",
                           skillFilters.sourceFilter === tab.id 
                             ? "bg-purple-500 text-white font-black shadow-md shadow-purple-500/20" 
                             : "text-zinc-400 hover:text-zinc-200"
@@ -636,9 +637,10 @@ export default function App() {
                 </div>
 
                 {/* Middle group: Ownership / Source Tabs */}
-                <div className="flex bg-zinc-900/50 p-1 rounded-2xl border border-zinc-800 shrink-0">
+                <div className="flex bg-zinc-900/50 p-1 rounded-2xl border border-zinc-800 shrink-0 overflow-x-auto max-w-full">
                   {[
-                    { id: 'all', name: 'Все', count: counts.all },
+                    { id: 'all', name: 'Все (+ чужие)', count: counts.all },
+                    { id: 'my-all', name: 'Все мои', count: counts.myAll },
                     { id: 'my-own', name: 'Мои (Авторские)', count: counts.own },
                     { id: 'my-web', name: 'Мои (Из сети)', count: counts.web },
                     { id: 'others', name: 'Чужие (Публичные)', count: counts.others }
@@ -647,7 +649,7 @@ export default function App() {
                       key={tab.id}
                       onClick={() => setSourceFilter(tab.id as any)}
                       className={cn(
-                        "px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5",
+                        "px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shrink-0 whitespace-nowrap",
                         sourceFilter === tab.id 
                           ? "bg-sky-400 text-black font-black shadow-md shadow-sky-400/10" 
                           : "text-zinc-400 hover:text-zinc-200"

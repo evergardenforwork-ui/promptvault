@@ -5,7 +5,7 @@ export function useSkillFilters(skills: SkillPackage[], user: User | null) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSkillTypes, setSelectedSkillTypes] = useState<string[]>([]);
   const [selectedTargetAi, setSelectedTargetAi] = useState<string>('all');
-  const [sourceFilter, setSourceFilter] = useState<'all' | 'my-own' | 'my-web' | 'others'>('all');
+  const [sourceFilter, setSourceFilter] = useState<'all' | 'my-all' | 'my-own' | 'my-web' | 'others'>('all');
   const [sortBy, setSortBy] = useState<'date' | 'name'>('date');
 
   const filteredSkills = useMemo(() => {
@@ -23,7 +23,9 @@ export function useSkillFilters(skills: SkillPackage[], user: User | null) {
       }
 
       // 2. Источник (Ownership)
-      if (sourceFilter === 'my-own') {
+      if (sourceFilter === 'my-all') {
+        if (skill.userId !== user?.uid) return false;
+      } else if (sourceFilter === 'my-own') {
         if (skill.userId !== user?.uid || skill.skillOrigin === 'web') return false;
       } else if (sourceFilter === 'my-web') {
         if (skill.userId !== user?.uid || skill.skillOrigin !== 'web') return false;
@@ -57,11 +59,13 @@ export function useSkillFilters(skills: SkillPackage[], user: User | null) {
   }, [skills, searchQuery, selectedSkillTypes, selectedTargetAi, sourceFilter, sortBy, user]);
 
   const counts = useMemo(() => {
+    if (!user) return { all: 0, myAll: 0, own: 0, web: 0, others: 0 };
     const all = skills.length;
-    const own = skills.filter((s) => s.userId === user?.uid && s.skillOrigin !== 'web').length;
-    const web = skills.filter((s) => s.userId === user?.uid && s.skillOrigin === 'web').length;
-    const others = skills.filter((s) => s.userId !== user?.uid).length;
-    return { all, own, web, others };
+    const myAll = skills.filter((s) => s.userId === user.uid).length;
+    const own = skills.filter((s) => s.userId === user.uid && s.skillOrigin !== 'web').length;
+    const web = skills.filter((s) => s.userId === user.uid && s.skillOrigin === 'web').length;
+    const others = skills.filter((s) => s.userId !== user.uid).length;
+    return { all, myAll, own, web, others };
   }, [skills, user]);
 
   // Счётчики по типам скилла

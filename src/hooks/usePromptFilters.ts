@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Prompt, User, MediaType } from '../types';
 
 type SortBy = 'date' | 'name' | 'usage';
-type SourceFilter = 'all' | 'my-own' | 'my-web' | 'others';
+export type SourceFilter = 'all' | 'my-all' | 'my-own' | 'my-web' | 'others';
 type MediaFilter = 'all' | MediaType;
 
 interface UsePromptFiltersOptions {
@@ -21,6 +21,7 @@ interface UsePromptFiltersResult {
   allTags: string[];
   counts: {
     all: number;
+    myAll: number;
     own: number;
     web: number;
     others: number;
@@ -53,9 +54,10 @@ export function usePromptFilters({
   }, [prompts]);
 
   const counts = useMemo(() => {
-    if (!user) return { all: 0, own: 0, web: 0, others: 0 };
+    if (!user) return { all: 0, myAll: 0, own: 0, web: 0, others: 0 };
     return {
       all: prompts.length,
+      myAll: prompts.filter((p) => p.userId === user.uid).length,
       own: prompts.filter((p) => p.userId === user.uid && p.promptOrigin !== 'web').length,
       web: prompts.filter((p) => p.userId === user.uid && p.promptOrigin === 'web').length,
       others: prompts.filter((p) => p.userId !== user.uid).length,
@@ -96,7 +98,9 @@ export function usePromptFilters({
         const matchesFavorite = !showFavoritesOnly || p.isFavorite;
 
         let matchesSource = true;
-        if (sourceFilter === 'my-own') {
+        if (sourceFilter === 'my-all') {
+          matchesSource = p.userId === user?.uid;
+        } else if (sourceFilter === 'my-own') {
           matchesSource = p.userId === user?.uid && p.promptOrigin !== 'web';
         } else if (sourceFilter === 'my-web') {
           matchesSource = p.userId === user?.uid && p.promptOrigin === 'web';

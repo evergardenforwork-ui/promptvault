@@ -212,7 +212,9 @@ export default function SpaceFilePreview({ file, canEdit, onSaveFile }: SpaceFil
                 prose-th:border prose-th:border-zinc-700 prose-th:bg-zinc-900 prose-th:p-3 prose-th:text-left prose-th:font-semibold
                 prose-td:border prose-td:border-zinc-800/80 prose-td:p-3
                 prose-hr:border-zinc-800/80 prose-hr:my-10
-                prose-li:my-1
+                prose-ul:list-disc prose-ul:pl-6 prose-ul:my-5
+                prose-ol:list-decimal prose-ol:pl-6 prose-ol:my-5
+                prose-li:my-2 prose-li:pl-2
               ">
                 <ReactMarkdown remarkPlugins={[remarkGfm, remarkFrontmatter]}>{file.content!}</ReactMarkdown>
               </div>

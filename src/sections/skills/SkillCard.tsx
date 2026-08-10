@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Package, Star, Calendar, User as UserIcon, Cpu } from 'lucide-react';
-import { SkillPackage, SKILL_TYPE_OPTIONS, TARGET_AI_OPTIONS } from '../../types';
+import { SkillPackage, SKILL_TYPE_OPTIONS, TARGET_AI_OPTIONS, FileNode } from '../../types';
 import { cn } from '../../utils/cn';
 
 interface SkillCardProps {
@@ -35,7 +35,27 @@ export default function SkillCard({
     );
   };
 
-  const fileCount = skill.fileStructure?.length || 0;
+  const countNodes = (nodes: FileNode[]) => {
+    let dirs = 0;
+    let files = 0;
+    
+    const traverse = (n: FileNode[]) => {
+      for (const node of n) {
+        if (node.type === 'directory') {
+          dirs++;
+          if (node.children) traverse(node.children);
+        } else {
+          files++;
+        }
+      }
+    };
+    
+    traverse(nodes);
+    return { dirs, files };
+  };
+
+  const { dirs, files } = skill.fileStructure ? countNodes(skill.fileStructure) : { dirs: 0, files: 0 };
+  const total = dirs + files;
 
   return (
     <motion.div
@@ -118,7 +138,10 @@ export default function SkillCard({
       <div className="flex items-center justify-between pt-4 border-t border-zinc-800/80 text-xs text-zinc-500">
         <div className="flex items-center gap-2">
           <Package className="w-4 h-4 text-purple-400" />
-          <span className="font-mono text-purple-300 font-bold">{fileCount} файлов</span>
+          <span className="font-mono text-purple-300 font-bold">
+            {total} всего {dirs > 0 && <span className="text-zinc-500 font-normal">({dirs} папок, {files} файлов)</span>}
+            {dirs === 0 && files > 0 && <span className="text-zinc-500 font-normal">({files} файлов)</span>}
+          </span>
         </div>
         <div className="flex items-center gap-1 text-[10px] text-zinc-500">
           <Calendar className="w-3 h-3" />

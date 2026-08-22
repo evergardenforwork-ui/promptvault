@@ -70,6 +70,8 @@ promptvault/
 │   ├── sections/
 │   │   ├── admin/
 │   │   │   └── UsersSection.tsx  ← Панель управления пользователями
+│   │   ├── prompts/
+│   │   │   └── PromptsSection.tsx ← Сетка карточек + Toolbar фильтров + пагинация
 │   │   ├── photo/
 │   │   │   ├── PhotoCard.tsx      ← Карточка промпта в сетке
 │   │   │   ├── PhotoForm.tsx      ← Оркестратор формы (создание/редактирование)
@@ -77,6 +79,7 @@ promptvault/
 │   │   │   ├── form/              ← ImageSlotsSection, SubSectionsEditor
 │   │   │   └── view/              ← MiniLayoutPreview, CollapsibleText, AIAssistant
 │   │   └── skills/
+│   │       ├── SkillsSection.tsx  ← Сетка карточек + Toolbar фильтров типов/ИИ
 │   │       ├── SkillCard.tsx      ← Карточка скилла в сетке
 │   │       ├── SkillForm.tsx      ← Форма создания/редактирования пакета
 │   │       ├── SkillSpaceView.tsx ← Полноэкранный IDE-лейаут (h-screen, fixed viewport)

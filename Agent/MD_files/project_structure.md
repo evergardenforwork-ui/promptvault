@@ -55,9 +55,10 @@ promptvault/
     │   ├── layout/           # Sidebar.tsx
     │   └── ui/               # Toast, CategoryForm, ImageCropper, ConfirmDialog, FileTreeViewer
     └── sections/
-        ├── admin/            # UsersSection.tsx
+        ├── admin/            # UsersSection.tsx (управление пользователями)
+        ├── prompts/          # PromptsSection.tsx (сетка, тулбар фильтров, пагинация промптов)
         ├── photo/            # PhotoCard, PhotoForm, PhotoView, ImageSlotsSection, SubSectionsEditor
-        └── skills/           # SkillCard, SkillForm, SkillSpaceView, SpaceFileTree, SpaceFilePreview, SpaceContextMenu, SpaceSelectionBar, SkillHintsPanel
+        └── skills/           # SkillsSection, SkillCard, SkillForm, SkillSpaceView, SpaceFileTree, SpaceFilePreview, SpaceContextMenu, SpaceSelectionBar, SkillHintsPanel
 ```
 
 ---

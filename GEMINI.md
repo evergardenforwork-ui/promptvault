@@ -124,7 +124,10 @@ superbasetest/
     │   ├── admin/
     │   │   └── UsersSection.tsx
     │   │
-    │   ├── photo/                       ← Раздел промптов
+    │   ├── prompts/                     ← Раздел промптов (оркестрация и тулбар)
+    │   │   └── PromptsSection.tsx       ← Сетка карточек + Toolbar фильтров + пагинация
+    │   │
+    │   ├── photo/                       ← Компоненты промптов (карточки, формы, просмотр)
     │   │   ├── PhotoCard.tsx
     │   │   ├── PhotoForm.tsx
     │   │   ├── PhotoView.tsx            ← Включает заглушку "in development" для ИИ
@@ -137,6 +140,7 @@ superbasetest/
     │   │       └── MiniLayoutPreview.tsx
     │   │
     │   └── skills/                      ← Раздел Пространств скиллов
+    │       ├── SkillsSection.tsx        ← Сетка карточек + Toolbar фильтров типов/ИИ
     │       ├── SkillCard.tsx
     │       ├── SkillForm.tsx
     │       ├── SkillSpaceView.tsx       ← IDE лейаут (h-screen), без скролла окна, сворачиваемое описание

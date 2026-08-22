@@ -75,7 +75,7 @@ export interface User {
 - `FilterBar` компонент → `src/components/layout/FilterBar.tsx`
 - `PromptGrid` компонент → `src/components/layout/PromptGrid.tsx`
 
-**Статус**: ✅ Сделано — созданы `src/hooks/useHotkeys.ts` и `src/hooks/usePromptFilters.ts`. App.tsx очищен от ~70 строк инлайн-логики.
+**Статус**: ✅ Сделано — созданы `src/hooks/useHotkeys.ts`, `src/hooks/usePromptFilters.ts`, `src/hooks/useSkillFilters.ts`, а также полноценные изолированные секции `PromptsSection.tsx`, `SkillsSection.tsx` и `UsersSection.tsx`. `App.tsx` стал компактным оркестратором разделов (~350 строк).
 
 ---
 

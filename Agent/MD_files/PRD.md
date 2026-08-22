@@ -108,3 +108,5 @@ PromptVault — персональное fullstack веб-приложение �
 | Phase 4 — Cloud DB | Миграция на Supabase PostgreSQL + Storage | ✅ Готово |
 | Phase 5 — Skill Space | VS Code-подобный просмотрщик, Hints, Editor, Фильтры | ✅ Готово |
 | Phase 6 — Deploy | Vercel деплой, vercel.json + api/index.ts | 🔜 Готово к деплою |
+| Phase 7 — Modular Sections | Модульная архитектура (PromptsSection, SkillsSection, UsersSection), подготовка к Git проектам | ✅ Готово |
+| Phase 8 — Git Projects & Hub | Вкладка Git репозиториев, клонирование, коммиты | 📋 Запланировано |

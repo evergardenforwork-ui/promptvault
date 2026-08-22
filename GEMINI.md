@@ -54,6 +54,7 @@
 ```
 superbasetest/
 ├── GEMINI.md               ← Ты читаешь это сейчас
+├── CHANGELOG.md            ← 📜 Глобальный журнал изменений и Git-история (чекпоинты, теги)
 ├── server.ts               ← Express API + Vite dev-сервер (единый процесс, dev only)
 ├── api/
 │   └── index.ts            ← Express adapter для Vercel Serverless (production)
@@ -90,11 +91,11 @@ superbasetest/
 │   │   ├── USER_MANAGEMENT.md ← ✅ Актуально (2026-08-23)
 │   │   └── project_structure.md ← ✅ Актуально (2026-08-23)
 │   └── plan/
-│       ├── plan.md         ← ✅ Актуально (2026-08-23)
-│       ├── plan_supabase.md         ← ✅ Завершено
-│       ├── plan_skill_space.md      ← ✅ Завершено
-│       ├── plan_skill_hints.md      ← ✅ Завершено
-│       └── plan_file_system.md      ← ✅ Завершено
+│       ├── plan.md                 ← 🟡 Актуальный план и бэклог (2026-08-23)
+│       ├── plan_supabase.md        ← [✅ ВЫПОЛНЕНО]
+│       ├── plan_skill_space.md     ← [✅ ВЫПОЛНЕНО]
+│       ├── plan_skill_hints.md     ← [✅ ВЫПОЛНЕНО]
+│       └── plan_file_system.md     ← [✅ ВЫПОЛНЕНО]
 │
 └── src/
     ├── main.tsx
@@ -272,17 +273,22 @@ AssistantConfig { systemPrompt }
 - **Таблицы**: `categories`, `prompts`, `chats`, `skills`, `users`, `user_favorites`, `skill_hints`
 - **Storage Buckets (PUBLIC)**: `prompt-images`, `prompt-files`
 
----
+## 🤖 Инструкции для AGY и ИИ-Агентов
 
-## 🤖 Инструкции для AGY
+### 📚 С чего начинать читать проект (Порядок онбординга):
+1. **[`GEMINI.md`](GEMINI.md)** *(этот файл)* — текущий статус, стек, структура файлов и критические правила.
+2. **[`CHANGELOG.md`](CHANGELOG.md)** — контрольные точки (Git tags `v1.0-checkpoint` и др.) и история изменений.
+3. **[`Agent/MD_files/ARCHITECTURE.md`](Agent/MD_files/ARCHITECTURE.md)** & **[`SCHEMA.md`](Agent/MD_files/SCHEMA.md)** — архитектура модульных разделов (`PromptsSection`, `SkillsSection`, `UsersSection`), типы и Supabase DDL.
+4. **[`Agent/plan/plan.md`](Agent/plan/plan.md)** — актуальный бэклог задач. **НЕ читать** планы со статусом `[✅ ВЫПОЛНЕНО]` (`plan_supabase.md`, `plan_skill_space.md`, `plan_skill_hints.md`, `plan_file_system.md`).
 
 ### Обязательно перед любой задачей:
 1. Проверь `src/types.ts` — единый источник типов.
 2. API роуты добавляй ОДНОВРЕМЕННО в `server.ts` И `api/index.ts`.
 3. Используй `ConfirmDialog.tsx` вместо `window.confirm()`.
 4. Стили: Tailwind CSS v4 (без `tailwind.config.js`).
-5. Используй **навыки (skills)** при работе с Supabase! Читай `.agents/skills/supabase/SKILL.md`.
-6. Не раскрывай `.env` в коде или логах.
+5. Модульность: Новые вкладки/страницы создавай как изолированные секции в `src/sections/` (например, `src/sections/git/GitProjectsSection.tsx`), не раздувая `src/App.tsx`.
+6. Используй **навыки (skills)** при работе с Supabase! Читай `.agents/skills/supabase/SKILL.md`.
+7. Не раскрывай `.env` в коде или логах.
 
 ### Vite + Express:
 - Dev: `tsx server.ts` запускает оба (Express + Vite) в одном процессе.

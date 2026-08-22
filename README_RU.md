@@ -82,3 +82,28 @@
 - **Администратор**: `evergardenforwork@gmail.com` (полные права, управление пользователями, сброс паролей).
 - **Пароли**: защищены bcrypt-хэшированием в таблице `users`.
 - **Приватность**: `is_public = false` гарантирует видимость только автору и администратору.
+
+---
+
+## 🤖 Руководство по документации для ИИ-агентов и разработчиков
+
+### 📚 С чего начинать изучение проекта:
+1. **[`GEMINI.md`](GEMINI.md)** — контекст, стек, карта эндпоинтов и правила разработки.
+2. **[`CHANGELOG.md`](CHANGELOG.md)** — 📜 история версий, коммитов и контрольных точек (`v1.0-checkpoint`).
+3. **[`src/types.ts`](src/types.ts)** — единый источник TypeScript типов.
+4. **[`Agent/MD_files/ARCHITECTURE.md`](Agent/MD_files/ARCHITECTURE.md)** & **[`SCHEMA.md`](Agent/MD_files/SCHEMA.md)** — архитектура модульных разделов (`PromptsSection`, `SkillsSection`, `UsersSection`), типы и API.
+
+### 🟡 Справочная системная документация (`Agent/MD_files/`):
+- [`PRD.md`](Agent/MD_files/PRD.md) — Продуктовые требования и Roadmap
+- [`DESIGN.md`](Agent/MD_files/DESIGN.md) — Дизайн-система (токены, fixed IDE viewport, Tailwind v4)
+- [`DATABASE.md`](Agent/MD_files/DATABASE.md) — Схема Supabase PostgreSQL + Storage
+- [`RULES.md`](Agent/MD_files/RULES.md) — Стандарты кода и правила синхронизации API
+- [`USER_MANAGEMENT.md`](Agent/MD_files/USER_MANAGEMENT.md) — CLI и SQL управление пользователями
+- [`project_structure.md`](Agent/MD_files/project_structure.md) — Полная структура файлов и скриптов
+
+### 📅 Планы разработки (`Agent/plan/`):
+- **[`Agent/plan/plan.md`](Agent/plan/plan.md)** — 🟡 **АКТУАЛЬНЫЙ БЭКЛОГ** (Этапы 9–10, бэклог фич)
+- [`Agent/plan/plan_supabase.md`](Agent/plan/plan_supabase.md) — `[✅ ВЫПОЛНЕНО]` (не читать)
+- [`Agent/plan/plan_skill_space.md`](Agent/plan/plan_skill_space.md) — `[✅ ВЫПОЛНЕНО]` (не читать)
+- [`Agent/plan/plan_skill_hints.md`](Agent/plan/plan_skill_hints.md) — `[✅ ВЫПОЛНЕНО]` (не читать)
+- [`Agent/plan/plan_file_system.md`](Agent/plan/plan_file_system.md) — `[✅ ВЫПОЛНЕНО]` (не читать)

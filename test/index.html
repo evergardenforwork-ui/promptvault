@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Git Tools & AI Hub — Расширенный прототип</title>
+  <title>Git Tools & AI Hub — Прототип v2.1</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons CDN -->
@@ -55,8 +55,8 @@
 
   <!-- TOP NOTICE BANNER -->
   <div class="bg-gradient-to-r from-purple-900/40 via-sky-900/40 to-emerald-900/40 border-b border-white/10 px-4 py-2 text-center text-xs font-medium text-zinc-300 flex items-center justify-center gap-2">
-    <span class="px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-400 font-bold text-[10px] uppercase tracking-wider">Тестовый прототип v2.0</span>
-    <span>Добавлены: <b>Раскрывающиеся гайды по запуску</b>, <b>Детальное описание</b>, <b>Личные заметки</b>, <b>Умные теги</b> и <b>🪄 ИИ-автозаполнение (Gemini)</b>.</span>
+    <span class="px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-400 font-bold text-[10px] uppercase tracking-wider">Тестовый прототип v2.1</span>
+    <span>Добавлено: <b>Создание и управление собственными категориями</b> (кнопка «+ Категория» в тулбаре)!</span>
   </div>
 
   <!-- HEADER -->
@@ -124,12 +124,12 @@
     <div class="flex flex-col gap-4 border-b border-zinc-800/80 pb-5">
       <!-- Upper row: Categories & Pricing Filters -->
       <div class="flex flex-wrap items-center justify-between gap-4">
-        <!-- Category Tabs -->
+        <!-- Category Tabs & Add Category Button -->
         <div class="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-1" id="categoryFilterContainer">
           <!-- Populated by JS -->
         </div>
 
-        <!-- Counter & Tag Clear -->
+        <!-- Counter & Filter Clear -->
         <div class="text-xs text-zinc-400 font-medium flex items-center gap-3 shrink-0">
           <button 
             id="clearFiltersBtn"
@@ -183,7 +183,73 @@
 
   </main>
 
-  <!-- MODAL 1: ADD / EDIT PROJECT (MANUAL) -->
+  <!-- MODAL: ADD CUSTOM CATEGORY -->
+  <div id="categoryModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-[#121215] border border-zinc-800 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+      <div class="px-6 py-4 border-b border-zinc-800 flex items-center justify-between bg-[#18181c]">
+        <h3 class="text-base font-black text-white flex items-center gap-2">
+          <span>📁 Новая категория</span>
+        </h3>
+        <button id="closeCategoryModalBtn" class="p-2 hover:bg-zinc-800 rounded-xl text-zinc-400 hover:text-white transition-colors cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="categoryForm" class="p-6 space-y-4">
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Эмодзи иконка</label>
+          <div class="flex items-center gap-2">
+            <input 
+              id="catEmojiInput" 
+              type="text" 
+              value="⚡" 
+              maxlength="2" 
+              class="w-14 text-center bg-[#18181c] border border-zinc-800 rounded-xl py-2 text-xl text-white focus:outline-none focus:border-sky-400 font-bold"
+            />
+            <div class="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-1">
+              <button type="button" onclick="selectEmoji('🤖')" class="p-1.5 hover:bg-zinc-800 rounded-lg text-base cursor-pointer">🤖</button>
+              <button type="button" onclick="selectEmoji('🛠️')" class="p-1.5 hover:bg-zinc-800 rounded-lg text-base cursor-pointer">🛠️</button>
+              <button type="button" onclick="selectEmoji('🧠')" class="p-1.5 hover:bg-zinc-800 rounded-lg text-base cursor-pointer">🧠</button>
+              <button type="button" onclick="selectEmoji('📊')" class="p-1.5 hover:bg-zinc-800 rounded-lg text-base cursor-pointer">📊</button>
+              <button type="button" onclick="selectEmoji('🔒')" class="p-1.5 hover:bg-zinc-800 rounded-lg text-base cursor-pointer">🔒</button>
+              <button type="button" onclick="selectEmoji('🎨')" class="p-1.5 hover:bg-zinc-800 rounded-lg text-base cursor-pointer">🎨</button>
+              <button type="button" onclick="selectEmoji('⚡')" class="p-1.5 hover:bg-zinc-800 rounded-lg text-base cursor-pointer">⚡</button>
+              <button type="button" onclick="selectEmoji('🚀')" class="p-1.5 hover:bg-zinc-800 rounded-lg text-base cursor-pointer">🚀</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Название категории *</label>
+          <input 
+            id="catNameInput" 
+            type="text" 
+            required 
+            placeholder="например, Датасеты или Безопасность"
+            class="w-full bg-[#18181c] border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-sky-400 font-semibold"
+          />
+        </div>
+
+        <div class="pt-3 border-t border-zinc-800 flex items-center justify-end gap-3">
+          <button 
+            type="button" 
+            onclick="closeCategoryModal()" 
+            class="px-4 py-2 text-zinc-400 hover:text-white text-xs font-bold cursor-pointer"
+          >
+            Отмена
+          </button>
+          <button 
+            type="submit" 
+            class="px-5 py-2.5 bg-sky-400 hover:bg-sky-300 text-black font-black rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-sky-400/20 cursor-pointer"
+          >
+            Создать категорию
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD / EDIT PROJECT (MANUAL) -->
   <div id="projectFormModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
     <div class="bg-[#121215] border border-zinc-800 rounded-3xl w-full max-w-3xl max-h-[92vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
       
@@ -217,7 +283,7 @@
       <form id="projectForm" class="p-6 space-y-5 overflow-y-auto custom-scrollbar flex-1">
         <input type="hidden" id="formProjectId">
 
-        <!-- Title & Category -->
+        <!-- Title & Dynamic Category Select -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="md:col-span-2 space-y-1.5">
             <label class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Название инструмента *</label>
@@ -230,17 +296,15 @@
             />
           </div>
           <div class="space-y-1.5">
-            <label class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Категория</label>
+            <label class="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center justify-between">
+              <span>Категория</span>
+              <button type="button" onclick="openCategoryModal()" class="text-[10px] text-sky-400 hover:underline cursor-pointer">+ Новая</button>
+            </label>
             <select 
               id="formCategory" 
               class="w-full bg-[#18181c] border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-zinc-300 focus:outline-none focus:border-sky-400 transition-all cursor-pointer"
             >
-              <option value="agents">🤖 ИИ Агенты</option>
-              <option value="tools">🛠️ Тулзы & CLI</option>
-              <option value="models">🧠 Модели & LLM</option>
-              <option value="media">🎬 Видео / Аудио / Фото</option>
-              <option value="scrapers">🌐 Скраперы & API</option>
-              <option value="other">📦 Другое</option>
+              <!-- Populated dynamically by JS -->
             </select>
           </div>
         </div>
@@ -322,7 +386,7 @@
           </div>
         </div>
 
-        <!-- NEW COLLAPSIBLE BLOCK 1: Commands & Quick Launch Guide -->
+        <!-- COLLAPSIBLE BLOCK 1: Commands & Quick Launch Guide -->
         <details class="bg-[#18181c]/70 border border-zinc-800 rounded-2xl p-4 group" open>
           <summary class="flex items-center justify-between cursor-pointer list-none select-none font-bold text-xs uppercase tracking-wider text-emerald-400">
             <div class="flex items-center gap-2">
@@ -364,7 +428,7 @@ python main.py"
           ></textarea>
         </div>
 
-        <!-- NEW COLLAPSIBLE BLOCK 2: Detailed Description (Markdown) -->
+        <!-- COLLAPSIBLE BLOCK 2: Detailed Description (Markdown) -->
         <details class="bg-[#18181c]/70 border border-zinc-800 rounded-2xl p-4 group">
           <summary class="flex items-center justify-between cursor-pointer list-none select-none font-bold text-xs uppercase tracking-wider text-sky-400">
             <div class="flex items-center gap-2">
@@ -384,7 +448,7 @@ python main.py"
           </div>
         </details>
 
-        <!-- NEW COLLAPSIBLE BLOCK 3: Personal Author Notes & Review -->
+        <!-- COLLAPSIBLE BLOCK 3: Personal Author Notes & Review -->
         <details class="bg-[#18181c]/70 border border-zinc-800 rounded-2xl p-4 group" open>
           <summary class="flex items-center justify-between cursor-pointer list-none select-none font-bold text-xs uppercase tracking-wider text-amber-400">
             <div class="flex items-center gap-2">
@@ -407,7 +471,7 @@ python main.py"
         <!-- Tags & Pricing Badge -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="md:col-span-2 space-y-1.5">
-            <label class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Теги (вводите через запятую или Enter)</label>
+            <label class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Теги (через запятую или Enter)</label>
             <input 
               id="formTags" 
               type="text" 
@@ -449,7 +513,7 @@ python main.py"
     </div>
   </div>
 
-  <!-- MODAL 2: GEMINI AI SMART PARSER & AUTO-EXTRACTOR -->
+  <!-- MODAL: GEMINI AI SMART PARSER & AUTO-EXTRACTOR -->
   <div id="aiSmartModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
     <div class="bg-[#121215] border border-purple-500/30 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
       <!-- Header -->
@@ -486,7 +550,7 @@ python main.py"
           />
         </div>
 
-        <!-- Option 2: Raw Text / Post copy-paste -->
+        <!-- Option 2: Raw Text -->
         <div class="space-y-1.5">
           <label class="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
             <i data-lucide="file-text" class="w-3.5 h-3.5 text-purple-400"></i> Сырой текст поста из Telegram / Twitter / Readme
@@ -542,7 +606,7 @@ python main.py"
     </div>
   </div>
 
-  <!-- MODAL 3: VIEW PROJECT DETAILS (EXPANDED ACCORDIONS) -->
+  <!-- MODAL: VIEW PROJECT DETAILS (EXPANDED ACCORDIONS) -->
   <div id="viewProjectModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
     <div class="bg-[#121215] border border-zinc-800 rounded-3xl w-full max-w-3xl max-h-[92vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
       
@@ -668,6 +732,16 @@ python main.py"
 
   <!-- LOGIC SCRIPT -->
   <script>
+    // INITIAL DEMO CATEGORIES
+    const DEFAULT_CATEGORIES = [
+      { id: 'agents', name: 'ИИ Агенты', emoji: '🤖', isSystem: true },
+      { id: 'tools', name: 'Тулзы & CLI', emoji: '🛠️', isSystem: true },
+      { id: 'models', name: 'Модели & LLM', emoji: '🧠', isSystem: true },
+      { id: 'media', name: 'Видео & Фото', emoji: '🎬', isSystem: true },
+      { id: 'scrapers', name: 'Скраперы & API', emoji: '🌐', isSystem: true },
+      { id: 'datasets', name: 'Датасеты & Данные', emoji: '📊', isSystem: false },
+    ];
+
     // INITIAL DEMO DATA WITH ALL EXTENDED FIELDS
     const DEFAULT_PROJECTS = [
       {
@@ -721,6 +795,7 @@ python main.py"
     ];
 
     // STATE
+    let categories = [];
     let projects = [];
     let currentCategory = 'all';
     let currentTag = null;
@@ -730,6 +805,24 @@ python main.py"
     let currentViewingProject = null;
 
     // LOCAL STORAGE HANDLERS
+    function loadCategories() {
+      const saved = localStorage.getItem('pv_test_git_categories');
+      if (saved) {
+        try {
+          categories = JSON.parse(saved);
+        } catch (e) {
+          categories = [...DEFAULT_CATEGORIES];
+        }
+      } else {
+        categories = [...DEFAULT_CATEGORIES];
+        saveCategories();
+      }
+    }
+
+    function saveCategories() {
+      localStorage.setItem('pv_test_git_categories', JSON.stringify(categories));
+    }
+
     function loadProjects() {
       const saved = localStorage.getItem('pv_test_git_projects_v2');
       if (saved) {
@@ -748,16 +841,6 @@ python main.py"
       localStorage.setItem('pv_test_git_projects_v2', JSON.stringify(projects));
     }
 
-    // CATEGORIES DEFINITION
-    const CATEGORIES = [
-      { id: 'all', name: 'Все', emoji: '🌟' },
-      { id: 'agents', name: 'ИИ Агенты', emoji: '🤖' },
-      { id: 'tools', name: 'Тулзы & CLI', emoji: '🛠️' },
-      { id: 'models', name: 'Модели & LLM', emoji: '🧠' },
-      { id: 'media', name: 'Видео & Фото', emoji: '🎬' },
-      { id: 'scrapers', name: 'Скраперы & API', emoji: '🌐' },
-    ];
-
     // TOAST HELPER
     function showToast(msg) {
       const toast = document.getElementById('toast');
@@ -769,19 +852,40 @@ python main.py"
       }, 2500);
     }
 
-    // RENDER CATEGORIES
+    // RENDER CATEGORIES IN TOOLBAR & FORM SELECT
     function renderCategories() {
       const container = document.getElementById('categoryFilterContainer');
-      container.innerHTML = CATEGORIES.map(cat => {
-        const count = cat.id === 'all' 
-          ? projects.length 
-          : projects.filter(p => p.category === cat.id).length;
+      const formSelect = document.getElementById('formCategory');
+
+      // 1. Toolbar Pills
+      const allCount = projects.length;
+      const allActive = currentCategory === 'all';
+
+      let html = `
+        <button 
+          onclick="setCategory('all')"
+          class="px-3.5 py-1.5 text-xs font-bold rounded-xl border shrink-0 transition-all cursor-pointer flex items-center gap-1.5 ${
+            allActive 
+              ? 'bg-sky-400 text-black border-sky-400 font-black shadow-md shadow-sky-400/20' 
+              : 'bg-[#18181c] text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-white'
+          }"
+        >
+          <span>🌟</span>
+          <span>Все</span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded-md ${allActive ? 'bg-black/25 text-black' : 'bg-zinc-800 text-zinc-500'}">
+            ${allCount}
+          </span>
+        </button>
+      `;
+
+      html += categories.map(cat => {
+        const count = projects.filter(p => p.category === cat.id).length;
         const isActive = currentCategory === cat.id;
 
         return `
           <button 
             onclick="setCategory('${cat.id}')"
-            class="px-3.5 py-1.5 text-xs font-bold rounded-xl border shrink-0 transition-all cursor-pointer flex items-center gap-1.5 ${
+            class="group/btn px-3.5 py-1.5 text-xs font-bold rounded-xl border shrink-0 transition-all cursor-pointer flex items-center gap-1.5 ${
               isActive 
                 ? 'bg-sky-400 text-black border-sky-400 font-black shadow-md shadow-sky-400/20' 
                 : 'bg-[#18181c] text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-white'
@@ -792,9 +896,64 @@ python main.py"
             <span class="text-[10px] px-1.5 py-0.5 rounded-md ${isActive ? 'bg-black/25 text-black' : 'bg-zinc-800 text-zinc-500'}">
               ${count}
             </span>
+            ${!cat.isSystem ? `
+              <span 
+                onclick="event.stopPropagation(); deleteCategory('${cat.id}')"
+                title="Удалить категорию"
+                class="ml-0.5 text-zinc-500 hover:text-rose-400 opacity-0 group-hover/btn:opacity-100 transition-opacity"
+              >
+                ✕
+              </span>
+            ` : ''}
           </button>
         `;
       }).join('');
+
+      // Add Category button
+      html += `
+        <button 
+          onclick="openCategoryModal()"
+          class="px-3 py-1.5 text-xs font-bold rounded-xl border border-dashed border-zinc-800 hover:border-sky-400 hover:text-sky-400 text-zinc-500 shrink-0 transition-all cursor-pointer flex items-center gap-1 bg-[#18181c]/50"
+          title="Создать свою категорию"
+        >
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>Категория</span>
+        </button>
+      `;
+
+      container.innerHTML = html;
+
+      // 2. Form Select Options
+      formSelect.innerHTML = categories.map(cat => `
+        <option value="${cat.id}">${cat.emoji} ${cat.name}</option>
+      `).join('') + '<option value="other">📦 Другое</option>';
+
+      lucide.createIcons();
+    }
+
+    // CATEGORY MODAL ACTIONS
+    function openCategoryModal() {
+      document.getElementById('catNameInput').value = '';
+      document.getElementById('catEmojiInput').value = '⚡';
+      document.getElementById('categoryModal').classList.remove('hidden');
+    }
+
+    function closeCategoryModal() {
+      document.getElementById('categoryModal').classList.add('hidden');
+    }
+
+    function selectEmoji(emoji) {
+      document.getElementById('catEmojiInput').value = emoji;
+    }
+
+    function deleteCategory(catId) {
+      if (!confirm('Удалить эту категорию? Связанные проекты останутся.')) return;
+      categories = categories.filter(c => c.id !== catId);
+      if (currentCategory === catId) currentCategory = 'all';
+      saveCategories();
+      renderCategories();
+      renderProjects();
+      showToast('Категория удалена');
     }
 
     // RENDER TAGS CLOUD
@@ -873,14 +1032,13 @@ python main.py"
       emptyState.classList.remove('flex');
 
       grid.innerHTML = filtered.map(p => {
-        const catObj = CATEGORIES.find(c => c.id === p.category) || { name: 'Инструмент', emoji: '📦' };
+        const catObj = categories.find(c => c.id === p.category) || { name: 'Инструмент', emoji: '📦' };
         const pricingBadge = p.pricing === 'free'
           ? '<span class="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-black uppercase">БЕСПЛАТНО</span>'
           : p.pricing === 'freemium'
           ? '<span class="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[10px] font-black uppercase">FREEMIUM</span>'
           : '<span class="px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[10px] font-black uppercase">PAID</span>';
 
-        // Extract first line of command for card preview
         const firstCmdLine = (p.installCommand || '').split('\n').find(l => l.trim() && !l.trim().startsWith('#')) || p.installCommand;
 
         return `
@@ -1168,7 +1326,7 @@ python main.py"
       if (!p) return;
       currentViewingProject = p;
 
-      const catObj = CATEGORIES.find(c => c.id === p.category) || { name: 'Инструмент', emoji: '📦' };
+      const catObj = categories.find(c => c.id === p.category) || { name: 'Инструмент', emoji: '📦' };
 
       document.getElementById('viewTitle').innerText = p.title;
       document.getElementById('viewSummary').innerText = p.summary;
@@ -1281,6 +1439,7 @@ python main.py"
 
     // EVENT LISTENERS
     document.addEventListener('DOMContentLoaded', () => {
+      loadCategories();
       loadProjects();
       renderCategories();
       renderTagsCloud();
@@ -1308,6 +1467,7 @@ python main.py"
           closeFormModal();
           closeViewModal();
           closeAiModal();
+          closeCategoryModal();
         }
       });
 
@@ -1315,6 +1475,8 @@ python main.py"
       document.getElementById('openAddModalBtn').addEventListener('click', openAddModal);
       document.getElementById('closeFormModalBtn').addEventListener('click', closeFormModal);
       document.getElementById('cancelFormBtn').addEventListener('click', closeFormModal);
+
+      document.getElementById('closeCategoryModalBtn').addEventListener('click', closeCategoryModal);
 
       document.getElementById('openAiModalBtn').addEventListener('click', openAiModal);
       document.getElementById('closeAiModalBtn').addEventListener('click', closeAiModal);
@@ -1338,8 +1500,10 @@ python main.py"
 
       // Reset to defaults
       document.getElementById('resetDataBtn').addEventListener('click', () => {
-        if (confirm('Сбросить список к начальным демонстрационным примерам?')) {
+        if (confirm('Сбросить список категорий и проектов к начальным примерам?')) {
+          categories = [...DEFAULT_CATEGORIES];
           projects = [...DEFAULT_PROJECTS];
+          saveCategories();
           saveProjects();
           currentCategory = 'all';
           currentTag = null;
@@ -1392,7 +1556,22 @@ python main.py"
         }
       });
 
-      // Form Submit (Add / Edit)
+      // Category Form Submit
+      document.getElementById('categoryForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const emoji = document.getElementById('catEmojiInput').value.trim() || '📁';
+        const name = document.getElementById('catNameInput').value.trim();
+        if (!name) return;
+
+        const id = 'cat_' + Date.now();
+        categories.push({ id, name, emoji, isSystem: false });
+        saveCategories();
+        renderCategories();
+        closeCategoryModal();
+        showToast(`Категория "${emoji} ${name}" добавлена!`);
+      });
+
+      // Form Submit (Add / Edit Project)
       document.getElementById('projectForm').addEventListener('submit', (e) => {
         e.preventDefault();
 

@@ -1,7 +1,7 @@
 # PromptVault — Project Context for Antigravity
 
 > Этот файл автоматически читается AGY при каждом старте сессии.
-> **Последнее обновление**: 2026-08-10 (актуально на эту дату — синхронизирован с реальными файлами проекта)
+> **Последнее обновление**: 2026-08-23 (актуально на эту дату — синхронизирован с реальными файлами проекта)
 
 ---
 
@@ -27,7 +27,7 @@
 | База данных | Supabase (PostgreSQL) + Supabase Storage (бакеты `prompt-images`, `prompt-files`) |
 | ИИ | Google Gemini API (Временно отключён) |
 | Иконки | `lucide-react` |
-| Markdown | `react-markdown` |
+| Markdown | `react-markdown` + `remark-gfm` + `remark-frontmatter` |
 | ZIP | `jszip` (клиент) + `adm-zip` (сервер) |
 | Пароли | `bcryptjs` |
 
@@ -69,20 +69,28 @@ superbasetest/
 ├── scripts/
 │   ├── migrateToSupabase.ts        ← Скрипт миграции JSON → Supabase (данные уже перенесены)
 │   ├── create_skill_hints_table.sql ← SQL для создания таблицы skill_hints (выполнить в Supabase!)
-│   └── supabase_fix_schema.sql     ← SQL для адаптации типов и RLS
+│   ├── supabase_fix_schema.sql     ← SQL для адаптации типов и RLS
+│   ├── manageUsers.ts              ← CLI утилита управления пользователями и паролями
+│   ├── checkSchema.ts              ← Проверка схемы базы данных
+│   ├── checkTables.ts              ← Проверка таблиц в Supabase
+│   ├── fixSchema.ts                ← Исправление колонок базы
+│   ├── fixPromptCategories.ts      ← Корректировка категорий в промптах
+│   └── migrateUsers.ts             ← Миграция пользователей
 │
 ├── Agent/                  ← Документация и планирование
+│   ├── Superbase/
+│   │   └── supabase_schema.sql     ← Базовый DDL файл схемы Supabase
 │   ├── MD_files/
-│   │   ├── PRD.md          ← ✅ Актуально (2026-08-10)
-│   │   ├── DESIGN.md       ← ✅ Актуально (2026-08-10)
-│   │   ├── ARCHITECTURE.md ← ✅ Актуально (2026-08-10)
-│   │   ├── SCHEMA.md       ← ✅ Актуально (2026-08-10) — snake_case колонки Supabase
-│   │   ├── RULES.md        ← ✅ Актуально (2026-08-10)
-│   │   ├── DATABASE.md     ← ✅ Актуально (2026-08-10)
-│   │   ├── USER_MANAGEMENT.md ← ✅ Актуально (2026-08-10)
-│   │   └── project_structure.md ← ✅ Актуально (2026-08-10)
+│   │   ├── PRD.md          ← ✅ Актуально (2026-08-23)
+│   │   ├── DESIGN.md       ← ✅ Актуально (2026-08-23)
+│   │   ├── ARCHITECTURE.md ← ✅ Актуально (2026-08-23)
+│   │   ├── SCHEMA.md       ← ✅ Актуально (2026-08-23) — snake_case колонки Supabase
+│   │   ├── RULES.md        ← ✅ Актуально (2026-08-23)
+│   │   ├── DATABASE.md     ← ✅ Актуально (2026-08-23)
+│   │   ├── USER_MANAGEMENT.md ← ✅ Актуально (2026-08-23)
+│   │   └── project_structure.md ← ✅ Актуально (2026-08-23)
 │   └── plan/
-│       ├── plan.md         ← ✅ Актуально (2026-08-10)
+│       ├── plan.md         ← ✅ Актуально (2026-08-23)
 │       ├── plan_supabase.md         ← ✅ Завершено
 │       ├── plan_skill_space.md      ← ✅ Завершено
 │       ├── plan_skill_hints.md      ← ✅ Завершено
@@ -170,6 +178,8 @@ FileNode       { name, path, type:'file'|'directory', content?, size?, children?
 Category       { id, userId, name, emoji, color }
 ChatMessage    { id, promptId, userId, role:'user'|'model', content, image?, createdAt }
 MediaType      'photo' | 'video' | 'text' | 'music'
+SkillType      'skill' | 'agent' | 'mcp' | 'config' | 'rules' | 'template' | 'hooks' | 'other'
+TargetAi       'universal' | 'claude' | 'gemini' | 'chatgpt' | 'deepseek' | 'cursor' | 'other'
 SourceFilter   'all' | 'my-all' | 'my-own' | 'my-web' | 'others'
 AssistantConfig { systemPrompt }
 ```
@@ -182,6 +192,7 @@ AssistantConfig { systemPrompt }
 
 | Метод | Путь | Описание |
 |-------|------|----------|
+| GET | `/api/health` | Диагностический health check (статус, env vars) |
 | POST | `/api/auth/login` | Логин (bcrypt) |
 | GET | `/api/prompts` | Список промптов (limit/offset поддержка) |
 | POST | `/api/prompts` | Создать промпт (с валидацией) |
@@ -238,16 +249,17 @@ AssistantConfig { systemPrompt }
 ## 🚀 ТЕКУЩИЙ СТАТУС: ГОТОВ К ДЕПЛОЮ НА VERCEL
 
 ### ✅ Всё реализовано и работает:
-- Supabase PostgreSQL (6 таблиц: users, prompts, skills, skill_hints, categories, chats, user_favorites)
-- Supabase Storage (2 бакета: prompt-images, prompt-files)
-- `vercel.json` создан
+- Supabase PostgreSQL (таблицы: users, prompts, skills, skill_hints, categories, chats, user_favorites)
+- Supabase Storage (бакеты: prompt-images, prompt-files)
+- `vercel.json` создан и настроен
 - `api/index.ts` создан (Vercel Serverless adapter)
 - Skill Hints + Inline File Editor + Fixed IDE Layout реализованы
 - Расширенная система фильтров источников (Все + чужие, Все мои, Авторские, Из сети, Чужие)
+- Поддержка мультиселекта типов скиллов (`skillTypes`) и поддерживаемых ИИ платформ (`targetAis`)
 
 ### ❗ Осталось 3 шага (вручную):
-1. **Supabase**: выполнить `scripts/create_skill_hints_table.sql` в SQL Editor
-2. **Git**: `git add -A && git commit -m "feat: Vercel ready" && git push`
+1. **Supabase**: при необходимости пересоздания таблиц выполнить `scripts/create_skill_hints_table.sql` в SQL Editor
+2. **Git**: `git add -A && git commit -m "feat: updated docs and vercel config" && git push`
 3. **Vercel**: импортировать репо, добавить env vars (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY`)
 
 ### Контекст Supabase (ТЕКУЩИЙ БЭКЕНД):

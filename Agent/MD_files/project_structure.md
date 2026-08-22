@@ -2,7 +2,7 @@
 
 PromptVault — это веб-приложение для хранения, организации и тестирования промптов нейросетей, а также пакетов скиллов, субагентов и MCP (Skills & Agent Hub), работающее на базе React 19, Express.js / Vercel Serverless и облачной базы данных Supabase (PostgreSQL + Storage).
 
-> **Последнее обновление**: 2026-08-10
+> **Последнее обновление**: 2026-08-23
 
 ---
 
@@ -21,8 +21,16 @@ promptvault/
 ├── scripts/
 │   ├── migrateToSupabase.ts  # Скрипт миграции локальных данных в Supabase
 │   ├── create_skill_hints_table.sql # DDL создания таблицы skill_hints в Supabase
-│   └── manageUsers.ts        # CLI утилита управления пользователями и сброса паролей
+│   ├── supabase_fix_schema.sql # DDL адаптации типов и RLS
+│   ├── manageUsers.ts        # CLI утилита управления пользователями и сброса паролей
+│   ├── checkSchema.ts        # Проверка схемы базы данных
+│   ├── checkTables.ts        # Проверка таблиц в Supabase
+│   ├── fixSchema.ts          # Исправление колонок базы
+│   ├── fixPromptCategories.ts # Корректировка категорий в промптах
+│   └── migrateUsers.ts       # Миграция пользователей
 ├── Agent/                    # Системная документация и планы
+│   ├── Superbase/
+│   │   └── supabase_schema.sql # DDL схемы Supabase
 │   ├── MD_files/             # PRD, DESIGN, ARCHITECTURE, SCHEMA, RULES, DATABASE, USER_MANAGEMENT, project_structure
 │   └── plan/                 # План реализации фич (plan.md, plan_supabase.md, plan_skill_space.md, plan_skill_hints.md, plan_file_system.md)
 └── src/                      # Исходный код Frontend-части

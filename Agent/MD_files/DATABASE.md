@@ -2,7 +2,7 @@
 
 > Полное описание структуры базы данных Supabase PostgreSQL и Supabase Storage.
 >
-> **Последнее обновление**: 2026-08-10
+> **Последнее обновление**: 2026-08-23
 > **Связанные файлы**: [`SCHEMA.md`](SCHEMA.md) — API-контракты, [`ARCHITECTURE.md`](ARCHITECTURE.md) — архитектура системы
 
 ---
@@ -167,10 +167,10 @@ erDiagram
 - `merge-2-1` — Слева 2 маленьких фото, справа 1 большое
 
 ### `skillTypes` (Skill)
-- `Скилл`, `Агент`, `MCP`, `Конфиг`, `Правила`, `Шаблон`, `Хуки`, `Разное`
+- `skill` (Скилл), `agent` (Агент), `mcp` (MCP), `config` (Конфиг), `rules` (Правила), `template` (Шаблон), `hooks` (Хуки), `other` (Разное)
 
 ### `targetAis` (Skill)
-- `universal`, `claude`, `gemini`, `chatgpt`, `deepseek`, `cursor`
+- `universal`, `claude`, `gemini`, `chatgpt`, `deepseek`, `cursor`, `other`
 
 ---
 

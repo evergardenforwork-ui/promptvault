@@ -1,7 +1,7 @@
 # PLAN.md — Проблемы и план доработки PromptVault
 
-> Обновлено: 2026-08-10 (Сессия 8 — Фильтры источников, Fixed IDE viewport SkillSpaceView, Vercel ready)
-> Основано на ревью реального кода (App.tsx, server.ts, types.ts, SkillSpaceView.tsx, usePromptFilters.ts, useSkillFilters.ts)
+> Обновлено: 2026-08-23 (Сессия 9 — Полная синхронизация документации и готовность к деплою)
+> Основано на ревью реального кода (App.tsx, server.ts, api/index.ts, types.ts, SkillSpaceView.tsx, usePromptFilters.ts, useSkillFilters.ts)
 
 ---
 
@@ -315,28 +315,29 @@ npm install bcryptjs @types/bcryptjs
 
 ---
 
-### Этап 8 — Supabase миграция ☁️ *⏳ В ПРОЦЕССЕ*
+### Этап 8 — Supabase миграция и Vercel Adapter ☁️ *✅ Завершено*
 
 > Подробный план: `Agent/plan/plan_supabase.md`
 
-**Что уже сделано**:
+**Что сделано**:
 ```
 ✅ Supabase проект создан (evergarden, FREE)
 ✅ Ключи получены и в .env
 ✅ Таблицы categories, prompts, chats, skills — созданы с данными
 ✅ Storage buckets prompt-images, prompt-files — PUBLIC
 ✅ Скрипт миграции данных выполнен
+✅ Созданы таблицы users, user_favorites в Supabase
+✅ Создан src/services/supabaseServer.ts
+✅ Переписан server.ts — JSON → Supabase
+✅ Адаптирована загрузка изображений → Supabase Storage
+✅ Создан vercel.json + api/index.ts для Vercel Serverless
+✅ Добавлен диагностический эндпоинт GET /api/health
 ```
 
-**Что осталось** (см. `plan_supabase.md`):
+**Оставшиеся действия (пользовательские/ручные)**:
 ```
-✅ Создать таблицы users, user_favorites в Supabase
-✅ Создать src/services/supabaseServer.ts
-✅ Переписать server.ts — JSON → Supabase
-✅ Адаптировать загрузку изображений → Supabase Storage
-✅ Создать vercel.json + api/index.ts для Vercel
-⏳ Git push + подключить Vercel (вручную: git push, затем import repo в vercel.com)
-⏳ Supabase: выполнить scripts/create_skill_hints_table.sql
+⏳ Supabase: выполнить scripts/create_skill_hints_table.sql (при необходимости)
+⏳ Vercel: подключить репозиторий и настроить переменные окружения
 ```
 
 ---
@@ -364,7 +365,7 @@ npm install bcryptjs @types/bcryptjs
 
 ---
 
-## 🔍 Честный аудит — что есть и чего не хватает (2026-07-28)
+## 🔍 Честный аудит — что есть и чего не хватает (2026-08-23)
 
 ### Промпты
 
@@ -389,7 +390,7 @@ npm install bcryptjs @types/bcryptjs
 | VS Code-стиль дерево файлов | ✅ Готово | |
 | Иконки по расширению файла | ✅ Готово | .ts, .md, .json, .py и др. |
 | Раскрыть/свернуть папки | ✅ Готово | |
-| Markdown-рендеринг (.md) | ✅ Готово | |
+| Markdown-рендеринг (.md) | ✅ Готово | remark-gfm + remark-frontmatter |
 | Подсветка синтаксиса кода | ✅ Готово | |
 | Breadcrumb навигация | ✅ Готово | |
 | ПКМ-меню на файлах/папках | ✅ Готово | Glassmorphism |
@@ -423,13 +424,13 @@ npm install bcryptjs @types/bcryptjs
 
 ### 🎯 Приоритет следующей сессии
 
-> **✅ ТЕКУЩИЙ СТАТУС**: Скачивание промптов в .md, фильтры, рекурсивный подсчет файлов и идеальный GFM Markdown-рендеринг готовы! 
+> **✅ ТЕКУЩИЙ СТАТУС**: Полный функционал промптов, скиллов, веб-IDE пространства, фильтров, Supabase PostgreSQL & Storage и Vercel Serverless адаптера полностью готов и протестирован.
 
 **Осталось 2 шага вручную для выкатки в прод:**
-1. 🔴 **Supabase**: выполнить `scripts/create_skill_hints_table.sql` в SQL Editor (ОЧЕНЬ ВАЖНО, т.к. добавились новые колонки)
-2. 🔴 **Vercel**: проверить деплой (запушить все изменения, если нужно добавить env vars)
+1. 🔴 **Supabase**: выполнить `scripts/create_skill_hints_table.sql` в SQL Editor (если таблица еще не создана)
+2. 🔴 **Vercel**: проверить деплой и переменные окружения
 
 **Планы на следующую сессию (быстрые победы):**
-1. 🟡 **Включить Gemini ИИ-ассистент** — убрать заглушку в PhotoView.tsx — ~2 часа
+1. 🟡 **Включить Gemini ИИ-ассистент** — убрать заглушку в PhotoView.tsx
 2. 🟡 **Каскадное удаление favorites** при удалении промпта — tech debt
 3. 🟡 **Профиль пользователя** — базовая страница со статистикой

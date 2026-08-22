@@ -2,13 +2,13 @@
 
 **PromptVault** — персональное fullstack веб-приложение для хранения, организации и управления промптами для нейросетей, а также пакетами скиллов, субагентов и MCP-серверов.
 
-> **Последнее обновление**: 2026-08-10
+> **Последнее обновление**: 2026-08-23
 
 ---
 
 ## 📂 Архитектура и структура проекта
 
-- **Frontend**: React 19, TypeScript, Vite 6, Tailwind CSS v4 (@theme), Framer Motion (`motion` v12), Lucide React, React Markdown.
+- **Frontend**: React 19, TypeScript, Vite 6, Tailwind CSS v4 (@theme), Framer Motion (`motion` v12), Lucide React, React Markdown (GFM + frontmatter).
 - **Backend / API**: Express.js (`server.ts`) для локальной разработки + Vercel Serverless Function (`api/index.ts`) для production.
 - **База данных**: Supabase PostgreSQL (таблицы `users`, `prompts`, `skills`, `skill_hints`, `categories`, `chats`, `user_favorites`).
 - **Файловое хранилище**: Supabase Storage (бакеты `prompt-images`, `prompt-files`).

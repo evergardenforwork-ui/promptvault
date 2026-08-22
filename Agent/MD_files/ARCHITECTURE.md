@@ -2,7 +2,7 @@
 
 > Высокоуровневая карта системы. Перед любым структурным изменением кода
 > ИИ должен свериться с этим файлом, чтобы не нарушить существующие паттерны.
-> **Последнее обновление**: 2026-08-10
+> **Последнее обновление**: 2026-08-23
 
 ## System Overview & High-Level Diagram
 
@@ -11,6 +11,7 @@ Browser (React 19 SPA)
         │  HTTP (fetch) + Authorization: Bearer <uid>
         ▼
 [ Dev: Express.js (server.ts, порт 3000) / Prod: Vercel Serverless Function (api/index.ts) ]
+  ├─ /api/health     ← Диагностический health check
   ├─ /api/auth/*     ← Авторизация (bcrypt)
   ├─ /api/prompts/*  ← CRUD промптов + пагинация
   ├─ /api/skills/*   ← CRUD пакетов скиллов + /hints

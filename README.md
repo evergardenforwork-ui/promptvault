@@ -2,7 +2,7 @@
 
 Персональное fullstack веб-приложение для хранения, организации и управления промптами для нейросетей, а также пакетами скиллов, субагентов и MCP-серверов.
 
-> **Последнее обновление**: 2026-08-10
+> **Последнее обновление**: 2026-08-23
 
 ---
 
@@ -57,9 +57,12 @@ npm run build
 6. `Agent/MD_files/DATABASE.md` — Схема Supabase PostgreSQL + Storage
 7. `Agent/MD_files/SCHEMA.md` — ER-диаграммы и API-контракты
 8. `Agent/MD_files/RULES.md` — Стандарты кода и правила синхронизации API
+9. `Agent/MD_files/USER_MANAGEMENT.md` — Управление пользователями и паролями
+10. `Agent/MD_files/project_structure.md` — Полная структура файлов и компонентов
 
 ### 📅 Планы разработки:
-9. `Agent/plan/plan.md` — Основной план (этапы 1-10)
-10. `Agent/plan/plan_supabase.md` — Миграция на Supabase и деплой на Vercel
-11. `Agent/plan/plan_skill_space.md` — Полноэкранное пространство скиллов
-12. `Agent/plan/plan_skill_hints.md` — Система подсказок к скиллам и inline-редактор
+11. `Agent/plan/plan.md` — Основной план (этапы 1-10)
+12. `Agent/plan/plan_supabase.md` — Миграция на Supabase и деплой на Vercel
+13. `Agent/plan/plan_skill_space.md` — Полноэкранное пространство скиллов
+14. `Agent/plan/plan_skill_hints.md` — Система подсказок к скиллам и inline-редактор
+15. `Agent/plan/plan_file_system.md` — Файловая система и интерактивный конструктор скиллов

@@ -1,7 +1,7 @@
 # SCHEMA.md — Database & API Schema
 
 > Полностью соответствует реальным данным проекта. Обновлять при изменении types.ts или server.ts.
-> **Последнее обновление**: 2026-08-10
+> **Последнее обновление**: 2026-08-23
 
 ## Database Tables & Relationships (ER Diagram)
 
@@ -150,8 +150,8 @@ erDiagram
 | `title` | TEXT | Название набора |
 | `description` | TEXT | Описание |
 | `category` | TEXT | Категория (текст) |
-| `skill_types` | TEXT[] | Типы пакета (Скилл, Агент, MCP, Конфиг, Правила, Шаблон, Хуки, Разное) |
-| `target_ais` | TEXT[] | Поддерживаемые ИИ (universal, claude, gemini, chatgpt, deepseek, cursor) |
+| `skill_types` | TEXT[] | Типы пакета (skill, agent, mcp, config, rules, template, hooks, other) |
+| `target_ais` | TEXT[] | Поддерживаемые ИИ (universal, claude, gemini, chatgpt, deepseek, cursor, other) |
 | `skill_origin` | TEXT | Источник: 'own' (Авторский) или 'web' (Из сети) |
 | `tags` | TEXT[] | Хештеги |
 | `is_public` | BOOLEAN | Доступен ли всем |
@@ -213,6 +213,11 @@ erDiagram
 | `prompt-files` | ZIP-пакеты скиллов | 50MB |
 
 ## API Routes by Domain
+
+### `/api/health`
+| Метод | Путь | Auth | Описание |
+|---|---|---|---|
+| GET | `/api/health` | ❌ | Диагностический статус сервера и env переменных |
 
 ### `/api/auth`
 | Метод | Путь | Auth | Описание |

@@ -178,6 +178,9 @@ Prompt         { id, userId, title, category, tags, subSections[], mainPrompt,
 SkillPackage   { id, userId, title, description, category, skillTypes: string[], targetAis?: string[],
                  tags, fileStructure[], filePackageUrl?, isFavorite, isPublic, skillOrigin?: 'own' | 'web',
                  authorName, authorEmail, createdAt }
+GitProject     { id, userId, title, category: GitProjectCategory, summary, features?,
+                 detailedDescription?, installCommand?, authorNotes?, githubUrl?, demoUrl?,
+                 image?, tags: string[], pricing: 'free'|'freemium'|'paid', isFavorite?, isPublic?, createdAt }
 SkillHint      { id, skillId, userId, title, text, createdAt }
 SubSection     { title, text, imageBefore?, imageAfter?, originalImage*, additionalImages?, imageLayoutType? }
 FileNode       { name, path, type:'file'|'directory', content?, size?, children? }
@@ -211,6 +214,11 @@ AssistantConfig { systemPrompt }
 | GET | `/api/skills/:id/hints` | Список подсказок скилла |
 | POST | `/api/skills/:id/hints` | Создать подсказку { title, text } |
 | DELETE | `/api/skills/:id/hints/:hintId` | Удалить подсказку |
+| GET | `/api/git-projects` | [🔴 СЛЕДУЮЩИЙ ШАГ] Список Git проектов/тулзов |
+| POST | `/api/git-projects` | [🔴 СЛЕДУЮЩИЙ ШАГ] Создать Git проект |
+| PUT | `/api/git-projects/:id` | [🔴 СЛЕДУЮЩИЙ ШАГ] Обновить Git проект |
+| DELETE | `/api/git-projects/:id` | [🔴 СЛЕДУЮЩИЙ ШАГ] Удалить Git проект |
+| POST | `/api/gemini/parse-tool` | [🔴 СЛЕДУЮЩИЙ ШАГ] Gemini ИИ-парсер скриншотов/ссылок |
 | GET | `/api/categories` | Список категорий |
 | POST | `/api/categories` | Создать категорию |
 | DELETE | `/api/categories/:id` | Удалить категорию |
@@ -225,8 +233,6 @@ AssistantConfig { systemPrompt }
 | POST | `/api/users` | Создать пользователя (admin only) |
 | DELETE | `/api/users/:uid` | Удалить пользователя (admin only) |
 | PUT | `/api/users/:uid/password` | Сменить пароль (admin only) |
-| POST | `/api/gemini/chat` | Чат с Gemini (временно не используется) |
-| POST | `/api/gemini/analyze` | Анализ изображения Gemini (временно не используется) |
 
 ---
 
@@ -247,40 +253,37 @@ AssistantConfig { systemPrompt }
 ### Навигация в App.tsx
 - **Промпты**: `viewingPrompt: Prompt | null`, `editingPrompt`, `isFormOpen: boolean`
 - **Скиллы**: `spacedSkill: SkillPackage | null`, `viewingSkill`, `editingSkill`
-- **Разделы**: `activeSection: 'prompts' | 'skills' | 'admin'`
+- **Git Проекты**: `viewingGitProject`, `editingGitProject` (будет в `src/sections/git/`)
+- **Разделы**: `activeSection: 'prompts' | 'skills' | 'git' | 'admin'`
 - Навигация реализована исключительно через state (без react-router).
 
 ---
 
-## 🚀 ТЕКУЩИЙ СТАТУС: ГОТОВ К ДЕПЛОЮ НА VERCEL
+## 🚀 ТЕКУЩИЙ СТАТУС & ПЛАНЫ
 
 ### ✅ Всё реализовано и работает:
+- Модульная архитектура секций (`PromptsSection.tsx`, `SkillsSection.tsx`, `UsersSection.tsx`)
 - Supabase PostgreSQL (таблицы: users, prompts, skills, skill_hints, categories, chats, user_favorites)
 - Supabase Storage (бакеты: prompt-images, prompt-files)
-- `vercel.json` создан и настроен
-- `api/index.ts` создан (Vercel Serverless adapter)
-- Skill Hints + Inline File Editor + Fixed IDE Layout реализованы
-- Расширенная система фильтров источников (Все + чужие, Все мои, Авторские, Из сети, Чужие)
-- Поддержка мультиселекта типов скиллов (`skillTypes`) и поддерживаемых ИИ платформ (`targetAis`)
+- `vercel.json` и `api/index.ts` готовы к деплою на Vercel
+- Полнофункциональный прототип `test/index.html` v2.1 протестирован и одобрен пользователем
 
-### ❗ Осталось 3 шага (вручную):
-1. **Supabase**: при необходимости пересоздания таблиц выполнить `scripts/create_skill_hints_table.sql` в SQL Editor
-2. **Git**: `git add -A && git commit -m "feat: updated docs and vercel config" && git push`
-3. **Vercel**: импортировать репо, добавить env vars (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY`)
+### 🔴 Фокус следующего этапа (Раздел «Git Tools & AI Hub»):
+1. **База данных**: создать таблицу `git_projects` в Supabase (`scripts/create_git_projects_table.sql`).
+2. **API**: добавить CRUD эндпоинты `/api/git-projects` и `/api/gemini/parse-tool` в `server.ts` и `api/index.ts`.
+3. **Frontend**: создать `src/sections/git/GitProjectsSection.tsx`, `GitProjectCard.tsx`, `GitProjectView.tsx`, `GitProjectForm.tsx`, `AiSmartParserModal.tsx`.
+4. **Интеграция**: добавить вкладку `🐙 Git Hub` в Header `App.tsx` (`activeSection: 'git'`).
 
-### Контекст Supabase (ТЕКУЩИЙ БЭКЕНД):
-- **Проект**: `evergarden` (FREE tier, PRODUCTION)
-- **URL**: `https://pubsalagmikwbdztjwhq.supabase.co`
-- **Таблицы**: `categories`, `prompts`, `chats`, `skills`, `users`, `user_favorites`, `skill_hints`
-- **Storage Buckets (PUBLIC)**: `prompt-images`, `prompt-files`
+---
 
 ## 🤖 Инструкции для AGY и ИИ-Агентов
 
 ### 📚 С чего начинать читать проект (Порядок онбординга):
 1. **[`GEMINI.md`](GEMINI.md)** *(этот файл)* — текущий статус, стек, структура файлов и критические правила.
 2. **[`CHANGELOG.md`](CHANGELOG.md)** — контрольные точки (Git tags `v1.0-checkpoint` и др.) и история изменений.
-3. **[`Agent/MD_files/ARCHITECTURE.md`](Agent/MD_files/ARCHITECTURE.md)** & **[`SCHEMA.md`](Agent/MD_files/SCHEMA.md)** — архитектура модульных разделов (`PromptsSection`, `SkillsSection`, `UsersSection`), типы и Supabase DDL.
-4. **[`Agent/plan/plan.md`](Agent/plan/plan.md)** — актуальный бэклог задач. **НЕ читать** планы со статусом `[✅ ВЫПОЛНЕНО]` (`plan_supabase.md`, `plan_skill_space.md`, `plan_skill_hints.md`, `plan_file_system.md`).
+3. **[`Agent/plan/plan_git_hub.md`](Agent/plan/plan_git_hub.md)** — 🔴 **ПЛАН РЕАЛИЗАЦИИ РАЗДЕЛА GIT TOOLS & GEMINI PARSER**.
+4. **[`Agent/MD_files/ARCHITECTURE.md`](Agent/MD_files/ARCHITECTURE.md)** & **[`SCHEMA.md`](Agent/MD_files/SCHEMA.md)** — архитектура модульных разделов, типы и Supabase DDL.
+5. **[`Agent/plan/plan.md`](Agent/plan/plan.md)** — актуальный бэклог задач. **НЕ читать** завершённые планы `[✅ ВЫПОЛНЕНО]`.
 
 ### Обязательно перед любой задачей:
 1. Проверь `src/types.ts` — единый источник типов.

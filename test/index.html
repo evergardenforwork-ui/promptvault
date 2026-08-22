@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Git Tools & AI Hub — Расширенный прототип</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    code, pre, .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #0f0f12;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #27272e;
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #3f3f46;
+    }
+    details summary::-webkit-details-marker {
+      display:none;
+    }
+  </style>
+</head>
+<body class="bg-[#09090b] text-zinc-100 min-h-screen flex flex-col selection:bg-brand-500/30 selection:text-brand-400">
+
+  <!-- TOP NOTICE BANNER -->
+  <div class="bg-gradient-to-r from-purple-900/40 via-sky-900/40 to-emerald-900/40 border-b border-white/10 px-4 py-2 text-center text-xs font-medium text-zinc-300 flex items-center justify-center gap-2">
+    <span class="px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-400 font-bold text-[10px] uppercase tracking-wider">Тестовый прототип v2.0</span>
+    <span>Добавлены: <b>Раскрывающиеся гайды по запуску</b>, <b>Детальное описание</b>, <b>Личные заметки</b>, <b>Умные теги</b> и <b>🪄 ИИ-автозаполнение (Gemini)</b>.</span>
+  </div>
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-40 bg-[#09090b]/85 backdrop-blur-xl border-b border-zinc-800/80 px-6 py-4 flex items-center justify-between gap-4">
+    <div class="flex items-center gap-4">
+      <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sky-500 to-purple-600 flex items-center justify-center shadow-lg shadow-sky-500/20 text-white font-black text-xl">
+        <i data-lucide="git-branch" class="w-5 h-5"></i>
+      </div>
+      <div>
+        <h1 class="text-xl font-black tracking-tight flex items-center gap-2">
+          <span>PROMPT<span class="text-sky-400">VAULT</span></span>
+          <span class="text-xs px-2.5 py-0.5 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 font-bold uppercase tracking-wider flex items-center gap-1">
+            <span>🐙 Git Hub & Tools</span>
+          </span>
+        </h1>
+        <p class="text-xs text-zinc-500 font-medium">Каталог репозиториев, ИИ-агентов, тулзов и моделей</p>
+      </div>
+    </div>
+
+    <!-- Search Input -->
+    <div class="flex-1 max-w-xl relative">
+      <i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"></i>
+      <input 
+        id="searchInput"
+        type="text" 
+        placeholder="Поиск по названию, тегам, командам или тексту... (Ctrl+K)"
+        class="w-full bg-[#121215] border border-zinc-800 rounded-2xl py-2.5 pl-11 pr-4 focus:outline-none focus:border-sky-400 transition-all text-sm text-white placeholder-zinc-500"
+      />
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex items-center gap-3">
+      <button 
+        id="resetDataBtn"
+        title="Восстановить примеры по умолчанию"
+        class="p-2.5 bg-[#18181c] hover:bg-zinc-800 border border-zinc-800 rounded-2xl text-zinc-400 hover:text-white transition-all text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+      >
+        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+        <span class="hidden md:inline">Сбросить примеры</span>
+      </button>
+
+      <button 
+        id="openAiModalBtn"
+        class="px-3.5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold rounded-2xl transition-all shadow-lg shadow-purple-500/20 flex items-center gap-2 text-xs uppercase tracking-wider cursor-pointer border border-purple-400/30"
+        title="Распознать скриншот или ссылку через Gemini ИИ"
+      >
+        <i data-lucide="sparkles" class="w-4 h-4"></i>
+        <span>🪄 Gemini Парсер</span>
+      </button>
+
+      <button 
+        id="openAddModalBtn"
+        class="px-4 py-2.5 bg-sky-400 hover:bg-sky-300 text-black font-black rounded-2xl transition-all shadow-lg shadow-sky-400/20 flex items-center gap-2 text-xs uppercase tracking-wider cursor-pointer"
+      >
+        <i data-lucide="plus" class="w-4 h-4 stroke-[3]"></i>
+        <span>Добавить проект</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-6 py-6 space-y-6">
+
+    <!-- TOOLBAR & FILTERS -->
+    <div class="flex flex-col gap-4 border-b border-zinc-800/80 pb-5">
+      <!-- Upper row: Categories & Pricing Filters -->
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <!-- Category Tabs -->
+        <div class="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-1" id="categoryFilterContainer">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Counter & Tag Clear -->
+        <div class="text-xs text-zinc-400 font-medium flex items-center gap-3 shrink-0">
+          <button 
+            id="clearFiltersBtn"
+            onclick="clearAllFilters()"
+            class="hidden text-sky-400 hover:text-sky-300 font-bold items-center gap-1 cursor-pointer transition-colors"
+          >
+            <span>Сбросить фильтр</span>
+            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+          </button>
+          <span>Найдено: <span id="projectsCount" class="text-white font-bold bg-zinc-800 px-2 py-0.5 rounded-lg">0</span></span>
+        </div>
+      </div>
+
+      <!-- Lower row: Tags search & cloud -->
+      <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-zinc-900">
+        <div class="flex items-center gap-2 flex-1 overflow-hidden">
+          <span class="text-xs font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-1 shrink-0">
+            <i data-lucide="tag" class="w-3.5 h-3.5 text-purple-400"></i> Теги:
+          </span>
+          <div class="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-1" id="tagsCloudContainer">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Tag Quick Filter Input -->
+        <div class="relative w-44 shrink-0">
+          <input 
+            id="tagFilterSearchInput"
+            type="text" 
+            placeholder="Фильтр тегов..."
+            class="w-full bg-[#18181c] border border-zinc-800 rounded-xl py-1 pl-7 pr-2 text-xs text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-purple-500"
+          />
+          <i data-lucide="filter" class="w-3 h-3 text-zinc-500 absolute left-2.5 top-1/2 -translate-y-1/2"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARDS GRID -->
+    <div id="projectsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Cards rendered by JS -->
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div id="emptyState" class="hidden flex-col items-center justify-center py-20 text-center space-y-3">
+      <div class="w-16 h-16 rounded-3xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500">
+        <i data-lucide="folder-search" class="w-8 h-8"></i>
+      </div>
+      <h3 class="text-base font-bold text-white">Ничего не найдено</h3>
+      <p class="text-xs text-zinc-500 max-w-sm">Попробуйте изменить поисковый запрос или сбросить активные фильтры категорий и тегов.</p>
+    </div>
+
+  </main>
+
+  <!-- MODAL 1: ADD / EDIT PROJECT (MANUAL) -->
+  <div id="projectFormModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-[#121215] border border-zinc-800 rounded-3xl w-full max-w-3xl max-h-[92vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-zinc-800 flex items-center justify-between bg-[#18181c]">
+        <div class="flex items-center gap-3">
+          <div class="p-2 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/20">
+            <i data-lucide="sparkles" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h2 id="modalTitle" class="text-base font-black text-white">Добавить Git Проект / Инструмент</h2>
+            <p class="text-xs text-zinc-500">Заполните поля вручную или используйте вкладку ИИ-парсера</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button 
+            type="button"
+            onclick="closeFormModal(); openAiModal();" 
+            class="px-3 py-1.5 bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <i data-lucide="wand-2" class="w-3.5 h-3.5"></i>
+            <span>Заполнить через ИИ</span>
+          </button>
+          <button id="closeFormModalBtn" class="p-2 hover:bg-zinc-800 rounded-xl text-zinc-400 hover:text-white transition-colors cursor-pointer">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Form Body -->
+      <form id="projectForm" class="p-6 space-y-5 overflow-y-auto custom-scrollbar flex-1">
+        <input type="hidden" id="formProjectId">
+
+        <!-- Title & Category -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="md:col-span-2 space-y-1.5">
+            <label class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Название инструмента *</label>
+            <input 
+              id="formTitle" 
+              type="text" 
+              required
+              placeholder="например, Reverse API Engineer" 
+              class="w-full bg-[#18181c] border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-sky-400 transition-all font-semibold"
+            />
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Категория</label>
+            <select 
+              id="formCategory" 
+              class="w-full bg-[#18181c] border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-zinc-300 focus:outline-none focus:border-sky-400 transition-all cursor-pointer"
+            >
+              <option value="agents">🤖 ИИ Агенты</option>
+              <option value="tools">🛠️ Тулзы & CLI</option>
+              <option value="models">🧠 Модели & LLM</option>
+              <option value="media">🎬 Видео / Аудио / Фото</option>
+              <option value="scrapers">🌐 Скраперы & API</option>
+              <option value="other">📦 Другое</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Links (GitHub & Web) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="github" class="w-3.5 h-3.5 text-zinc-300"></i> Ссылка на GitHub / Репозиторий
+            </label>
+            <input 
+              id="formGithubUrl" 
+              type="url" 
+              placeholder="https://github.com/username/repo" 
+              class="w-full bg-[#18181c] border border-zinc-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-sky-400 transition-all font-mono text-xs"
+            />
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="globe" class="w-3.5 h-3.5 text-sky-400"></i> Ссылка на Сайт / Демо
+            </label>
+            <input 
+              id="formDemoUrl" 
+              type="url" 
+              placeholder="https://tool-website.com" 
+              class="w-full bg-[#18181c] border border-zinc-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-sky-400 transition-all font-mono text-xs"
+            />
+          </div>
+        </div>
+
+        <!-- Short Summary (Slogan) -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Краткое описание (Слоган в карточке) *</label>
+          <textarea 
+            id="formSummary" 
+            required 
+            rows="2"
+            placeholder="ИИ сделает из любой ссылки на сайт готовый рабочий API-сервис."
+            class="w-full bg-[#18181c] border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-sky-400 transition-all"
+          ></textarea>
+        </div>
+
+        <!-- Image Upload / Preview -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center justify-between">
+            <span>Скриншот / Баннер проекта</span>
+            <span class="text-[10px] text-zinc-500 font-normal">PNG, JPG, WebP</span>
+          </label>
+          <div class="flex items-center gap-4">
+            <div id="imagePreviewContainer" class="w-28 h-20 rounded-xl bg-zinc-900 border border-dashed border-zinc-800 flex items-center justify-center overflow-hidden shrink-0 relative group">
+              <img id="formImagePreview" src="" class="w-full h-full object-cover hidden" />
+              <div id="noImagePlaceholder" class="text-center p-2">
+                <i data-lucide="image" class="w-5 h-5 mx-auto text-zinc-600"></i>
+                <span class="text-[9px] text-zinc-600 block mt-0.5">Нет фото</span>
+              </div>
+            </div>
+            <div class="flex-1 space-y-2">
+              <input id="formImageInput" type="file" accept="image/*" class="hidden" />
+              <div class="flex items-center gap-2">
+                <button 
+                  type="button" 
+                  onclick="document.getElementById('formImageInput').click()"
+                  class="px-3.5 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                >
+                  <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                  Загрузить скриншот
+                </button>
+                <button 
+                  id="removeImageBtn" 
+                  type="button" 
+                  class="px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-xl text-xs font-bold transition-all cursor-pointer hidden flex items-center gap-1"
+                >
+                  <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+                  Удалить
+                </button>
+              </div>
+              <p class="text-[11px] text-zinc-500">Скриншот интерфейса, окна терминала или баннер репозитория.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- NEW COLLAPSIBLE BLOCK 1: Commands & Quick Launch Guide -->
+        <details class="bg-[#18181c]/70 border border-zinc-800 rounded-2xl p-4 group" open>
+          <summary class="flex items-center justify-between cursor-pointer list-none select-none font-bold text-xs uppercase tracking-wider text-emerald-400">
+            <div class="flex items-center gap-2">
+              <i data-lucide="terminal" class="w-4 h-4"></i>
+              <span>⚡ Команды и гайд по запуску (Раскрывающийся блок)</span>
+            </div>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400 transition-transform group-open:rotate-180"></i>
+          </summary>
+          <div class="pt-3 space-y-2">
+            <p class="text-[11px] text-zinc-400">Вставьте команды установки, Docker-запуска или пошаговую инструкцию из README:</p>
+            <textarea 
+              id="formInstallCommand" 
+              rows="3"
+              placeholder="# Шаг 1: Клонирование
+git clone https://github.com/example/repo.git
+cd repo
+
+# Шаг 2: Установка и запуск
+uv pip install -r requirements.txt
+python main.py" 
+              class="w-full bg-black/60 border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-emerald-400 focus:outline-none focus:border-emerald-500 transition-all font-mono"
+            ></textarea>
+          </div>
+        </details>
+
+        <!-- Key Features List -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center justify-between">
+            <span>Ключевые фичи (Список буллетов)</span>
+            <span class="text-[10px] text-zinc-500">Каждая фича с новой строки</span>
+          </label>
+          <textarea 
+            id="formFeatures" 
+            rows="3"
+            placeholder="• Два режима: Manual и Agent
+• Генерирует API-клиенты на Python, JS, TS, Go
+• Поддержка Claude, Cursor, Copilot, Ollama"
+            class="w-full bg-[#18181c] border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-zinc-300 focus:outline-none focus:border-sky-400 transition-all font-mono"
+          ></textarea>
+        </div>
+
+        <!-- NEW COLLAPSIBLE BLOCK 2: Detailed Description (Markdown) -->
+        <details class="bg-[#18181c]/70 border border-zinc-800 rounded-2xl p-4 group">
+          <summary class="flex items-center justify-between cursor-pointer list-none select-none font-bold text-xs uppercase tracking-wider text-sky-400">
+            <div class="flex items-center gap-2">
+              <i data-lucide="book-open" class="w-4 h-4"></i>
+              <span>📖 Детальное описание / Инструкция (Раскрывающийся блок)</span>
+            </div>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400 transition-transform group-open:rotate-180"></i>
+          </summary>
+          <div class="pt-3 space-y-2">
+            <p class="text-[11px] text-zinc-400">Подробное описание архитектуры, поддерживаемых форматов, API и ограничений:</p>
+            <textarea 
+              id="formDetailedDescription" 
+              rows="4"
+              placeholder="Инструмент использует Playwright в фоновом режиме для эмуляции действий пользователя. При исследовании страницы агент извлекает схему запросов XHR/Fetch и генерирует OpenAPI 3.0 спецификацию..."
+              class="w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-zinc-200 focus:outline-none focus:border-sky-400 transition-all leading-relaxed"
+            ></textarea>
+          </div>
+        </details>
+
+        <!-- NEW COLLAPSIBLE BLOCK 3: Personal Author Notes & Review -->
+        <details class="bg-[#18181c]/70 border border-zinc-800 rounded-2xl p-4 group" open>
+          <summary class="flex items-center justify-between cursor-pointer list-none select-none font-bold text-xs uppercase tracking-wider text-amber-400">
+            <div class="flex items-center gap-2">
+              <i data-lucide="message-square-quote" class="w-4 h-4"></i>
+              <span>💬 Личный комментарий & Заметки автора (Раскрывающийся блок)</span>
+            </div>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400 transition-transform group-open:rotate-180"></i>
+          </summary>
+          <div class="pt-3 space-y-2">
+            <p class="text-[11px] text-zinc-400">Ваш личный вердикт, советы по настройке или впечатления от использования:</p>
+            <textarea 
+              id="formAuthorNotes" 
+              rows="2"
+              placeholder="Протестировал на Windows 11 — работает без багов. С Cursor агентом генерирует типы мгновенно. Рекомендую использовать с Ollama для локальной работы."
+              class="w-full bg-black/40 border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-amber-200/90 focus:outline-none focus:border-amber-400 transition-all"
+            ></textarea>
+          </div>
+        </details>
+
+        <!-- Tags & Pricing Badge -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="md:col-span-2 space-y-1.5">
+            <label class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Теги (вводите через запятую или Enter)</label>
+            <input 
+              id="formTags" 
+              type="text" 
+              placeholder="agent, api, python, cursor, free" 
+              class="w-full bg-[#18181c] border border-zinc-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-purple-400 transition-all font-mono text-xs"
+            />
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Тип доступа</label>
+            <select 
+              id="formPricing" 
+              class="w-full bg-[#18181c] border border-zinc-800 rounded-xl px-3 py-2 text-sm text-zinc-300 focus:outline-none focus:border-sky-400 transition-all cursor-pointer"
+            >
+              <option value="free">🟢 БЕСПЛАТНО / Open Source</option>
+              <option value="freemium">🟡 Freemium</option>
+              <option value="paid">🔴 Платный</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-4 border-t border-zinc-800 flex items-center justify-end gap-3">
+          <button 
+            type="button" 
+            id="cancelFormBtn"
+            class="px-5 py-2.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 text-xs font-bold transition-all cursor-pointer"
+          >
+            Отмена
+          </button>
+          <button 
+            type="submit" 
+            class="px-6 py-2.5 bg-sky-400 hover:bg-sky-300 text-black font-black rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-sky-400/20 cursor-pointer flex items-center gap-2"
+          >
+            <i data-lucide="check" class="w-4 h-4 stroke-[3]"></i>
+            <span id="submitBtnText">Сохранить проект</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: GEMINI AI SMART PARSER & AUTO-EXTRACTOR -->
+  <div id="aiSmartModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-[#121215] border border-purple-500/30 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+      <!-- Header -->
+      <div class="px-6 py-4 border-b border-zinc-800 flex items-center justify-between bg-gradient-to-r from-purple-950/60 to-zinc-900">
+        <div class="flex items-center gap-3">
+          <div class="p-2 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30">
+            <i data-lucide="sparkles" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h2 class="text-base font-black text-white flex items-center gap-2">
+              <span>🪄 Gemini Smart Parser</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 font-bold uppercase">ИИ Автозаполнение</span>
+            </h2>
+            <p class="text-xs text-zinc-400">Скормите Gemini скриншот поста, ссылку на GitHub или скопированный текст</p>
+          </div>
+        </div>
+        <button id="closeAiModalBtn" class="p-2 hover:bg-zinc-800 rounded-xl text-zinc-400 hover:text-white transition-colors cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- AI Parser Form Body -->
+      <div class="p-6 space-y-4">
+        <!-- Option 1: URL -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="link" class="w-3.5 h-3.5 text-sky-400"></i> Ссылка на сайт или GitHub репозиторий
+          </label>
+          <input 
+            id="aiInputUrl" 
+            type="url" 
+            placeholder="https://github.com/username/awesome-agent"
+            class="w-full bg-[#18181c] border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500 font-mono"
+          />
+        </div>
+
+        <!-- Option 2: Raw Text / Post copy-paste -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="file-text" class="w-3.5 h-3.5 text-purple-400"></i> Сырой текст поста из Telegram / Twitter / Readme
+          </label>
+          <textarea 
+            id="aiInputText" 
+            rows="3" 
+            placeholder="Вставьте скопированный текст: «Нашли тулзу для работы с видео... Фичи: сжатие, нарезка... Ставится через Docker...»"
+            class="w-full bg-[#18181c] border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-purple-500"
+          ></textarea>
+        </div>
+
+        <!-- Option 3: Image / Screenshot -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="image" class="w-3.5 h-3.5 text-emerald-400"></i> Прикрепить скриншот поста или баннер
+          </label>
+          <div class="flex items-center gap-3">
+            <input id="aiImageInput" type="file" accept="image/*" class="hidden" />
+            <button 
+              type="button" 
+              onclick="document.getElementById('aiImageInput').click()"
+              class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+            >
+              <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+              <span>Выбрать скриншот</span>
+            </button>
+            <span id="aiImageNameLabel" class="text-xs text-zinc-500 truncate max-w-xs">Файл не выбран</span>
+          </div>
+        </div>
+
+        <!-- AI Demo Trigger Buttons -->
+        <div class="pt-4 border-t border-zinc-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] text-zinc-500">Или выберите готовый тестовый пресет:</span>
+            <div class="flex items-center gap-2">
+              <button onclick="loadAiPreset(1)" class="px-2 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-[10px] font-bold rounded-lg cursor-pointer">Скрин 1 (Reverse API)</button>
+              <button onclick="loadAiPreset(2)" class="px-2 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-[10px] font-bold rounded-lg cursor-pointer">Скрин 2 (Ailia)</button>
+              <button onclick="loadAiPreset(3)" class="px-2 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-[10px] font-bold rounded-lg cursor-pointer">Скрин 3 (Video Knife)</button>
+            </div>
+          </div>
+
+          <button 
+            id="runAiParserBtn"
+            onclick="simulateAiParsing()"
+            class="w-full py-3.5 bg-gradient-to-r from-purple-600 to-sky-500 hover:from-purple-500 hover:to-sky-400 text-white font-black rounded-2xl text-xs uppercase tracking-wider transition-all shadow-xl shadow-purple-500/20 flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <i data-lucide="wand-2" class="w-4 h-4"></i>
+            <span id="aiBtnText">🪄 Распознать и заполнить карточку проекта</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: VIEW PROJECT DETAILS (EXPANDED ACCORDIONS) -->
+  <div id="viewProjectModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-[#121215] border border-zinc-800 rounded-3xl w-full max-w-3xl max-h-[92vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+      
+      <!-- Top bar -->
+      <div class="p-6 border-b border-zinc-800 flex items-start justify-between gap-4 bg-[#18181c]">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2" id="viewBadgesContainer">
+            <!-- Badges -->
+          </div>
+          <h2 id="viewTitle" class="text-2xl font-black text-white tracking-tight"></h2>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="editFromViewBtn" class="p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5">
+            <i data-lucide="edit-3" class="w-4 h-4"></i>
+            <span>Редактировать</span>
+          </button>
+          <button id="closeViewModalBtn" class="p-2 hover:bg-zinc-800 rounded-xl text-zinc-400 hover:text-white transition-colors cursor-pointer">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- View Content Body -->
+      <div class="p-6 space-y-5 overflow-y-auto custom-scrollbar flex-1">
+        
+        <!-- Big Image banner if exists -->
+        <div id="viewImageBannerContainer" class="rounded-2xl overflow-hidden border border-zinc-800 bg-black hidden">
+          <img id="viewImage" src="" class="w-full max-h-80 object-contain mx-auto" />
+        </div>
+
+        <!-- Summary -->
+        <div class="space-y-2">
+          <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Краткое описание</h4>
+          <p id="viewSummary" class="text-sm text-zinc-200 leading-relaxed font-medium bg-zinc-900/60 p-4 rounded-2xl border border-zinc-800/80"></p>
+        </div>
+
+        <!-- ACCORDION 1: Commands & Quick Launch Guide -->
+        <details id="viewCommandAccordion" class="bg-[#18181c]/70 border border-emerald-500/20 rounded-2xl p-4 group" open>
+          <summary class="flex items-center justify-between cursor-pointer list-none select-none font-bold text-xs uppercase tracking-wider text-emerald-400">
+            <div class="flex items-center gap-2">
+              <i data-lucide="terminal" class="w-4 h-4"></i>
+              <span>⚡ Команды и гайд по запуску</span>
+            </div>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400 transition-transform group-open:rotate-180"></i>
+          </summary>
+          <div class="pt-3 space-y-2 relative group/cmd">
+            <pre id="viewCommandCode" class="p-3.5 bg-black/90 rounded-xl border border-emerald-500/30 text-emerald-400 text-xs overflow-x-auto font-mono leading-relaxed whitespace-pre-wrap"></pre>
+            <button 
+              id="copyCommandBtn"
+              class="absolute right-3 top-6 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer shadow-md"
+            >
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span>Копировать всё</span>
+            </button>
+          </div>
+        </details>
+
+        <!-- ACCORDION 2: Key Features -->
+        <details id="viewFeaturesAccordion" class="bg-[#18181c]/70 border border-zinc-800 rounded-2xl p-4 group" open>
+          <summary class="flex items-center justify-between cursor-pointer list-none select-none font-bold text-xs uppercase tracking-wider text-purple-400">
+            <div class="flex items-center gap-2">
+              <i data-lucide="list-checks" class="w-4 h-4"></i>
+              <span>📋 Ключевые фичи & Возможности</span>
+            </div>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400 transition-transform group-open:rotate-180"></i>
+          </summary>
+          <div class="pt-3">
+            <div id="viewFeaturesList" class="bg-zinc-900/60 p-4 rounded-xl border border-zinc-800/80 text-xs text-zinc-300 font-mono whitespace-pre-wrap leading-relaxed"></div>
+          </div>
+        </details>
+
+        <!-- ACCORDION 3: Detailed Description -->
+        <details id="viewDetailedAccordion" class="bg-[#18181c]/70 border border-sky-500/20 rounded-2xl p-4 group">
+          <summary class="flex items-center justify-between cursor-pointer list-none select-none font-bold text-xs uppercase tracking-wider text-sky-400">
+            <div class="flex items-center gap-2">
+              <i data-lucide="book-open" class="w-4 h-4"></i>
+              <span>📖 Детальное описание / Архитектура</span>
+            </div>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400 transition-transform group-open:rotate-180"></i>
+          </summary>
+          <div class="pt-3">
+            <div id="viewDetailedText" class="bg-zinc-900/60 p-4 rounded-xl border border-zinc-800/80 text-xs text-zinc-200 leading-relaxed whitespace-pre-wrap"></div>
+          </div>
+        </details>
+
+        <!-- ACCORDION 4: Author's Notes / Personal Review -->
+        <details id="viewAuthorNotesAccordion" class="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 group" open>
+          <summary class="flex items-center justify-between cursor-pointer list-none select-none font-bold text-xs uppercase tracking-wider text-amber-400">
+            <div class="flex items-center gap-2">
+              <i data-lucide="message-square-quote" class="w-4 h-4"></i>
+              <span>💬 Личный комментарий & Заметки</span>
+            </div>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400 transition-transform group-open:rotate-180"></i>
+          </summary>
+          <div class="pt-3">
+            <div id="viewAuthorNotesText" class="bg-black/40 p-4 rounded-xl border border-amber-500/20 text-xs text-amber-100/90 leading-relaxed font-medium"></div>
+          </div>
+        </details>
+
+        <!-- Action Links -->
+        <div class="flex flex-wrap items-center gap-3 pt-2">
+          <a id="viewGithubLink" href="#" target="_blank" class="px-5 py-3 bg-white text-black hover:bg-zinc-200 font-black rounded-2xl text-xs uppercase tracking-wider transition-all flex items-center gap-2 shadow-lg shadow-white/5">
+            <i data-lucide="github" class="w-4 h-4"></i>
+            <span>Открыть GitHub репозиторий</span>
+          </a>
+          <a id="viewDemoLink" href="#" target="_blank" class="px-5 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded-2xl text-xs uppercase tracking-wider transition-all flex items-center gap-2 border border-zinc-700 hidden">
+            <i data-lucide="external-link" class="w-4 h-4"></i>
+            <span>Официальный сайт / Демо</span>
+          </a>
+        </div>
+
+        <!-- Tags -->
+        <div class="pt-4 border-t border-zinc-800/80 flex items-center gap-2 flex-wrap" id="viewTagsContainer"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed bottom-6 right-6 z-[100] px-4 py-3 bg-zinc-900 border border-zinc-700 text-white rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold transition-all transform translate-y-20 opacity-0 pointer-events-none">
+    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+    <span id="toastMessage">Сообщение</span>
+  </div>
+
+  <!-- LOGIC SCRIPT -->
+  <script>
+    // INITIAL DEMO DATA WITH ALL EXTENDED FIELDS
+    const DEFAULT_PROJECTS = [
+      {
+        id: 'proj-1',
+        title: 'Reverse API Engineer',
+        category: 'agents',
+        summary: 'Агент превратит ЛЮБОЙ сайт в рабочий API-сервис с генерацией готовых клиентов.',
+        features: '• Два режима: Manual (пользователь управляет браузером) и Agent (ИИ сам ходит по сайту)\n• Генерирует API-клиенты на Python, JavaScript, TypeScript, Go, Java, C#, PHP, Ruby, C\n• Поддерживает работу разных агентов: Claude, OpenCode, Cursor, GitHub Copilot, Ollama',
+        detailedDescription: 'Инструмент подключается к браузеру через Playwright и слушает сетевую активность (XHR/Fetch). При переходе по страницам он автоматически определяет структуры входящих/исходящих JSON ответов, параметры авторизации (Bearer, Cookies, Headers) и генерирует OpenAPI 3.0 спецификацию и клиентские SDK.',
+        authorNotes: 'Имба для автоматизации закрытых сервисов без официального API! В связке с Cursor генерирует рабочие скрипты за 30 секунд. Рекомендую запускать через uv.',
+        githubUrl: 'https://github.com/reverse-api/engineer',
+        demoUrl: 'https://reverseapi.dev',
+        installCommand: '# 1. Установка через uv (быстрый запуск)\nuv run reverse-api-engineer\n\n# 2. Или запуск в Docker контейнере\ndocker run -p 3000:3000 reverse-api-engineer',
+        tags: ['agent', 'api', 'python', 'crawler', 'cursor', 'free', 'playwright'],
+        pricing: 'free',
+        image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
+        createdAt: '2026-08-23'
+      },
+      {
+        id: 'proj-2',
+        title: 'Ailia Models',
+        category: 'models',
+        summary: 'Коллекция из 418+ предобученных современных моделей искусственного интеллекта для запуска из одного CLI.',
+        features: '• 418 моделей: обнаружение объектов, распознавание речи, генерация изображений, LLM\n• Запуск любой модели одной простой командой в консоли\n• Оптимизация под CPU, GPU и NPU без сложных зависимостей',
+        detailedDescription: 'Ailia Models предоставляет единый кроссплатформенный интерфейс для запуска моделей YOLO, Whisper, Stable Diffusion, Llama, Segment Anything и сотен других. Модели оптимизированы для минимального потребления памяти.',
+        authorNotes: 'Очень удобно, когда нужно быстро проверить модель компьютерного зрения или транскрибацию речи локально без разворачивания огромных сред PyTorch.',
+        githubUrl: 'https://github.com/axinc-ai/ailia-models',
+        demoUrl: '',
+        installCommand: '# Установка фреймворка\npip install ailia\n\n# Запуск детекции объектов YOLO\npython3 object_detection/yolox/yolox.py -v 0',
+        tags: ['models', 'llm', 'cv', 'voice', 'cli', 'python', 'free', 'whisper'],
+        pricing: 'free',
+        image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+        createdAt: '2026-08-22'
+      },
+      {
+        id: 'proj-3',
+        title: 'Video Swiss Knife (Швейцарский нож для видео)',
+        category: 'media',
+        summary: 'Более 20 манипуляций с видеороликами в один клик: нарезка, сжатие, удаление вотермарок, гифки и блур.',
+        features: '• Изменение размера, вырезка аудио, сжатие, конвертация в GIF, ускорение, микширование\n• Стирание вотермарок, добавление блюра, зацикливание, нормализация звука\n• Ставится в один клик, работает локально без ограничений',
+        detailedDescription: 'Локальный веб-интерфейс поверх FFmpeg с поддержкой пакетной обработки. Позволяет объединять операции в цепочки (например: обрезать -> убрать вотермарку -> сжать в MP4 -> сделать GIF превью).',
+        authorNotes: 'Заменяет десяток онлайн-конвертеров, которые требуют подписку. Работает прямо в Docker без отправки файлов на сторонние серверы.',
+        githubUrl: 'https://github.com/video-tools/swiss-knife',
+        demoUrl: '',
+        installCommand: '# Запуск в один клик через Docker\ndocker run -d -p 8080:8080 --name video-tools video-swiss-knife\n\n# Открыть в браузере: http://localhost:8080',
+        tags: ['video', 'media', 'ffmpeg', 'converter', 'docker', 'free'],
+        pricing: 'free',
+        image: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=800&q=80',
+        createdAt: '2026-08-21'
+      }
+    ];
+
+    // STATE
+    let projects = [];
+    let currentCategory = 'all';
+    let currentTag = null;
+    let searchQuery = '';
+    let tagFilterQuery = '';
+    let uploadedImageDataUrl = '';
+    let currentViewingProject = null;
+
+    // LOCAL STORAGE HANDLERS
+    function loadProjects() {
+      const saved = localStorage.getItem('pv_test_git_projects_v2');
+      if (saved) {
+        try {
+          projects = JSON.parse(saved);
+        } catch (e) {
+          projects = [...DEFAULT_PROJECTS];
+        }
+      } else {
+        projects = [...DEFAULT_PROJECTS];
+        saveProjects();
+      }
+    }
+
+    function saveProjects() {
+      localStorage.setItem('pv_test_git_projects_v2', JSON.stringify(projects));
+    }
+
+    // CATEGORIES DEFINITION
+    const CATEGORIES = [
+      { id: 'all', name: 'Все', emoji: '🌟' },
+      { id: 'agents', name: 'ИИ Агенты', emoji: '🤖' },
+      { id: 'tools', name: 'Тулзы & CLI', emoji: '🛠️' },
+      { id: 'models', name: 'Модели & LLM', emoji: '🧠' },
+      { id: 'media', name: 'Видео & Фото', emoji: '🎬' },
+      { id: 'scrapers', name: 'Скраперы & API', emoji: '🌐' },
+    ];
+
+    // TOAST HELPER
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMessage');
+      toastMsg.innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+      }, 2500);
+    }
+
+    // RENDER CATEGORIES
+    function renderCategories() {
+      const container = document.getElementById('categoryFilterContainer');
+      container.innerHTML = CATEGORIES.map(cat => {
+        const count = cat.id === 'all' 
+          ? projects.length 
+          : projects.filter(p => p.category === cat.id).length;
+        const isActive = currentCategory === cat.id;
+
+        return `
+          <button 
+            onclick="setCategory('${cat.id}')"
+            class="px-3.5 py-1.5 text-xs font-bold rounded-xl border shrink-0 transition-all cursor-pointer flex items-center gap-1.5 ${
+              isActive 
+                ? 'bg-sky-400 text-black border-sky-400 font-black shadow-md shadow-sky-400/20' 
+                : 'bg-[#18181c] text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-white'
+            }"
+          >
+            <span>${cat.emoji}</span>
+            <span>${cat.name}</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded-md ${isActive ? 'bg-black/25 text-black' : 'bg-zinc-800 text-zinc-500'}">
+              ${count}
+            </span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    // RENDER TAGS CLOUD
+    function renderTagsCloud() {
+      const container = document.getElementById('tagsCloudContainer');
+      let allTags = Array.from(new Set(projects.flatMap(p => p.tags || [])));
+
+      if (tagFilterQuery) {
+        allTags = allTags.filter(t => t.toLowerCase().includes(tagFilterQuery.toLowerCase()));
+      }
+
+      if (allTags.length === 0) {
+        container.innerHTML = '<span class="text-xs text-zinc-600">Теги не найдены</span>';
+        return;
+      }
+
+      container.innerHTML = allTags.map(tag => {
+        const isActive = currentTag === tag;
+        return `
+          <button 
+            onclick="toggleTag('${tag}')"
+            class="px-2.5 py-1 text-[11px] font-bold rounded-lg border transition-all cursor-pointer ${
+              isActive
+                ? 'bg-purple-600 text-white border-purple-500 shadow-sm shadow-purple-500/20'
+                : 'bg-zinc-900/90 text-zinc-400 border-zinc-800/80 hover:border-zinc-700 hover:text-zinc-200'
+            }"
+          >
+            #${tag}
+          </button>
+        `;
+      }).join('');
+    }
+
+    // FILTER & RENDER PROJECTS
+    function renderProjects() {
+      const grid = document.getElementById('projectsGrid');
+      const emptyState = document.getElementById('emptyState');
+      const countEl = document.getElementById('projectsCount');
+      const clearBtn = document.getElementById('clearFiltersBtn');
+
+      const isFiltered = currentCategory !== 'all' || currentTag !== null || searchQuery !== '';
+      if (isFiltered) {
+        clearBtn.classList.remove('hidden');
+        clearBtn.classList.add('flex');
+      } else {
+        clearBtn.classList.add('hidden');
+        clearBtn.classList.remove('flex');
+      }
+
+      const filtered = projects.filter(p => {
+        const matchesCategory = currentCategory === 'all' || p.category === currentCategory;
+        const matchesTag = !currentTag || (p.tags && p.tags.includes(currentTag));
+        const q = searchQuery.toLowerCase().trim();
+        const matchesSearch = !q || 
+          p.title.toLowerCase().includes(q) ||
+          p.summary.toLowerCase().includes(q) ||
+          (p.features && p.features.toLowerCase().includes(q)) ||
+          (p.detailedDescription && p.detailedDescription.toLowerCase().includes(q)) ||
+          (p.authorNotes && p.authorNotes.toLowerCase().includes(q)) ||
+          (p.installCommand && p.installCommand.toLowerCase().includes(q)) ||
+          (p.tags && p.tags.some(t => t.toLowerCase().includes(q)));
+
+        return matchesCategory && matchesTag && matchesSearch;
+      });
+
+      countEl.innerText = filtered.length;
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        emptyState.classList.add('flex');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      emptyState.classList.remove('flex');
+
+      grid.innerHTML = filtered.map(p => {
+        const catObj = CATEGORIES.find(c => c.id === p.category) || { name: 'Инструмент', emoji: '📦' };
+        const pricingBadge = p.pricing === 'free'
+          ? '<span class="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-black uppercase">БЕСПЛАТНО</span>'
+          : p.pricing === 'freemium'
+          ? '<span class="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[10px] font-black uppercase">FREEMIUM</span>'
+          : '<span class="px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[10px] font-black uppercase">PAID</span>';
+
+        // Extract first line of command for card preview
+        const firstCmdLine = (p.installCommand || '').split('\n').find(l => l.trim() && !l.trim().startsWith('#')) || p.installCommand;
+
+        return `
+          <div class="bg-[#121215] border border-zinc-800/90 hover:border-zinc-700 rounded-3xl overflow-hidden flex flex-col transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/50 group">
+            
+            <!-- Card Image / Header -->
+            <div class="h-44 bg-zinc-950 relative overflow-hidden border-b border-zinc-800/80 cursor-pointer" onclick="openViewModal('${p.id}')">
+              ${p.image 
+                ? `<img src="${p.image}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="${p.title}">`
+                : `<div class="w-full h-full flex flex-col items-center justify-center text-zinc-700 space-y-1 bg-gradient-to-br from-zinc-900 to-black">
+                     <i data-lucide="terminal" class="w-10 h-10 stroke-[1.5]"></i>
+                     <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-600">Git Project</span>
+                   </div>`
+              }
+              
+              <!-- Badges Overlay -->
+              <div class="absolute top-3 left-3 flex items-center gap-1.5">
+                <span class="px-2.5 py-1 rounded-xl bg-black/70 backdrop-blur-md border border-white/10 text-white text-xs font-bold flex items-center gap-1">
+                  <span>${catObj.emoji}</span>
+                  <span>${catObj.name}</span>
+                </span>
+                ${pricingBadge}
+              </div>
+
+              <!-- Top Right Menu Buttons -->
+              <div class="absolute top-3 right-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button 
+                  onclick="event.stopPropagation(); openEditModal('${p.id}')" 
+                  title="Редактировать"
+                  class="p-2 rounded-xl bg-black/70 hover:bg-zinc-800 backdrop-blur-md text-zinc-300 hover:text-white transition-all cursor-pointer border border-white/10"
+                >
+                  <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                </button>
+                <button 
+                  onclick="event.stopPropagation(); deleteProject('${p.id}')" 
+                  title="Удалить"
+                  class="p-2 rounded-xl bg-black/70 hover:bg-rose-900/80 backdrop-blur-md text-zinc-300 hover:text-rose-300 transition-all cursor-pointer border border-white/10"
+                >
+                  <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+              <div class="space-y-2">
+                <h3 
+                  onclick="openViewModal('${p.id}')"
+                  class="text-base font-black text-white group-hover:text-sky-400 transition-colors cursor-pointer leading-snug line-clamp-1"
+                >
+                  ${p.title}
+                </h3>
+                <p class="text-xs text-zinc-400 line-clamp-2 leading-relaxed font-medium">
+                  ${p.summary}
+                </p>
+              </div>
+
+              <!-- Quick Command Snippet (if exists) -->
+              ${firstCmdLine ? `
+                <div class="bg-black/60 border border-zinc-800/80 rounded-xl px-3 py-1.5 flex items-center justify-between gap-2">
+                  <span class="text-[11px] font-mono text-emerald-400 truncate font-medium">$ ${firstCmdLine}</span>
+                  <button 
+                    onclick="event.stopPropagation(); copyText('${firstCmdLine.replace(/'/g, "\\'")}')" 
+                    title="Скопировать команду"
+                    class="text-zinc-500 hover:text-white transition-colors cursor-pointer shrink-0"
+                  >
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+              ` : ''}
+
+              <!-- Tags -->
+              <div class="flex items-center gap-1.5 flex-wrap pt-2 border-t border-zinc-900">
+                ${(p.tags || []).slice(0, 4).map(tag => `
+                  <span onclick="event.stopPropagation(); toggleTag('${tag}')" class="text-[10px] font-bold text-zinc-500 hover:text-purple-400 cursor-pointer transition-colors">
+                    #${tag}
+                  </span>
+                `).join('')}
+                ${(p.tags || []).length > 4 ? `<span class="text-[10px] text-zinc-600 font-bold">+${p.tags.length - 4}</span>` : ''}
+              </div>
+
+              <!-- Footer Action Buttons -->
+              <div class="flex items-center justify-between gap-2 pt-1">
+                <button 
+                  onclick="openViewModal('${p.id}')"
+                  class="text-xs font-bold text-sky-400 hover:text-sky-300 transition-colors flex items-center gap-1 cursor-pointer"
+                >
+                  <span>Подробнее</span>
+                  <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                </button>
+                
+                <div class="flex items-center gap-2">
+                  ${p.githubUrl ? `
+                    <a href="${p.githubUrl}" target="_blank" title="GitHub" class="p-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-zinc-400 hover:text-white transition-colors">
+                      <i data-lucide="github" class="w-3.5 h-3.5"></i>
+                    </a>
+                  ` : ''}
+                  ${p.demoUrl ? `
+                    <a href="${p.demoUrl}" target="_blank" title="Веб-сайт" class="p-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-sky-400 hover:text-sky-300 transition-colors">
+                      <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                    </a>
+                  ` : ''}
+                </div>
+              </div>
+
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    // FILTER ACTIONS
+    function setCategory(catId) {
+      currentCategory = catId;
+      renderCategories();
+      renderProjects();
+    }
+
+    function toggleTag(tag) {
+      if (currentTag === tag) {
+        currentTag = null;
+      } else {
+        currentTag = tag;
+      }
+      renderTagsCloud();
+      renderProjects();
+    }
+
+    function clearAllFilters() {
+      currentCategory = 'all';
+      currentTag = null;
+      searchQuery = '';
+      document.getElementById('searchInput').value = '';
+      renderCategories();
+      renderTagsCloud();
+      renderProjects();
+      showToast('Фильтры сброшены');
+    }
+
+    function copyText(text) {
+      navigator.clipboard.writeText(text);
+      showToast('Скопировано в буфер обмена!');
+    }
+
+    // MODAL OPEN / CLOSE (FORM)
+    function openAddModal() {
+      document.getElementById('modalTitle').innerText = 'Добавить Git Проект / Инструмент';
+      document.getElementById('submitBtnText').innerText = 'Сохранить проект';
+      document.getElementById('projectForm').reset();
+      document.getElementById('formProjectId').value = '';
+      uploadedImageDataUrl = '';
+      
+      const imgPreview = document.getElementById('formImagePreview');
+      const placeholder = document.getElementById('noImagePlaceholder');
+      const removeBtn = document.getElementById('removeImageBtn');
+      imgPreview.src = '';
+      imgPreview.classList.add('hidden');
+      placeholder.classList.remove('hidden');
+      removeBtn.classList.add('hidden');
+
+      document.getElementById('projectFormModal').classList.remove('hidden');
+    }
+
+    function openEditModal(id) {
+      const p = projects.find(x => x.id === id);
+      if (!p) return;
+
+      document.getElementById('modalTitle').innerText = 'Редактировать инструмент';
+      document.getElementById('submitBtnText').innerText = 'Сохранить изменения';
+      document.getElementById('formProjectId').value = p.id;
+      document.getElementById('formTitle').value = p.title;
+      document.getElementById('formCategory').value = p.category;
+      document.getElementById('formGithubUrl').value = p.githubUrl || '';
+      document.getElementById('formDemoUrl').value = p.demoUrl || '';
+      document.getElementById('formInstallCommand').value = p.installCommand || '';
+      document.getElementById('formSummary').value = p.summary || '';
+      document.getElementById('formFeatures').value = p.features || '';
+      document.getElementById('formDetailedDescription').value = p.detailedDescription || '';
+      document.getElementById('formAuthorNotes').value = p.authorNotes || '';
+      document.getElementById('formTags').value = (p.tags || []).join(', ');
+      document.getElementById('formPricing').value = p.pricing || 'free';
+
+      uploadedImageDataUrl = p.image || '';
+      const imgPreview = document.getElementById('formImagePreview');
+      const placeholder = document.getElementById('noImagePlaceholder');
+      const removeBtn = document.getElementById('removeImageBtn');
+
+      if (uploadedImageDataUrl) {
+        imgPreview.src = uploadedImageDataUrl;
+        imgPreview.classList.remove('hidden');
+        placeholder.classList.add('hidden');
+        removeBtn.classList.remove('hidden');
+      } else {
+        imgPreview.src = '';
+        imgPreview.classList.add('hidden');
+        placeholder.classList.remove('hidden');
+        removeBtn.classList.add('hidden');
+      }
+
+      document.getElementById('projectFormModal').classList.remove('hidden');
+    }
+
+    function closeFormModal() {
+      document.getElementById('projectFormModal').classList.add('hidden');
+    }
+
+    // AI MODAL HANDLERS
+    function openAiModal() {
+      document.getElementById('aiSmartModal').classList.remove('hidden');
+    }
+
+    function closeAiModal() {
+      document.getElementById('aiSmartModal').classList.add('hidden');
+    }
+
+    function loadAiPreset(presetNum) {
+      if (presetNum === 1) {
+        document.getElementById('aiInputUrl').value = 'https://github.com/reverse-api/engineer';
+        document.getElementById('aiInputText').value = 'Агент превратит ЛЮБОЙ сайт в рабочий API — нашли тулзу Reverse API Engineer. Фичи: Manual и Agent режимы, генерация клиентов на Python, TS, Go, поддержка Claude, Cursor, Copilot, Ollama. БЕСПЛАТНО.';
+      } else if (presetNum === 2) {
+        document.getElementById('aiInputUrl').value = 'https://github.com/axinc-ai/ailia-models';
+        document.getElementById('aiInputText').value = 'Ailia-models — коллекция 418 моделей искусственного интеллекта: детекция объектов, распознавание речи, LLM. Запуск через простой интерфейс командной строки pip install ailia.';
+      } else if (presetNum === 3) {
+        document.getElementById('aiInputUrl').value = 'https://github.com/video-tools/swiss-knife';
+        document.getElementById('aiInputText').value = 'Швейцарский нож для работы с видео — более 20 манипуляций в один клик: нарезка, сжатие, аудио, вотермарки, гифки, блюр. Ставится за 1 клик через Docker.';
+      }
+      showToast('Пресет загружен! Нажмите кнопку распознавания.');
+    }
+
+    function simulateAiParsing() {
+      const btn = document.getElementById('runAiParserBtn');
+      const btnText = document.getElementById('aiBtnText');
+      btn.disabled = true;
+      btnText.innerText = '⏳ Gemini анализирует текст и структуру...';
+
+      setTimeout(() => {
+        btn.disabled = false;
+        btnText.innerText = '🪄 Распознать и заполнить карточку проекта';
+        closeAiModal();
+        openAddModal();
+
+        const inputUrl = document.getElementById('aiInputUrl').value;
+        const inputText = document.getElementById('aiInputText').value;
+
+        // Auto-fill form based on parsed content
+        if (inputText.includes('Reverse API') || inputUrl.includes('reverse-api')) {
+          document.getElementById('formTitle').value = 'Reverse API Engineer';
+          document.getElementById('formCategory').value = 'agents';
+          document.getElementById('formGithubUrl').value = 'https://github.com/reverse-api/engineer';
+          document.getElementById('formSummary').value = 'Агент превратит ЛЮБОЙ сайт в рабочий API-сервис с генерацией готовых клиентов.';
+          document.getElementById('formFeatures').value = '• Два режима: Manual и Agent\n• Генерирует API-клиенты на Python, JavaScript, TypeScript, Go, Java, C#, PHP\n• Поддерживает работу разных агентов: Claude, OpenCode, Cursor, Copilot, Ollama';
+          document.getElementById('formInstallCommand').value = '# Быстрый запуск агента\nuv run reverse-api-engineer\n\n# Подключение к Cursor\nreverse-api-engineer --agent cursor';
+          document.getElementById('formDetailedDescription').value = 'Автоматически подключается к сессии браузера, перехватывает сетевой трафик и создает чистую OpenAPI 3.0 документацию.';
+          document.getElementById('formAuthorNotes').value = 'Распознано через Gemini ИИ. Отличный инструмент для интеграции закрытых сайтов.';
+          document.getElementById('formTags').value = 'agent, api, python, crawler, cursor, free';
+          document.getElementById('formPricing').value = 'free';
+        } else if (inputText.includes('video') || inputText.includes('видео') || inputUrl.includes('video')) {
+          document.getElementById('formTitle').value = 'Video Swiss Knife';
+          document.getElementById('formCategory').value = 'media';
+          document.getElementById('formGithubUrl').value = 'https://github.com/video-tools/swiss-knife';
+          document.getElementById('formSummary').value = 'Более 20 манипуляций с видеороликами в один клик: нарезка, сжатие, удаление вотермарок и гифки.';
+          document.getElementById('formFeatures').value = '• Нарезка, вырезка звука, сжатие, GIF конвертер\n• Стирание вотермарок, добавление блюра, зацикливание\n• Запуск локально через Docker в 1 клик';
+          document.getElementById('formInstallCommand').value = 'docker run -d -p 8080:8080 video-swiss-knife';
+          document.getElementById('formAuthorNotes').value = 'Распознано через Gemini ИИ. Заменяет платные онлайн-конвертеры.';
+          document.getElementById('formTags').value = 'video, media, ffmpeg, converter, docker, free';
+        } else {
+          document.getElementById('formTitle').value = 'Распознанный ИИ Инструмент';
+          document.getElementById('formCategory').value = 'tools';
+          document.getElementById('formGithubUrl').value = inputUrl || 'https://github.com';
+          document.getElementById('formSummary').value = inputText.slice(0, 100) || 'Полезный инструмент для разработки и ИИ.';
+          document.getElementById('formFeatures').value = '• Автоматически извлечено Gemini\n• Высокая производительность';
+          document.getElementById('formInstallCommand').value = 'git clone ' + (inputUrl || 'https://github.com/repo');
+          document.getElementById('formTags').value = 'ai, tools, github, free';
+        }
+
+        showToast('✨ Поля формы успешно заполнены с помощью Gemini!');
+      }, 1000);
+    }
+
+    // VIEW MODAL (WITH EXTENDED ACCORDIONS)
+    function openViewModal(id) {
+      const p = projects.find(x => x.id === id);
+      if (!p) return;
+      currentViewingProject = p;
+
+      const catObj = CATEGORIES.find(c => c.id === p.category) || { name: 'Инструмент', emoji: '📦' };
+
+      document.getElementById('viewTitle').innerText = p.title;
+      document.getElementById('viewSummary').innerText = p.summary;
+
+      // Badges
+      const badgesContainer = document.getElementById('viewBadgesContainer');
+      badgesContainer.innerHTML = `
+        <span class="px-2.5 py-1 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-bold flex items-center gap-1">
+          <span>${catObj.emoji}</span> <span>${catObj.name}</span>
+        </span>
+        <span class="px-2.5 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase">
+          ${p.pricing === 'free' ? 'БЕСПЛАТНО' : p.pricing}
+        </span>
+      `;
+
+      // Image
+      const imgContainer = document.getElementById('viewImageBannerContainer');
+      const viewImg = document.getElementById('viewImage');
+      if (p.image) {
+        viewImg.src = p.image;
+        imgContainer.classList.remove('hidden');
+      } else {
+        imgContainer.classList.add('hidden');
+      }
+
+      // Accordion 1: Commands Guide
+      const cmdAccordion = document.getElementById('viewCommandAccordion');
+      const cmdCode = document.getElementById('viewCommandCode');
+      if (p.installCommand && p.installCommand.trim()) {
+        cmdCode.innerText = p.installCommand;
+        cmdAccordion.classList.remove('hidden');
+      } else {
+        cmdAccordion.classList.add('hidden');
+      }
+
+      // Accordion 2: Features
+      const featuresAccordion = document.getElementById('viewFeaturesAccordion');
+      const featuresList = document.getElementById('viewFeaturesList');
+      if (p.features && p.features.trim()) {
+        featuresList.innerText = p.features;
+        featuresAccordion.classList.remove('hidden');
+      } else {
+        featuresAccordion.classList.add('hidden');
+      }
+
+      // Accordion 3: Detailed Description
+      const detailedAccordion = document.getElementById('viewDetailedAccordion');
+      const detailedText = document.getElementById('viewDetailedText');
+      if (p.detailedDescription && p.detailedDescription.trim()) {
+        detailedText.innerText = p.detailedDescription;
+        detailedAccordion.classList.remove('hidden');
+      } else {
+        detailedAccordion.classList.add('hidden');
+      }
+
+      // Accordion 4: Author's Notes
+      const authorNotesAccordion = document.getElementById('viewAuthorNotesAccordion');
+      const authorNotesText = document.getElementById('viewAuthorNotesText');
+      if (p.authorNotes && p.authorNotes.trim()) {
+        authorNotesText.innerText = p.authorNotes;
+        authorNotesAccordion.classList.remove('hidden');
+      } else {
+        authorNotesAccordion.classList.add('hidden');
+      }
+
+      // Links
+      const ghLink = document.getElementById('viewGithubLink');
+      if (p.githubUrl) {
+        ghLink.href = p.githubUrl;
+        ghLink.classList.remove('hidden');
+      } else {
+        ghLink.classList.add('hidden');
+      }
+
+      const demoLink = document.getElementById('viewDemoLink');
+      if (p.demoUrl) {
+        demoLink.href = p.demoUrl;
+        demoLink.classList.remove('hidden');
+      } else {
+        demoLink.classList.add('hidden');
+      }
+
+      // Tags
+      const tagsContainer = document.getElementById('viewTagsContainer');
+      tagsContainer.innerHTML = (p.tags || []).map(t => `
+        <span class="px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-full text-xs font-bold text-zinc-400">
+          #${t}
+        </span>
+      `).join('');
+
+      document.getElementById('viewProjectModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeViewModal() {
+      document.getElementById('viewProjectModal').classList.add('hidden');
+      currentViewingProject = null;
+    }
+
+    // DELETE PROJECT
+    function deleteProject(id) {
+      if (!confirm('Удалить этот инструмент из списка?')) return;
+      projects = projects.filter(x => x.id !== id);
+      saveProjects();
+      renderCategories();
+      renderTagsCloud();
+      renderProjects();
+      showToast('Инструмент удален');
+    }
+
+    // EVENT LISTENERS
+    document.addEventListener('DOMContentLoaded', () => {
+      loadProjects();
+      renderCategories();
+      renderTagsCloud();
+      renderProjects();
+
+      // Search input
+      document.getElementById('searchInput').addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        renderProjects();
+      });
+
+      // Tag filter search input
+      document.getElementById('tagFilterSearchInput').addEventListener('input', (e) => {
+        tagFilterQuery = e.target.value;
+        renderTagsCloud();
+      });
+
+      // Hotkey Ctrl+K for search
+      window.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+          e.preventDefault();
+          document.getElementById('searchInput').focus();
+        }
+        if (e.key === 'Escape') {
+          closeFormModal();
+          closeViewModal();
+          closeAiModal();
+        }
+      });
+
+      // Modal open/close buttons
+      document.getElementById('openAddModalBtn').addEventListener('click', openAddModal);
+      document.getElementById('closeFormModalBtn').addEventListener('click', closeFormModal);
+      document.getElementById('cancelFormBtn').addEventListener('click', closeFormModal);
+
+      document.getElementById('openAiModalBtn').addEventListener('click', openAiModal);
+      document.getElementById('closeAiModalBtn').addEventListener('click', closeAiModal);
+
+      // Close view modal
+      document.getElementById('closeViewModalBtn').addEventListener('click', closeViewModal);
+      document.getElementById('editFromViewBtn').addEventListener('click', () => {
+        if (currentViewingProject) {
+          const id = currentViewingProject.id;
+          closeViewModal();
+          openEditModal(id);
+        }
+      });
+
+      // Copy command in view modal
+      document.getElementById('copyCommandBtn').addEventListener('click', () => {
+        if (currentViewingProject && currentViewingProject.installCommand) {
+          copyText(currentViewingProject.installCommand);
+        }
+      });
+
+      // Reset to defaults
+      document.getElementById('resetDataBtn').addEventListener('click', () => {
+        if (confirm('Сбросить список к начальным демонстрационным примерам?')) {
+          projects = [...DEFAULT_PROJECTS];
+          saveProjects();
+          currentCategory = 'all';
+          currentTag = null;
+          searchQuery = '';
+          tagFilterQuery = '';
+          document.getElementById('searchInput').value = '';
+          document.getElementById('tagFilterSearchInput').value = '';
+          renderCategories();
+          renderTagsCloud();
+          renderProjects();
+          showToast('Примеры восстановлены!');
+        }
+      });
+
+      // Image upload handling
+      const imageInput = document.getElementById('formImageInput');
+      const imgPreview = document.getElementById('formImagePreview');
+      const placeholder = document.getElementById('noImagePlaceholder');
+      const removeBtn = document.getElementById('removeImageBtn');
+
+      imageInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            uploadedImageDataUrl = event.target.result;
+            imgPreview.src = uploadedImageDataUrl;
+            imgPreview.classList.remove('hidden');
+            placeholder.classList.add('hidden');
+            removeBtn.classList.remove('hidden');
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      removeBtn.addEventListener('click', () => {
+        uploadedImageDataUrl = '';
+        imageInput.value = '';
+        imgPreview.src = '';
+        imgPreview.classList.add('hidden');
+        placeholder.classList.remove('hidden');
+        removeBtn.classList.add('hidden');
+      });
+
+      // AI Image file selector display
+      document.getElementById('aiImageInput').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          document.getElementById('aiImageNameLabel').innerText = file.name;
+        }
+      });
+
+      // Form Submit (Add / Edit)
+      document.getElementById('projectForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const id = document.getElementById('formProjectId').value;
+        const title = document.getElementById('formTitle').value.trim();
+        const category = document.getElementById('formCategory').value;
+        const githubUrl = document.getElementById('formGithubUrl').value.trim();
+        const demoUrl = document.getElementById('formDemoUrl').value.trim();
+        const installCommand = document.getElementById('formInstallCommand').value.trim();
+        const summary = document.getElementById('formSummary').value.trim();
+        const features = document.getElementById('formFeatures').value.trim();
+        const detailedDescription = document.getElementById('formDetailedDescription').value.trim();
+        const authorNotes = document.getElementById('formAuthorNotes').value.trim();
+        const tagsRaw = document.getElementById('formTags').value;
+        const pricing = document.getElementById('formPricing').value;
+
+        const tags = tagsRaw
+          .split(/[,#\s]+/)
+          .map(t => t.trim().toLowerCase())
+          .filter(t => t.length > 0);
+
+        if (id) {
+          // Edit existing
+          projects = projects.map(p => {
+            if (p.id === id) {
+              return {
+                ...p,
+                title,
+                category,
+                githubUrl,
+                demoUrl,
+                installCommand,
+                summary,
+                features,
+                detailedDescription,
+                authorNotes,
+                tags,
+                pricing,
+                image: uploadedImageDataUrl || p.image || ''
+              };
+            }
+            return p;
+          });
+          showToast('Инструмент обновлен!');
+        } else {
+          // Create new
+          const newProj = {
+            id: 'proj-' + Date.now(),
+            title,
+            category,
+            githubUrl,
+            demoUrl,
+            installCommand,
+            summary,
+            features,
+            detailedDescription,
+            authorNotes,
+            tags,
+            pricing,
+            image: uploadedImageDataUrl || '',
+            createdAt: new Date().toISOString().split('T')[0]
+          };
+          projects.unshift(newProj);
+          showToast('Инструмент успешно добавлен!');
+        }
+
+        saveProjects();
+        renderCategories();
+        renderTagsCloud();
+        renderProjects();
+        closeFormModal();
+      });
+    });
+  </script>
+</body>
+</html>

@@ -103,6 +103,7 @@
 
 ### 📅 Планы разработки (`Agent/plan/`):
 - **[`Agent/plan/plan.md`](Agent/plan/plan.md)** — 🟡 **АКТУАЛЬНЫЙ БЭКЛОГ** (Этапы 9–10, бэклог фич)
+- **[`Agent/plan/plan_git_hub.md`](Agent/plan/plan_git_hub.md)** — `[🔴 НУЖНО СДЕЛАТЬ]` Раздел Git Tools & Gemini Smart Parser
 - [`Agent/plan/plan_supabase.md`](Agent/plan/plan_supabase.md) — `[✅ ВЫПОЛНЕНО]` (не читать)
 - [`Agent/plan/plan_skill_space.md`](Agent/plan/plan_skill_space.md) — `[✅ ВЫПОЛНЕНО]` (не читать)
 - [`Agent/plan/plan_skill_hints.md`](Agent/plan/plan_skill_hints.md) — `[✅ ВЫПОЛНЕНО]` (не читать)

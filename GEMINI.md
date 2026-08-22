@@ -92,6 +92,7 @@ superbasetest/
 │   │   └── project_structure.md ← ✅ Актуально (2026-08-23)
 │   └── plan/
 │       ├── plan.md                 ← 🟡 Актуальный план и бэклог (2026-08-23)
+│       ├── plan_git_hub.md         ← [🔴 НУЖНО СДЕЛАТЬ] Раздел Git Tools & Gemini Parser
 │       ├── plan_supabase.md        ← [✅ ВЫПОЛНЕНО]
 │       ├── plan_skill_space.md     ← [✅ ВЫПОЛНЕНО]
 │       ├── plan_skill_hints.md     ← [✅ ВЫПОЛНЕНО]

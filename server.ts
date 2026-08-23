@@ -1382,6 +1382,48 @@ async function startServer() {
 
   // ─── API: Gemini ──────────────────────────────────────────────────────────
 
+  // 🛡️ Kill switch & Guards
+  function isGeminiEnabled(): boolean {
+    if (process.env.DISABLE_AI === "true" || process.env.GEMINI_DISABLED === "true") return false;
+    return Boolean(process.env.GEMINI_API_KEY);
+  }
+
+  // 🛡️ Rate Limiting per User (в памяти): 1 запрос в 3 секунды, max 15 в минуту
+  const aiRequestLog = new Map<string, number[]>();
+
+  function checkAiRateLimit(userId: string): { allowed: boolean; message?: string } {
+    const now = Date.now();
+    const timestamps = (aiRequestLog.get(userId) || []).filter((t) => now - t < 60_000);
+
+    const lastReq = timestamps[timestamps.length - 1];
+    if (lastReq && now - lastReq < 3000) {
+      const waitSec = Math.ceil((3000 - (now - lastReq)) / 1000);
+      return { allowed: false, message: `Слишком частые запросы. Подождите ${waitSec} сек перед следующим AI-анализом.` };
+    }
+
+    if (timestamps.length >= 15) {
+      return { allowed: false, message: "Превышен минутный лимит запросов к ИИ (макс 15/мин). Подождите немного." };
+    }
+
+    timestamps.push(now);
+    aiRequestLog.set(userId, timestamps);
+    return { allowed: true };
+  }
+
+  // 🛡️ Таймаут вызова Gemini (25 секунд)
+  const GEMINI_TIMEOUT_MS = 25000;
+
+  async function generateWithTimeout(params: any): Promise<any> {
+    let timer: NodeJS.Timeout;
+    const timeoutPromise = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error("Превышено время ожидания ответа Gemini (25 сек). Попробуйте позже.")), GEMINI_TIMEOUT_MS);
+    });
+    try {
+      return await Promise.race([ai.models.generateContent(params), timeoutPromise]);
+    } finally {
+      clearTimeout(timer!);
+    }
+  }
 
   function dataUrlToInlinePart(
     dataUrl: string
@@ -1393,17 +1435,29 @@ async function startServer() {
 
   app.post("/api/gemini/chat", authenticate, async (req, res) => {
     try {
+      if (!isGeminiEnabled()) {
+        return res.status(503).json({ message: "ИИ-функции временно отключены администратором." });
+      }
+
+      const user = (req as any).user;
+      const rateCheck = checkAiRateLimit(user.uid);
+      if (!rateCheck.allowed) {
+        return res.status(429).json({ message: rateCheck.message });
+      }
+
       if (req.body.history && !Array.isArray(req.body.history)) {
         return res.status(400).json({ error: "Поле history должно быть массивом" });
       }
       const { prompt, systemInstruction, history, images } = req.body;
+      const safePrompt = prompt ? String(prompt).slice(0, 10000) : "";
+
       const contents = history.map((turn: any) => {
         const parts: any[] = [];
         if (turn.role === "user" && turn.image) {
           const imgPart = dataUrlToInlinePart(turn.image);
           if (imgPart) parts.push(imgPart);
         }
-        if (turn.text?.trim()) parts.push({ text: turn.text });
+        if (turn.text?.trim()) parts.push({ text: String(turn.text).slice(0, 10000) });
         return { role: turn.role, parts: parts.length ? parts : [{ text: "" }] };
       });
 
@@ -1415,14 +1469,14 @@ async function startServer() {
         role: "user",
         parts: [
           ...attachImages,
-          { text: prompt || (attachImages.length ? "Смотри изображения." : "") },
+          { text: safePrompt || (attachImages.length ? "Смотри изображения." : "") },
         ],
       });
 
-      const response = await ai.models.generateContent({
+      const response = await generateWithTimeout({
         model: GEMINI_MODEL,
         contents,
-        config: { systemInstruction },
+        config: { systemInstruction, maxOutputTokens: 2048 },
       });
 
       res.json({ text: response.text ?? "" });
@@ -1435,16 +1489,29 @@ async function startServer() {
   app.post("/api/gemini/analyze", authenticate, async (req, res) => {
     const { image, prompt } = req.body;
     try {
+      if (!isGeminiEnabled()) {
+        return res.status(503).json({ message: "ИИ-функции временно отключены администратором." });
+      }
+
+      const user = (req as any).user;
+      const rateCheck = checkAiRateLimit(user.uid);
+      if (!rateCheck.allowed) {
+        return res.status(429).json({ message: rateCheck.message });
+      }
+
       const inline = dataUrlToInlinePart(image);
       if (!inline) throw new Error("Invalid image data URL");
 
-      const response = await ai.models.generateContent({
+      const safePrompt = prompt ? String(prompt).slice(0, 2000) : "Analyze this image and describe it in detail.";
+
+      const response = await generateWithTimeout({
         model: GEMINI_MODEL,
         contents: [
           {
-            parts: [inline, { text: prompt || "Analyze this image and describe it in detail." }],
+            parts: [inline, { text: safePrompt }],
           },
         ],
+        config: { maxOutputTokens: 2048 },
       });
       res.json({ text: response.text ?? "" });
     } catch (e: any) {
@@ -1456,11 +1523,27 @@ async function startServer() {
   // 🪄 Gemini Smart Parser — /api/gemini/parse-tool
   app.post("/api/gemini/parse-tool", authenticate, async (req, res) => {
     try {
+      // 1. Kill Switch
+      if (!isGeminiEnabled()) {
+        return res.status(503).json({ message: "ИИ-парсер временно отключен администратором." });
+      }
+
+      // 2. Rate Limiting per User
+      const user = (req as any).user;
+      const rateCheck = checkAiRateLimit(user.uid);
+      if (!rateCheck.allowed) {
+        return res.status(429).json({ message: rateCheck.message });
+      }
+
       const { url, text, imageBase64 } = req.body;
 
       if (!url && !text && !imageBase64) {
         return res.status(400).json({ error: "Необходим хотя бы один из параметров: url, text или imageBase64" });
       }
+
+      // 3. Token & Payload Caps (защита от случайных гигантских объёмов)
+      const safeUrl = url ? String(url).trim().slice(0, 500) : "";
+      const safeText = text ? String(text).trim().slice(0, 12000) : "";
 
       const PARSE_SYSTEM_PROMPT = `Ты — экспертный технический аналитик программных инструментов и ИИ-проектов.
 Тебе предоставлен скриншот поста из Telegram/Twitter, ссылка на GitHub-репозиторий или текстовое описание инструмента.
@@ -1494,18 +1577,20 @@ async function startServer() {
 
       // Составляем текстовый запрос
       let userText = "Проанализируй следующий материал и верни JSON с информацией о проекте:\n\n";
-      if (url) userText += `GitHub URL: ${url}\n`;
-      if (text) userText += `Текст описания:\n${text}\n`;
-      if (imageBase64 && !url && !text) userText += "Анализируй предоставленный скриншот.";
+      if (safeUrl) userText += `GitHub URL: ${safeUrl}\n`;
+      if (safeText) userText += `Текст описания:\n${safeText}\n`;
+      if (imageBase64 && !safeUrl && !safeText) userText += "Анализируй предоставленный скриншот.";
 
       parts.push({ text: userText });
 
-      const response = await ai.models.generateContent({
+      // 4. Запрос с таймаутом и лимитом выходных токенов
+      const response = await generateWithTimeout({
         model: GEMINI_MODEL,
         contents: [{ role: "user", parts }],
         config: {
           systemInstruction: PARSE_SYSTEM_PROMPT,
           responseMimeType: "application/json",
+          maxOutputTokens: 2048,
           responseSchema: {
             type: "object" as any,
             properties: {
@@ -1528,7 +1613,6 @@ async function startServer() {
       const rawText = response.text ?? "{}";
       let parsed: any = {};
       try {
-        // Чистим markdown-обёртку если есть
         const cleaned = rawText.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
         parsed = JSON.parse(cleaned);
       } catch {

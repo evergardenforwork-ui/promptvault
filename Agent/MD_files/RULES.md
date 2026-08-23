@@ -19,7 +19,7 @@
 
 - **S (Single Responsibility)**: `server.ts` (dev) и `api/index.ts` (prod) — API-интерфейсы и адаптеры. Бизнес-логика разделена по сервисам и хукам.
 - **O (Open/Closed)**: Новые layout-типы добавляются через расширение `imageLayoutType` string и нового кейса в рендере.
-- **I (Interface Segregation)**: Типы в `src/types.ts` строго разделены на `User`, `Prompt`, `SkillPackage`, `SkillHint`, `Category`, `ChatMessage`, `SourceFilter`.
+- **I (Interface Segregation)**: Типы в `src/types.ts` строго разделены на `User`, `Prompt`, `SkillPackage`, `SkillHint`, `GitProject`, `Category`, `ChatMessage`, `SourceFilter`, `GitProjectCategory`, `GitProjectPricing`.
 - **D (Dependency Inversion)**: Компоненты зависят от `src/services/api.ts` (абстракция), а не от прямого `fetch`.
 
 ## DRY & KISS Guidelines
@@ -35,6 +35,45 @@
 - **UI-логика**: В компонентах `src/sections/` и `src/components/`.
 - **Типы**: Только в `src/types.ts` — единый источник правды для типизации.
 - **Изображения**: Загружать в Supabase Storage бакет `prompt-images`. Никаких локальных файлов.
+
+---
+
+## ⚠️ File Decomposition Rules — ОБЯЗАТЕЛЬНО
+
+> **Главное правило**: **ОДИН компонент = ОДИН файл**. Не складывай модалки, тулбары, панели и независимые блоки в один файл вместе с основным компонентом.
+
+### ❌ ЗАПРЕЩЕНО:
+```
+GitProjectForm.tsx   ← форма + AI-модалка + загрузка файла = 30KB  ← НАРУШЕНИЕ
+PhotoView.tsx        ← просмотр + чат + анализ + ИИ = 50KB         ← НАРУШЕНИЕ
+```
+
+### ✅ ПРАВИЛЬНО:
+```
+GitProjectForm.tsx          ← только форма (~16KB)
+AiSmartParserModal.tsx      ← только AI-модалка (~8KB)
+
+PhotoView.tsx               ← только оркестрация
+view/AIAssistant.tsx        ← изолированный ИИ-блок
+view/CollapsibleText.tsx    ← изолированный текстовый блок
+```
+
+### Пороги: когда выносить?
+| Признак | Действие |
+|---|---|
+| Файл > **~250 строк** или > **~15KB** | Обязательно разбить |
+| Внутри компонента есть `<AnimatePresence>` с отдельным state | Вынести в `XxxModal.tsx` |
+| Логика фильтрации / поиска > 30 строк | Вынести в `src/hooks/useXxx.ts` |
+| UI-блок встречается в 2+ местах | Вынести в `src/components/ui/Xxx.tsx` |
+
+### Файлы-исключения (разрешено держать "большими"):
+| Файл | Причина исключения |
+|---|---|
+| `server.ts` | Backend API + Vite интеграция — единый dev-процесс |
+| `api/index.ts` | Зеркало `server.ts` для Vercel — должны быть идентичны |
+| `App.tsx` | Центральный state-контейнер. Только state + prop drilling + навигация — НЕ рендер UI |
+
+> 💡 Паттерн новой секции: `Section.tsx` → `Card.tsx` → `Form.tsx` + `[XxxModal.tsx]` → `View.tsx`
 
 ## Validation Strategy
 
@@ -55,8 +94,9 @@
 - **Глобальный state**: `useState` в `App.tsx`, передаётся через props.
 - Серверный state: После мутации (POST/PUT/DELETE) — refetch через `loadData()`.
 
-## AI Assistant Status
-> **Внимание**: Раздел ИИ-ассистента (Gemini) в данный момент находится в статусе ⏳ "В разработке"/Отключено. Не модифицировать вызовы Gemini без явного запроса.
+## AI Assistant & Gemini Status
+> **Gemini parse-tool** (`/api/gemini/parse-tool`) — ✅ **АКТИВЕН**. Модель `gemini-3.1-flash-lite`. Используется для AI Smart Parser в разделе Git Hub.
+> **Gemini chat/analyze** (`/api/gemini/chat`, `/api/gemini/analyze`) — ⏸️ **Временно отключены**. Файл `AIAssistant.tsx` существует, но НЕ импортируется в PhotoView.tsx. Не модифицировать без явного запроса.
 
 ## Error Handling & Security Practices
 

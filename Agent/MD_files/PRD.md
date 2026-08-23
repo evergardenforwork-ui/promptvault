@@ -69,6 +69,7 @@ PromptVault — персональное fullstack веб-приложение �
 | Поддержка типов (Скилл, Агент, MCP) и ИИ платформ (Claude, Gemini, ChatGPT, DeepSeek, Cursor) | P1 | ✅ Готово |
 | Фильтры принадлежности (Все + чужие, Все мои, Авторские, Из сети, Чужие) | P1 | ✅ Готово |
 | Деплой на Vercel | P1 | 🔜 Готово к деплою |
+| **🐙 Git Hub & AI Tools (каталог, AI-парсер)** | P1 | ✅ Готово |
 
 ## Success Metrics
 
@@ -88,7 +89,7 @@ PromptVault — персональное fullstack веб-приложение �
 | Backend | Express.js | 4 |
 | Serverless | Vercel Serverless Function (`api/index.ts`) | — |
 | Runtime | Node.js + tsx | — |
-| ИИ | Google Gemini API | gemini-2.5-flash-lite |
+| ИИ | Google Gemini API | gemini-3.1-flash-lite |
 | БД | Supabase (PostgreSQL + Storage) | FREE tier |
 
 ## Deployment Strategy
@@ -109,4 +110,4 @@ PromptVault — персональное fullstack веб-приложение �
 | Phase 5 — Skill Space | VS Code-подобный просмотрщик, Hints, Editor, Фильтры | ✅ Готово |
 | Phase 6 — Deploy | Vercel деплой, vercel.json + api/index.ts | 🔜 Готово к деплою |
 | Phase 7 — Modular Sections | Модульная архитектура (PromptsSection, SkillsSection, UsersSection), подготовка к Git проектам | ✅ Готово |
-| Phase 8 — Git Projects & Hub | Вкладка Git репозиториев, клонирование, коммиты | 📋 Запланировано |
+| Phase 8 — Git Hub & AI Tools | 🐙 Раздел Git-проектов с карточками, AI Smart Parser (Gemini 3.1 Flash-Lite), аккордеонами | ✅ Готово |

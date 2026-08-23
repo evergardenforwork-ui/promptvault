@@ -138,3 +138,52 @@ export interface SkillHint {
   text: string;
   createdAt: string;
 }
+
+// ─── Git Projects / AI Tools Hub ──────────────────────────────────────────────
+
+export type GitProjectCategory = 'agents' | 'tools' | 'models' | 'media' | 'scrapers' | 'other';
+export type GitProjectPricing = 'free' | 'freemium' | 'paid';
+
+export const GIT_CATEGORY_OPTIONS: { value: GitProjectCategory; label: string; emoji: string }[] = [
+  { value: 'agents',   label: 'ИИ-Агенты',    emoji: '🤖' },
+  { value: 'tools',    label: 'Инструменты',  emoji: '🛠️' },
+  { value: 'models',   label: 'Модели',       emoji: '🧠' },
+  { value: 'media',    label: 'Медиа',        emoji: '🎬' },
+  { value: 'scrapers', label: 'Скрейперы',    emoji: '🕷️' },
+  { value: 'other',    label: 'Другое',       emoji: '📦' },
+];
+
+export const GIT_PRICING_OPTIONS: { value: GitProjectPricing; label: string; color: string }[] = [
+  { value: 'free',     label: 'Бесплатно', color: 'text-emerald-400 bg-emerald-950/60 border-emerald-800/40' },
+  { value: 'freemium', label: 'Freemium',  color: 'text-amber-400 bg-amber-950/60 border-amber-800/40' },
+  { value: 'paid',     label: 'Платный',   color: 'text-rose-400 bg-rose-950/60 border-rose-800/40' },
+];
+
+export interface GitProject {
+  id: string;
+  userId: string;
+  title: string;
+  category: GitProjectCategory;
+  summary: string;
+  features?: string;
+  detailedDescription?: string;
+  installCommand?: string;
+  authorNotes?: string;
+  githubUrl?: string;
+  demoUrl?: string;
+  image?: string;
+  tags: string[];
+  pricing: GitProjectPricing;
+  isFavorite?: boolean;
+  isPublic?: boolean;
+  authorName: string;
+  authorEmail: string;
+  createdAt: string;
+}
+
+export interface ParseToolRequest {
+  url?: string;
+  text?: string;
+  imageBase64?: string;
+}
+

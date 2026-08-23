@@ -1,9 +1,21 @@
-# [🔴 НУЖНО СДЕЛАТЬ] Plan: Раздел «Git Проекты & AI Инструменты» + Gemini Smart Parser
+# [✅ ВЫПОЛНЕНО] Plan: Раздел «Git Проекты & AI Инструменты» + Gemini Smart Parser
 
-> **Статус**: 🔴 **НУЖНО СДЕЛАТЬ** (Фокус следующего этапа)
+> **Статус**: ✅ **ВЫПОЛНЕНО** (2026-08-23)
 > **Дата создания**: 2026-08-23  
 > **Связанные документы**: [`PRD.md`](../MD_files/PRD.md), [`SCHEMA.md`](../MD_files/SCHEMA.md), [`ARCHITECTURE.md`](../MD_files/ARCHITECTURE.md)  
 > **Тестовый прототип**: [`test/index.html`](../../test/index.html)
+
+### ✅ Все пункты плана выполнены:
+1. ✅ **Типы** — `GitProject`, `GitProjectCategory`, `GitProjectPricing`, `ParseToolRequest`, `GIT_CATEGORY_OPTIONS`, `GIT_PRICING_OPTIONS` добавлены в `src/types.ts`
+2. ✅ **SQL-миграция** — `scripts/create_git_projects_table.sql` создан (выполнить в Supabase!)
+3. ✅ **CRUD API** — `/api/git-projects` (GET/POST/PUT/DELETE) в `server.ts` и `api/index.ts`
+4. ✅ **Gemini Smart Parser** — `/api/gemini/parse-tool` с моделью `gemini-3.1-flash-lite`, Structured JSON Output, системный промпт на русском
+5. ✅ **GitProjectsSection.tsx** — сетка карточек, фильтры категорий/цены/источника, избранное, сортировка
+6. ✅ **GitProjectCard.tsx** — grid и list режим, hero-image, бейджи, ссылки GitHub/Demo, подсветка поиска
+7. ✅ **GitProjectForm.tsx** — полная форма с аккордеонами (Фичи, Установка, Описание, Заметки) + 🪄 AI Smart Parser модалка (URL / текст / скриншот)
+8. ✅ **GitProjectView.tsx** — полноэкранный просмотр с аккордеонами, кнопкой копирования команды, CopyButton, ConfirmDialog
+9. ✅ **Навигация** — вкладка `🐙 Git Hub` добавлена в Header `App.tsx`, state `isGitFormOpen`, `viewingGitProject`, `editingGitProject`
+10. ✅ **Линтер и сборка** — `npm run lint` и `npm run build` ✅ 0 ошибок
 
 ---
 

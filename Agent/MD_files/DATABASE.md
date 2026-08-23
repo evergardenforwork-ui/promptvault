@@ -20,6 +20,7 @@
 | `categories` | Пользовательские и системные категории |
 | `chats` | История сообщений чата с Gemini |
 | `user_favorites` | Личное избранное пользователей (полиморфная связка `item_id` + `item_type`) |
+| `git_projects` | 🐙 Git Hub & AI Tools: каталог репозиториев, агентов, моделей с AI-парсером |
 | `prompt-images` (Bucket) | Хранение изображений карточек (до/после, оригиналы, слоты) |
 | `prompt-files` (Bucket) | Хранение ZIP архивов пакетов скиллов |
 
@@ -117,12 +118,34 @@ erDiagram
         timestamptz created_at
     }
 
+    GIT_PROJECTS {
+        uuid id PK
+        text user_id FK
+        text title
+        text category
+        text summary
+        text features
+        text detailed_description
+        text install_command
+        text author_notes
+        text github_url
+        text demo_url
+        text image
+        text[] tags
+        text pricing
+        boolean is_public
+        text author_name
+        text author_email
+        timestamptz created_at
+    }
+
     USERS ||--o{ PROMPTS : "создаёт"
     USERS ||--o{ SKILLS : "создаёт"
     USERS ||--o{ CATEGORIES : "создаёт (userId=admin-uid → общие)"
     USERS ||--o{ CHATS : "пишет"
     USERS ||--o{ USER_FAVORITES : "имеет личное избранное"
     USERS ||--o{ SKILL_HINTS : "создаёт"
+    USERS ||--o{ GIT_PROJECTS : "добавляет"
     PROMPTS ||--o{ CHATS : "обсуждается в"
     SKILLS ||--o{ SKILL_HINTS : "содержит"
 ```
@@ -283,4 +306,32 @@ CREATE INDEX IF NOT EXISTS idx_skills_user_id        ON skills(user_id);
 CREATE INDEX IF NOT EXISTS idx_skills_is_public      ON skills(is_public);
 CREATE INDEX IF NOT EXISTS idx_skill_hints_skill_id  ON skill_hints(skill_id);
 CREATE INDEX IF NOT EXISTS idx_user_favorites_user   ON user_favorites(user_id);
+
+-- 8. Git Projects / AI Tools Hub (выполнить scripts/create_git_projects_table.sql в Supabase!)
+CREATE TABLE IF NOT EXISTS git_projects (
+    id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id              TEXT NOT NULL REFERENCES users(uid) ON DELETE CASCADE,
+    title                TEXT NOT NULL,
+    category             TEXT NOT NULL DEFAULT 'tools',
+    summary              TEXT NOT NULL,
+    features             TEXT,
+    detailed_description TEXT,
+    install_command      TEXT,
+    author_notes         TEXT,
+    github_url           TEXT,
+    demo_url             TEXT,
+    image                TEXT,
+    tags                 TEXT[] DEFAULT '{}',
+    pricing              TEXT NOT NULL DEFAULT 'free',
+    is_public            BOOLEAN DEFAULT true,
+    author_name          TEXT NOT NULL DEFAULT '',
+    author_email         TEXT NOT NULL DEFAULT '',
+    created_at           TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_git_projects_user_id  ON git_projects(user_id);
+CREATE INDEX IF NOT EXISTS idx_git_projects_category ON git_projects(category);
+CREATE INDEX IF NOT EXISTS idx_git_projects_pricing  ON git_projects(pricing);
+CREATE INDEX IF NOT EXISTS idx_git_projects_tags     ON git_projects USING GIN (tags);
+CREATE INDEX IF NOT EXISTS idx_git_projects_created  ON git_projects(created_at DESC);
 ```

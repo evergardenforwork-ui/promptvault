@@ -13,7 +13,7 @@
 | [`plan_skill_space.md`](plan_skill_space.md) | `[✅ ВЫПОЛНЕНО]` | Полноэкранный fixed IDE лейаут, просмотрщик файлов | ❌ **НЕТ** (Всё реализовано) |
 | [`plan_skill_hints.md`](plan_skill_hints.md) | `[✅ ВЫПОЛНЕНО]` | Панель подсказок-промптов, Inline File Editor (Ctrl+S) | ❌ **НЕТ** (Всё реализовано) |
 | [`plan_file_system.md`](plan_file_system.md) | `[✅ ВЫПОЛНЕНО]` | Дерево файлов, загрузка/сборка ZIP архивов на лету | ❌ **НЕТ** (Всё реализовано) |
-| **[`plan_git_hub.md`](plan_git_hub.md)** | `[🔴 НУЖНО СДЕЛАТЬ]` | 🐙 Новый раздел Git Tools Hub, аккордеоны, Gemini Smart Parser | ✅ **ДА** (В разработке) |
+| **[`plan_git_hub.md`](plan_git_hub.md)** | `[✅ ВЫПОЛНЕНО]` | 🐙 Новый раздел Git Tools Hub, аккордеоны, Gemini Smart Parser | ❌ **НЕТ** (Всё реализовано) |
 | **[`plan.md`](plan.md)** (текущий) | `[🟡 ДОРАБОТКА / 🔴 НУЖНО СДЕЛАТЬ]` | Главный план дорожной карты, этапы 9–10, бэклог фич | ✅ **ДА** (Актуальный бэклог) |
 
 ---
@@ -436,13 +436,16 @@ npm install bcryptjs @types/bcryptjs
 
 ### 🎯 Приоритет следующей сессии
 
-> **✅ ТЕКУЩИЙ СТАТУС**: Полный функционал промптов, скиллов, веб-IDE пространства, фильтров, Supabase PostgreSQL & Storage и Vercel Serverless адаптера полностью готов и протестирован.
+> **✅ ТЕКУЩИЙ СТАТУС**: Полный функционал промптов, скиллов, веб-IDE пространства, фильтров, Supabase PostgreSQL & Storage, Vercel Serverless адаптера и раздела **🐙 Git Hub & AI Tools** полностью готов и протестирован. `npm run lint` и `npm run build` — ✅ 0 ошибок.
 
-**Осталось 2 шага вручную для выкатки в прод:**
-1. 🔴 **Supabase**: выполнить `scripts/create_skill_hints_table.sql` в SQL Editor (если таблица еще не создана)
-2. 🔴 **Vercel**: проверить деплой и переменные окружения
+**Осталось сделать вручную для запуска Git Hub:**
+1. 🔴 **Supabase**: выполнить `scripts/create_git_projects_table.sql` в SQL Editor (таблица `git_projects`)
+2. 🔴 **Supabase**: выполнить `scripts/create_skill_hints_table.sql` (если таблица ещё не создана)
+3. 🔴 **Vercel**: проверить деплой и переменные окружения
 
-**Планы на следующую сессию (быстрые победы):**
+**Планы на следующую сессию:**
 1. 🟡 **Включить Gemini ИИ-ассистент** — убрать заглушку в PhotoView.tsx
 2. 🟡 **Каскадное удаление favorites** при удалении промпта — tech debt
 3. 🟡 **Профиль пользователя** — базовая страница со статистикой
+4. 🟡 **Расширить Git Hub фильтры** — облако тегов
+5. 🟡 **Добавить `git_projects` в backup** export/import ZIP

@@ -183,11 +183,11 @@ export const api = {
   },
 
   // Favorites (personal, per-user)
-  async getFavorites(): Promise<{ prompts: string[]; skills: string[] }> {
+  async getFavorites(): Promise<{ prompts: string[]; skills: string[]; gitProjects?: string[] }> {
     return request('/favorites');
   },
 
-  async toggleFavorite(itemId: string, itemType: 'prompt' | 'skill'): Promise<{ added: boolean; favorites: { prompts: string[]; skills: string[] } }> {
+  async toggleFavorite(itemId: string, itemType: 'prompt' | 'skill' | 'git_project'): Promise<{ added: boolean; favorites: { prompts: string[]; skills: string[]; gitProjects?: string[] } }> {
     return request('/favorites/toggle', {
       method: 'POST',
       body: JSON.stringify({ itemId, itemType }),
@@ -232,4 +232,36 @@ export const api = {
   async deleteSkillHint(skillId: string, hintId: string): Promise<void> {
     return request(`/skills/${skillId}/hints/${hintId}`, { method: 'DELETE' });
   },
+
+  // Git Projects (AI Tools Hub)
+  async getGitProjects(): Promise<import('../types').GitProject[]> {
+    return request('/git-projects');
+  },
+
+  async createGitProject(project: Omit<import('../types').GitProject, 'id' | 'createdAt' | 'userId' | 'authorName' | 'authorEmail'>): Promise<import('../types').GitProject> {
+    return request('/git-projects', {
+      method: 'POST',
+      body: JSON.stringify(project),
+    });
+  },
+
+  async updateGitProject(id: string, project: Partial<import('../types').GitProject>): Promise<import('../types').GitProject> {
+    return request(`/git-projects/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(project),
+    });
+  },
+
+  async deleteGitProject(id: string): Promise<void> {
+    return request(`/git-projects/${id}`, { method: 'DELETE' });
+  },
+
+  // Gemini AI Smart Parser
+  async parseToolWithGemini(data: import('../types').ParseToolRequest): Promise<Partial<import('../types').GitProject>> {
+    return request('/gemini/parse-tool', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
 };
+

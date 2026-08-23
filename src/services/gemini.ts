@@ -1,6 +1,6 @@
 import { api } from "./api";
 
-export const GEMINI_MODEL = "gemini-2.5-flash-lite";
+export const GEMINI_MODEL = "gemini-3.1-flash-lite";
 
 export type GeminiHistoryTurn = {
   role: "user" | "model";

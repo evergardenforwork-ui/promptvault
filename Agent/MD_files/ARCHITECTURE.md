@@ -11,22 +11,25 @@ Browser (React 19 SPA)
         │  HTTP (fetch) + Authorization: Bearer <uid>
         ▼
 [ Dev: Express.js (server.ts, порт 3000) / Prod: Vercel Serverless Function (api/index.ts) ]
-  ├─ /api/health     ← Диагностический health check
-  ├─ /api/auth/*     ← Авторизация (bcrypt)
-  ├─ /api/prompts/*  ← CRUD промптов + пагинация
-  ├─ /api/skills/*   ← CRUD пакетов скиллов + /hints
-  ├─ /api/categories ← Управление категориями
-  ├─ /api/favorites  ← Личное избранное
-  ├─ /api/users/*    ← Управление пользователями (admin only)
-  ├─ /api/chats/*    ← История чатов
-  ├─ /api/export     ← Резервная копия (ZIP)
-  └─ /api/import     ← Восстановление из ZIP
-        ├─ Supabase (PostgreSQL)   ← Таблицы users, prompts, skills, skill_hints, categories, chats, user_favorites
-        ├─ Supabase Storage        ← Бакеты prompt-images, prompt-files
+  ├─ /api/health          ← Диагностический health check
+  ├─ /api/auth/*          ← Авторизация (bcrypt)
+  ├─ /api/prompts/*       ← CRUD промптов + пагинация
+  ├─ /api/skills/*        ← CRUD пакетов скиллов + /hints
+  ├─ /api/git-projects/*  ← CRUD Git проектов (GET/POST/PUT/DELETE)
+  ├─ /api/categories      ← Управление категориями
+  ├─ /api/favorites       ← Личное избранное
+  ├─ /api/users/*         ← Управление пользователями (admin only)
+  ├─ /api/chats/*         ← История чатов
+  ├─ /api/export          ← Резервная копия (ZIP)
+  ├─ /api/import          ← Восстановление из ZIP
+  └─ /api/gemini/*
+       ├─ /api/gemini/chat       ← Чат с историей (временно не используется)
+       ├─ /api/gemini/analyze    ← Анализ изображения (временно не используется)
+       └─ /api/gemini/parse-tool ← 🪄 AI Smart Parser (URL / текст / скриншот → JSON)
+        ├─ Supabase (PostgreSQL)   ← Таблицы: users, prompts, skills, skill_hints, categories, chats, user_favorites, git_projects
+        ├─ Supabase Storage        ← Бакеты: prompt-images, prompt-files
         │
-        └─ Google Gemini API (gemini-2.5-flash-lite) (⏳ в разработке)
-             ├─ /api/gemini/chat     ← Чат с историей
-             └─ /api/gemini/analyze  ← Анализ изображения
+        └─ Google Gemini API (gemini-3.1-flash-lite) — активен для /api/gemini/parse-tool
 ```
 
 ## Layered Architecture & Conventions
@@ -45,6 +48,45 @@ Browser (React 19 SPA)
 ├──────────────────────────────────────┤
 │  Data & Storage Layer                │  Supabase Postgres DB, Buckets (prompt-images, prompt-files)
 └──────────────────────────────────────┘
+```
+
+## ⚠️ Component Decomposition Rules (Правила декомпозиции)
+
+> **Главное правило**: ОДИН компонент = ОДИН файл. Не сваливай модалки, тулбары и сложную логику в один файл.
+
+### Разрешено держать в одном файле:
+| Файл | Почему |
+|---|---|
+| `server.ts` | Dev-сервер: единый процесс Express + Vite, дублировать нельзя |
+| `api/index.ts` | Зеркало `server.ts` для Vercel — должны быть идентичны |
+| `App.tsx` | Только глобальный state + навигация. **Рендер секций** через импорт |
+| Маленькие (< 150 строк) утилиты | `cn.ts`, `buildSelectionZip.ts` — нет смысла дробить |
+
+### Когда выносить в отдельный файл:
+| Сигнал | Действие |
+|---|---|
+| Компонент > **~200 строк** | Разбить на подкомпоненты |
+| Модалка / попап внутри формы | Вынести: `XxxModal.tsx` рядом с `XxxForm.tsx` |
+| Логика фильтрации / поиска | Вынести в `src/hooks/useXxx.ts` |
+| Повторяющийся UI-блок | Вынести в `src/components/ui/Xxx.tsx` |
+| Секция с собственным state и view | Вынести в `src/sections/domain/XxxView.tsx` |
+
+### Паттерн структуры новой секции:
+```
+src/sections/<domain>/
+├── <Domain>Section.tsx      ← Оркестратор: сетка, тулбар, фильтры (~150-250 строк)
+├── <Domain>Card.tsx         ← Карточка в сетке (~100-200 строк)
+├── <Domain>Form.tsx         ← Форма создания/редактирования (~200-350 строк)
+├── <Domain>View.tsx         ← Просмотр / детальная страница (~200-350 строк)
+└── [XxxModal.tsx]           ← Отдельная модалка если есть (< 200 строк)
+```
+
+### Реальные примеры из проекта:
+```
+✅ skills/SkillForm.tsx + space/SkillHintsPanel.tsx  — разделены
+✅ git/GitProjectForm.tsx + git/AiSmartParserModal.tsx — разделены
+✅ photo/form/ImageSlotsSection.tsx + form/SubSectionsEditor.tsx — разделены
+❌ (было) git/GitProjectForm.tsx = форма + модалка (30KB) — ИСПРАВЛЕНО
 ```
 
 ## Directory & Domain Structure
@@ -84,6 +126,12 @@ promptvault/
 │   │       ├── SkillForm.tsx      ← Форма создания/редактирования пакета
 │   │       ├── SkillSpaceView.tsx ← Полноэкранный IDE-лейаут (h-screen, fixed viewport)
 │   │       └── space/             ← SpaceFileTree, SpaceFilePreview, SpaceContextMenu, SpaceSelectionBar, SkillHintsPanel
+│   │   └── git/                       ← 🐙 Git Hub & AI Tools раздел
+│   │       ├── GitProjectsSection.tsx     ← Сетка + фильтры категорий/цены/источника
+│   │       ├── GitProjectCard.tsx         ← Карточка с hero-image, бейджами, ссылками
+│   │       ├── GitProjectForm.tsx         ← Форма (оркестратор, подключает AI-модалку)
+│   │       ├── AiSmartParserModal.tsx     ← 🪄 AI Smart Parser модалка (изолированная)
+│   │       └── GitProjectView.tsx         ← Полноэкранный просмотр с аккордеонами
 │   ├── services/
 │   │   ├── api.ts          ← fetch-обёртки для всех /api/* эндпоинтов
 │   │   └── gemini.ts       ← Клиент для /api/gemini/* эндпоинтов

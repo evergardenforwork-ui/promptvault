@@ -88,6 +88,26 @@ erDiagram
         text item_type PK
         timestamptz created_at
     }
+    GIT_PROJECT {
+        uuid id PK
+        text user_id FK
+        text title
+        text category
+        text summary
+        text features
+        text detailed_description
+        text install_command
+        text author_notes
+        text github_url
+        text demo_url
+        text image
+        text[] tags
+        text pricing
+        boolean is_public
+        text author_name
+        text author_email
+        timestamptz created_at
+    }
 
     USER ||--o{ PROMPT : "создаёт"
     USER ||--o{ SKILL : "создаёт"
@@ -95,6 +115,7 @@ erDiagram
     USER ||--o{ CHAT : "пишет"
     USER ||--o{ USER_FAVORITES : "имеет"
     USER ||--o{ SKILL_HINT : "создаёт"
+    USER ||--o{ GIT_PROJECT : "добавляет"
     PROMPT ||--o{ CHAT : "имеет историю"
     SKILL ||--o{ SKILL_HINT : "содержит"
 ```
@@ -205,6 +226,31 @@ erDiagram
 | `item_type` | TEXT (PK part) | `prompt` \| `skill` |
 | `created_at` | TIMESTAMPTZ | |
 
+### `git_projects` (Supabase Table) — Git Hub & AI Tools
+
+| Поле | Тип | Описание |
+|---|---|---|
+| `id` | UUID (PK) | Авто-генерируется |
+| `user_id` | TEXT (FK → users) | uid автора |
+| `title` | TEXT | Название проекта |
+| `category` | TEXT | `agents` \| `tools` \| `models` \| `media` \| `scrapers` \| `other` |
+| `summary` | TEXT | Краткий слоган (1-2 предложения) |
+| `features` | TEXT? | Ключевые фичи через `• ` буллеты |
+| `detailed_description` | TEXT? | Подробное описание архитектуры |
+| `install_command` | TEXT? | Команды установки/запуска |
+| `author_notes` | TEXT? | Личные заметки автора |
+| `github_url` | TEXT? | Ссылка на GitHub репозиторий |
+| `demo_url` | TEXT? | Ссылка на демо/сайт |
+| `image` | TEXT? | base64 или URL скриншота/баннера |
+| `tags` | TEXT[] | Технические теги (англ., нижний регистр) |
+| `pricing` | TEXT | `free` \| `freemium` \| `paid` |
+| `is_public` | BOOLEAN | Видимость для других пользователей |
+| `author_name` | TEXT | Имя автора |
+| `author_email` | TEXT | Email автора |
+| `created_at` | TIMESTAMPTZ | Дата создания |
+
+> ⚠️ Таблица создаётся вручную. SQL: `scripts/create_git_projects_table.sql`
+
 ## Supabase Storage Buckets (PUBLIC)
 
 | Бакет | Описание | Лимит |
@@ -277,11 +323,20 @@ erDiagram
 | GET | `/api/export` | ✅ admin | Скачать ZIP-бэкап |
 | POST | `/api/import` | ✅ admin | Восстановить из ZIP |
 
-### `/api/gemini` (временно не используется)
+### `/api/gemini` (parse-tool активен, chat/analyze временно отключены)
 | Метод | Путь | Auth | Описание |
 |---|---|---|---|
-| POST | `/api/gemini/chat` | ✅ | Чат с историей |
-| POST | `/api/gemini/analyze` | ✅ | Анализ изображения |
+| POST | `/api/gemini/chat` | ✅ | Чат с историей ⏸️ (временно не используется) |
+| POST | `/api/gemini/analyze` | ✅ | Анализ изображения ⏸️ (временно не используется) |
+| POST | `/api/gemini/parse-tool` | ✅ | 🪄 AI Smart Parser: URL / текст / скриншот → JSON карточки Git-проекта |
+
+### `/api/git-projects`
+| Метод | Путь | Auth | Описание |
+|---|---|---|---|
+| GET | `/api/git-projects` | ✅ | Список Git-проектов (все публичные + свои) |
+| POST | `/api/git-projects` | ✅ | Создать проект |
+| PUT | `/api/git-projects/:id` | ✅ | Обновить проект (только автор или admin) |
+| DELETE | `/api/git-projects/:id` | ✅ | Удалить проект |
 
 ## camelCase ↔ snake_case Mapping
 

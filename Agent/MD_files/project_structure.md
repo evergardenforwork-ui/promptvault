@@ -40,8 +40,7 @@ promptvault/
     ├── types.ts              # Единый источник TypeScript типов
     ├── services/
     │   ├── api.ts            # API клиент для взаимодействия с бэкендом
-    │   ├── gemini.ts         # Клиент Gemini AI (временно отключён)
-    │   └── supabaseServer.ts # Инициализация Supabase клиента
+    │   └── gemini.ts         # Клиент Gemini AI (обёртки)
     ├── hooks/
     │   ├── useHotkeys.ts     # Глобальные горячие клавиши
     │   ├── usePromptFilters.ts # Фильтрация и подсчёт промптов (all, my-all, my-own, my-web, others)
@@ -58,7 +57,8 @@ promptvault/
         ├── admin/            # UsersSection.tsx (управление пользователями)
         ├── prompts/          # PromptsSection.tsx (сетка, тулбар фильтров, пагинация промптов)
         ├── photo/            # PhotoCard, PhotoForm, PhotoView, ImageSlotsSection, SubSectionsEditor
-        └── skills/           # SkillsSection, SkillCard, SkillForm, SkillSpaceView, SpaceFileTree, SpaceFilePreview, SpaceContextMenu, SpaceSelectionBar, SkillHintsPanel
+        ├── skills/           # SkillsSection, SkillCard, SkillForm, SkillSpaceView, SpaceFileTree, SpaceFilePreview, SpaceContextMenu, SpaceSelectionBar, SkillHintsPanel
+        └── git/              # GitProjectsSection, GitProjectCard, GitProjectForm, AiSmartParserModal, GitProjectView
 ```
 
 ---
@@ -67,7 +67,7 @@ promptvault/
 
 *   **Frontend**: React (v19), Vite (v6), Tailwind CSS (v4), Framer Motion (`motion` v12), Lucide React, React Markdown.
 *   **Backend / DB**: Node.js + Express.js (`server.ts` dev, `api/index.ts` prod) + Supabase (PostgreSQL + Supabase Storage).
-*   **ИИ**: Google Gemini SDK (`@google/genai`), модель `gemini-2.5-flash-lite` (в разработке).
+*   **ИИ**: Google Gemini SDK (`@google/genai`), модель `gemini-3.1-flash-lite` (активна для AI Smart Parser).
 
 ---
 
@@ -77,10 +77,11 @@ promptvault/
 2. **`prompts`** — шаблоны промптов, макеты изображений (6 layout-типов), подсекции, теги, счетчик использований.
 3. **`skills`** — наборы скиллов, субагентов и MCP, дерево файлов (`file_structure`), поддерживаемые типы ИИ (`target_ais`).
 4. **`skill_hints`** — готовые подсказки-промпты для быстрого применения конкретного скилла в ИИ.
-5. **`categories`** — пользовательские и системные категории для группировки.
-6. **`chats`** — история диалогов с Gemini.
-7. **`user_favorites`** — полиморфная таблица личного избранного.
-8. **Storage Buckets**: `prompt-images` (изображения), `prompt-files` (ZIP-архивы).
+5. **`git_projects`** — каталог полезных репозиториев, агентов и тулзов с фичами, гайдом по установке и AI-парсером.
+6. **`categories`** — пользовательские и системные категории для группировки.
+7. **`chats`** — история диалогов с Gemini.
+8. **`user_favorites`** — полиморфная таблица личного избранного.
+9. **Storage Buckets**: `prompt-images` (изображения), `prompt-files` (ZIP-архивы).
 
 ---
 

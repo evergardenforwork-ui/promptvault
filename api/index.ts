@@ -38,7 +38,7 @@ const supabase = createClient(
 
 // ─── Google Gemini ────────────────────────────────────────────────────────────
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
-const GEMINI_MODEL = "gemini-2.5-flash-lite";
+const GEMINI_MODEL = "gemini-3.1-flash-lite";
 
 // ─── camelCase → snake_case helpers ──────────────────────────────────────────
 
@@ -229,15 +229,16 @@ async function authenticate(
   next();
 }
 
-async function getUserFavoriteIds(uid: string): Promise<{ prompts: string[]; skills: string[] }> {
+async function getUserFavoriteIds(uid: string): Promise<{ prompts: string[]; skills: string[]; gitProjects: string[] }> {
   const { data, error } = await supabase
     .from("user_favorites")
     .select("item_id, item_type")
     .eq("user_id", uid);
-  if (error || !data) return { prompts: [], skills: [] };
+  if (error || !data) return { prompts: [], skills: [], gitProjects: [] };
   return {
     prompts: data.filter((r) => r.item_type === "prompt").map((r) => r.item_id),
     skills: data.filter((r) => r.item_type === "skill").map((r) => r.item_id),
+    gitProjects: data.filter((r) => r.item_type === "git_project").map((r) => r.item_id),
   };
 }
 
@@ -653,5 +654,173 @@ app.post("/api/gemini/analyze", authenticate, async (req, res) => {
   } catch (e: any) { console.error("Gemini Analyze Error:", e); res.status(500).json({ message: e.message || "Ошибка работы с Gemini" }); }
 });
 
+// ─── API: Git Projects (AI Tools Hub) ────────────────────────────────────────
+
+function gitProjectToDb(data: any, userId: string) {
+  return {
+    user_id: userId,
+    title: data.title || '',
+    category: data.category || 'tools',
+    summary: data.summary || '',
+    features: data.features || null,
+    detailed_description: data.detailedDescription || null,
+    install_command: data.installCommand || null,
+    author_notes: data.authorNotes || null,
+    github_url: data.githubUrl || null,
+    demo_url: data.demoUrl || null,
+    image: data.image || null,
+    tags: data.tags || [],
+    pricing: data.pricing || 'free',
+    is_public: data.isPublic ?? true,
+    author_name: data.authorName || '',
+    author_email: data.authorEmail || '',
+  };
+}
+
+function gitProjectFromDb(row: any, isFavorite = false) {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    title: row.title,
+    category: row.category || 'tools',
+    summary: row.summary || '',
+    features: row.features || '',
+    detailedDescription: row.detailed_description || '',
+    installCommand: row.install_command || '',
+    authorNotes: row.author_notes || '',
+    githubUrl: row.github_url || '',
+    demoUrl: row.demo_url || '',
+    image: row.image || null,
+    tags: row.tags || [],
+    pricing: row.pricing || 'free',
+    isPublic: row.is_public,
+    authorName: row.author_name || '',
+    authorEmail: row.author_email || '',
+    createdAt: row.created_at,
+    isFavorite,
+  };
+}
+
+app.get("/api/git-projects", authenticate, async (req, res) => {
+  try {
+    const user = (req as any).user;
+    const { data, error } = await supabase.from("git_projects").select("*").order("created_at", { ascending: false });
+    if (error) throw error;
+    const { data: favData } = await supabase.from("user_favorites").select("item_id").eq("user_id", user.uid).eq("item_type", "git_project");
+    const favIds = new Set((favData || []).map((f: any) => f.item_id));
+    res.json((data || []).map((row: any) => gitProjectFromDb(row, favIds.has(row.id))));
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
+app.post("/api/git-projects", authenticate, async (req, res) => {
+  try {
+    const user = (req as any).user;
+    if (!req.body.title || !req.body.summary) return res.status(400).json({ error: "title и summary обязательны" });
+    let imageUrl = req.body.image || null;
+    if (imageUrl?.startsWith("data:image/")) imageUrl = await uploadImage(imageUrl, "git_project");
+    const dbRow = gitProjectToDb({ ...req.body, image: imageUrl, authorName: user.displayName, authorEmail: user.email }, user.uid);
+    const { data, error } = await supabase.from("git_projects").insert(dbRow).select().single();
+    if (error) throw error;
+    res.status(201).json(gitProjectFromDb(data));
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
+app.put("/api/git-projects/:id", authenticate, async (req, res) => {
+  try {
+    const user = (req as any).user;
+    const { id } = req.params;
+    const { data: existing } = await supabase.from("git_projects").select("user_id").eq("id", id).single();
+    if (!existing) return res.status(404).json({ error: "Проект не найден" });
+    if (existing.user_id !== user.uid && user.role !== "admin") return res.status(403).json({ error: "Нет прав" });
+    let imageUrl = req.body.image || null;
+    if (imageUrl?.startsWith("data:image/")) imageUrl = await uploadImage(imageUrl, `git_project_${id}`);
+    const updates: any = {
+      title: req.body.title, category: req.body.category, summary: req.body.summary,
+      features: req.body.features ?? null, detailed_description: req.body.detailedDescription ?? null,
+      install_command: req.body.installCommand ?? null, author_notes: req.body.authorNotes ?? null,
+      github_url: req.body.githubUrl ?? null, demo_url: req.body.demoUrl ?? null,
+      tags: req.body.tags || [], pricing: req.body.pricing || 'free', is_public: req.body.isPublic ?? true,
+    };
+    if (imageUrl !== undefined) updates.image = imageUrl;
+    const { data, error } = await supabase.from("git_projects").update(updates).eq("id", id).select().single();
+    if (error) throw error;
+    res.json(gitProjectFromDb(data));
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
+app.delete("/api/git-projects/:id", authenticate, async (req, res) => {
+  try {
+    const user = (req as any).user;
+    const { id } = req.params;
+    const { data: existing } = await supabase.from("git_projects").select("user_id").eq("id", id).single();
+    if (!existing) return res.status(404).json({ error: "Проект не найден" });
+    if (existing.user_id !== user.uid && user.role !== "admin") return res.status(403).json({ error: "Нет прав" });
+    const { error } = await supabase.from("git_projects").delete().eq("id", id);
+    if (error) throw error;
+    await supabase.from("user_favorites").delete().eq("item_id", id).eq("item_type", "git_project");
+    res.json({ message: "Проект удалён" });
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
+// 🪄 Gemini Smart Parser
+app.post("/api/gemini/parse-tool", authenticate, async (req, res) => {
+  try {
+    const { url, text, imageBase64 } = req.body;
+    if (!url && !text && !imageBase64) return res.status(400).json({ error: "Нужен url, text или imageBase64" });
+
+    const PARSE_SYSTEM_PROMPT = `Ты — экспертный технический аналитик программных инструментов и ИИ-проектов.
+Тебе предоставлен скриншот поста из Telegram/Twitter, ссылка на GitHub-репозиторий или текстовое описание инструмента.
+Твоя задача — извлечь ключевую информацию и вернуть строгий JSON по схеме без каких-либо пояснений.
+
+Правила:
+- title: точное официальное название проекта (без эмодзи)
+- category: ТОЛЬКО одно из: agents | tools | models | media | scrapers | other
+- summary: краткая ёмкая суть на русском языке, 1-2 предложения
+- features: список из 3-7 ключевых возможностей через буллет "• ", каждая с новой строки, на русском
+- detailedDescription: подробное описание архитектуры и сценариев применения на русском (2-4 предложения)
+- installCommand: точные консольные команды установки и запуска
+- githubUrl: полная ссылка https://github.com/... (если есть)
+- demoUrl: ссылка на демо/сайт (если есть)
+- tags: массив из 4-7 технических тегов на английском в нижнем регистре
+- pricing: ТОЛЬКО одно из: free | freemium | paid`;
+
+    const parts: any[] = [];
+    if (imageBase64) { const p = dataUrlToInlinePart(imageBase64); if (p) parts.push(p); }
+    let userText = "Проанализируй следующий материал и верни JSON с информацией о проекте:\n\n";
+    if (url) userText += `GitHub URL: ${url}\n`;
+    if (text) userText += `Текст описания:\n${text}\n`;
+    if (imageBase64 && !url && !text) userText += "Анализируй предоставленный скриншот.";
+    parts.push({ text: userText });
+
+    const response = await ai.models.generateContent({
+      model: GEMINI_MODEL,
+      contents: [{ role: "user", parts }],
+      config: {
+        systemInstruction: PARSE_SYSTEM_PROMPT,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "object" as any,
+          properties: {
+            title: { type: "string" }, category: { type: "string", enum: ["agents", "tools", "models", "media", "scrapers", "other"] },
+            summary: { type: "string" }, features: { type: "string" }, detailedDescription: { type: "string" },
+            installCommand: { type: "string" }, githubUrl: { type: "string" }, demoUrl: { type: "string" },
+            tags: { type: "array", items: { type: "string" } }, pricing: { type: "string", enum: ["free", "freemium", "paid"] },
+          },
+          required: ["title", "category", "summary", "tags", "pricing"],
+        },
+      },
+    });
+
+    const rawText = response.text ?? "{}";
+    try {
+      const cleaned = rawText.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
+      res.json(JSON.parse(cleaned));
+    } catch {
+      res.status(500).json({ error: "Gemini вернул невалидный JSON", raw: rawText });
+    }
+  } catch (e: any) { console.error("parse-tool Error:", e); res.status(500).json({ message: e.message || "Ошибка парсера" }); }
+});
+
 // ─── Export для Vercel ────────────────────────────────────────────────────────
 export default app;
+

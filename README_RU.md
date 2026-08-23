@@ -1,6 +1,6 @@
-# PromptVault (Skills & AI Hub)
+# PromptVault (Skills, Git & AI Hub)
 
-**PromptVault** — персональное fullstack веб-приложение для хранения, организации и управления промптами для нейросетей, а также пакетами скиллов, субагентов и MCP-серверов.
+**PromptVault** — персональное fullstack веб-приложение для хранения, организации и управления промптами для нейросетей, пакетами скиллов, субагентов и MCP-серверов, а также каталогом полезных репозиториев, ИИ-инструментов и моделей с 🪄 AI Smart Parser.
 
 > **Последнее обновление**: 2026-08-23
 
@@ -10,9 +10,9 @@
 
 - **Frontend**: React 19, TypeScript, Vite 6, Tailwind CSS v4 (@theme), Framer Motion (`motion` v12), Lucide React, React Markdown (GFM + frontmatter).
 - **Backend / API**: Express.js (`server.ts`) для локальной разработки + Vercel Serverless Function (`api/index.ts`) для production.
-- **База данных**: Supabase PostgreSQL (таблицы `users`, `prompts`, `skills`, `skill_hints`, `categories`, `chats`, `user_favorites`).
+- **База данных**: Supabase PostgreSQL (таблицы `users`, `prompts`, `skills`, `skill_hints`, `git_projects`, `categories`, `chats`, `user_favorites`).
 - **Файловое хранилище**: Supabase Storage (бакеты `prompt-images`, `prompt-files`).
-- **ИИ-функции**: Google Gemini API (`@google/genai`, модель `gemini-2.5-flash-lite` — временно в разработке).
+- **ИИ-функции**: Google Gemini API (`@google/genai`, модель `gemini-3.1-flash-lite` — активна для AI Smart Parser).
 
 ---
 
@@ -41,11 +41,18 @@
   - **Контекстное меню ПКМ**: скачивание, копирование, выбор файлов и папок
   - **Кастомный ZIP на лету**: плавающая панель `SpaceSelectionBar` для генерации архива выбранных элементов
 
-### 3. Интерактивная навигация и фильтрация
+### 3. Раздел «Git Hub & AI Tools Hub» 🐙
+- **Каталог репозиториев и инструментов**:
+  - Карточки с баннерами, тегами, ссылками на GitHub и Demo
+  - Аккордеоны с фичами, пошаговой установкой (с 1-клик копированием команд), детальным описанием и личными заметками
+  - **🪄 AI Smart Parser**: автоматическое заполнение карточки по URL, тексту или скриншоту поста через Gemini 3.1 Flash-Lite
+  - Фильтры по категориям (`agents`, `tools`, `models`, `media`, `scrapers`), стоимости (`free`, `freemium`, `paid`) и избранному
+
+### 4. Интерактивная навигация и фильтрация
 - **Вкладки источников (Ownership)**:
   - **Все (+ чужие)** — абсолютно все записи базы данных
   - **Все мои** — все ваши материалы (авторские + из сети)
-  - **Мои (Авторские)** — только ваши авторские промпты/скиллы
+  - **Мои (Авторские)** — только ваши авторские материалы
   - **Мои (Из сети)** — только сохранённые из сети
   - **Чужие (Публичные)** — публичные материалы других пользователей
 - **Специальные фильтры для скиллов**:
@@ -88,22 +95,22 @@
 ## 🤖 Руководство по документации для ИИ-агентов и разработчиков
 
 ### 📚 С чего начинать изучение проекта:
-1. **[`GEMINI.md`](GEMINI.md)** — контекст, стек, карта эндпоинтов и правила разработки.
+1. **[`GEMINI.md`](GEMINI.md)** — контекст, стек, карта эндпоинтов, правила декомпозиции файлов.
 2. **[`CHANGELOG.md`](CHANGELOG.md)** — 📜 история версий, коммитов и контрольных точек (`v1.0-checkpoint`).
 3. **[`src/types.ts`](src/types.ts)** — единый источник TypeScript типов.
-4. **[`Agent/MD_files/ARCHITECTURE.md`](Agent/MD_files/ARCHITECTURE.md)** & **[`SCHEMA.md`](Agent/MD_files/SCHEMA.md)** — архитектура модульных разделов (`PromptsSection`, `SkillsSection`, `UsersSection`), типы и API.
+4. **[`Agent/MD_files/ARCHITECTURE.md`](Agent/MD_files/ARCHITECTURE.md)** & **[`SCHEMA.md`](Agent/MD_files/SCHEMA.md)** — архитектура модульных разделов (`PromptsSection`, `SkillsSection`, `GitProjectsSection`, `UsersSection`), типы и API.
 
 ### 🟡 Справочная системная документация (`Agent/MD_files/`):
 - [`PRD.md`](Agent/MD_files/PRD.md) — Продуктовые требования и Roadmap
 - [`DESIGN.md`](Agent/MD_files/DESIGN.md) — Дизайн-система (токены, fixed IDE viewport, Tailwind v4)
 - [`DATABASE.md`](Agent/MD_files/DATABASE.md) — Схема Supabase PostgreSQL + Storage
-- [`RULES.md`](Agent/MD_files/RULES.md) — Стандарты кода и правила синхронизации API
+- [`RULES.md`](Agent/MD_files/RULES.md) — Стандарты кода, правила синхронизации API и декомпозиции файлов
 - [`USER_MANAGEMENT.md`](Agent/MD_files/USER_MANAGEMENT.md) — CLI и SQL управление пользователями
 - [`project_structure.md`](Agent/MD_files/project_structure.md) — Полная структура файлов и скриптов
 
 ### 📅 Планы разработки (`Agent/plan/`):
 - **[`Agent/plan/plan.md`](Agent/plan/plan.md)** — 🟡 **АКТУАЛЬНЫЙ БЭКЛОГ** (Этапы 9–10, бэклог фич)
-- **[`Agent/plan/plan_git_hub.md`](Agent/plan/plan_git_hub.md)** — `[🔴 НУЖНО СДЕЛАТЬ]` Раздел Git Tools & Gemini Smart Parser
+- [`Agent/plan/plan_git_hub.md`](Agent/plan/plan_git_hub.md) — `[✅ ВЫПОЛНЕНО]` (не читать)
 - [`Agent/plan/plan_supabase.md`](Agent/plan/plan_supabase.md) — `[✅ ВЫПОЛНЕНО]` (не читать)
 - [`Agent/plan/plan_skill_space.md`](Agent/plan/plan_skill_space.md) — `[✅ ВЫПОЛНЕНО]` (не читать)
 - [`Agent/plan/plan_skill_hints.md`](Agent/plan/plan_skill_hints.md) — `[✅ ВЫПОЛНЕНО]` (не читать)

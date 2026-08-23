@@ -69,6 +69,7 @@ superbasetest/
 │
 ├── scripts/
 │   ├── migrateToSupabase.ts        ← Скрипт миграции JSON → Supabase (данные уже перенесены)
+│   ├── create_git_projects_table.sql ← SQL для создания таблицы git_projects (выполнить в Supabase!)
 │   ├── create_skill_hints_table.sql ← SQL для создания таблицы skill_hints (выполнить в Supabase!)
 │   ├── supabase_fix_schema.sql     ← SQL для адаптации типов и RLS
 │   ├── manageUsers.ts              ← CLI утилита управления пользователями и паролями
@@ -92,7 +93,7 @@ superbasetest/
 │   │   └── project_structure.md ← ✅ Актуально (2026-08-23)
 │   └── plan/
 │       ├── plan.md                 ← 🟡 Актуальный план и бэклог (2026-08-23)
-│       ├── plan_git_hub.md         ← [🔴 НУЖНО СДЕЛАТЬ] Раздел Git Tools & Gemini Parser
+│       ├── plan_git_hub.md         ← [✅ ВЫПОЛНЕНО] Раздел Git Tools & Gemini Parser
 │       ├── plan_supabase.md        ← [✅ ВЫПОЛНЕНО]
 │       ├── plan_skill_space.md     ← [✅ ВЫПОЛНЕНО]
 │       ├── plan_skill_hints.md     ← [✅ ВЫПОЛНЕНО]
@@ -114,7 +115,6 @@ superbasetest/
     │       ├── CategoryForm.tsx
     │       ├── ConfirmDialog.tsx
     │       ├── ImageCropper.tsx
-    │       ├── ImageUpload.tsx
     │       └── FileTreeViewer.tsx
     │
     ├── hooks/
@@ -141,22 +141,28 @@ superbasetest/
     │   │       ├── CollapsibleText.tsx
     │   │       └── MiniLayoutPreview.tsx
     │   │
-    │   └── skills/                      ← Раздел Пространств скиллов
-    │       ├── SkillsSection.tsx        ← Сетка карточек + Toolbar фильтров типов/ИИ
-    │       ├── SkillCard.tsx
-    │       ├── SkillForm.tsx
-    │       ├── SkillSpaceView.tsx       ← IDE лейаут (h-screen), без скролла окна, сворачиваемое описание
-    │       └── space/
-    │           ├── SpaceFileTree.tsx     ← VS Code дерево файлов + чекбоксы
-    │           ├── SpaceFilePreview.tsx  ← Markdown/код превью + breadcrumb + inline editor (Ctrl+S)
-    │           ├── SpaceContextMenu.tsx  ← ПКМ glassmorphism меню
-    │           ├── SpaceSelectionBar.tsx ← Плавающая панель выделения
-    │           └── SkillHintsPanel.tsx   ← Панель подсказок-промптов к скиллу
+    │   ├── skills/                      ← Раздел Пространств скиллов
+    │   │   ├── SkillsSection.tsx        ← Сетка карточек + Toolbar фильтров типов/ИИ
+    │   │   ├── SkillCard.tsx
+    │   │   ├── SkillForm.tsx
+    │   │   ├── SkillSpaceView.tsx       ← IDE лейаут (h-screen), без скролла окна, сворачиваемое описание
+    │   │   └── space/
+    │   │       ├── SpaceFileTree.tsx     ← VS Code дерево файлов + чекбоксы
+    │   │       ├── SpaceFilePreview.tsx  ← Markdown/код превью + breadcrumb + inline editor (Ctrl+S)
+    │   │       ├── SpaceContextMenu.tsx  ← ПКМ glassmorphism меню
+    │   │       ├── SpaceSelectionBar.tsx ← Плавающая панель выделения
+    │   │       └── SkillHintsPanel.tsx   ← Панель подсказок-промптов к скиллу
+    │   │
+    │   └── git/                         ← 🐙 Раздел Git Hub & AI Tools
+    │       ├── GitProjectsSection.tsx    ← Сетка карточек + Toolbar фильтров
+    │       ├── GitProjectCard.tsx        ← Карточка проекта (grid/list)
+    │       ├── GitProjectForm.tsx        ← Форма создания/редактирования
+    │       ├── AiSmartParserModal.tsx    ← 🪄 AI Smart Parser модалка (Gemini 3.1)
+    │       └── GitProjectView.tsx        ← Просмотр проекта с аккордеонами
     │
     ├── services/
     │   ├── api.ts
-    │   ├── gemini.ts
-    │   └── supabaseServer.ts
+    │   └── gemini.ts
     │
     └── utils/
         ├── cn.ts
@@ -267,12 +273,25 @@ AssistantConfig { systemPrompt }
 - Supabase Storage (бакеты: prompt-images, prompt-files)
 - `vercel.json` и `api/index.ts` готовы к деплою на Vercel
 - Полнофункциональный прототип `test/index.html` v2.1 протестирован и одобрен пользователем
+- **🐙 Раздел «Git Hub & AI Tools»** — ПОЛНОСТЬЮ РЕАЛИЗОВАН:
+  - SQL-миграция `scripts/create_git_projects_table.sql` (выполнить в Supabase!)
+  - CRUD API `/api/git-projects` (GET/POST/PUT/DELETE) в `server.ts` и `api/index.ts`
+  - Gemini 3.1 Flash-Lite Smart Parser `/api/gemini/parse-tool` (URL / текст / скриншот → JSON)
+  - `GitProjectsSection.tsx` — сетка с фильтрами категорий, цены, источника
+  - `GitProjectCard.tsx` — карточки с hero-image, бейджами, ссылками
+  - `GitProjectForm.tsx` — форма + встроенный AI Smart Parser модал (🪄 Wand2)
+  - `GitProjectView.tsx` — полноэкранный просмотр с аккордеонами (Фичи, Установка, Описание, Заметки)
 
-### 🔴 Фокус следующего этапа (Раздел «Git Tools & AI Hub»):
-1. **База данных**: создать таблицу `git_projects` в Supabase (`scripts/create_git_projects_table.sql`).
-2. **API**: добавить CRUD эндпоинты `/api/git-projects` и `/api/gemini/parse-tool` в `server.ts` и `api/index.ts`.
-3. **Frontend**: создать `src/sections/git/GitProjectsSection.tsx`, `GitProjectCard.tsx`, `GitProjectView.tsx`, `GitProjectForm.tsx`, `AiSmartParserModal.tsx`.
-4. **Интеграция**: добавить вкладку `🐙 Git Hub` в Header `App.tsx` (`activeSection: 'git'`).
+### ✅ Раздел «Git Hub & AI Tools» — ВЫПОЛНЕНО (2026-08-23):
+1. ✅ **База данных**: `scripts/create_git_projects_table.sql` — **выполнить в Supabase SQL Editor!**
+2. ✅ **API**: CRUD `/api/git-projects` + `/api/gemini/parse-tool` — в `server.ts` и `api/index.ts`.
+3. ✅ **Frontend**: `GitProjectsSection`, `GitProjectCard`, `GitProjectForm` (+ AI-модал), `GitProjectView`.
+4. ✅ **Навигация**: вкладка `🐙 Git Hub` добавлена в Header `App.tsx`.
+
+### 🔴 Следующий этап (будущие задачи):
+- Выполнить SQL-миграцию `scripts/create_git_projects_table.sql` в Supabase
+- Расширить фильтры Git Hub (поиск по тегам как облако)
+- Добавить поддержку `git_projects` в backup export/import
 
 ---
 
@@ -293,6 +312,26 @@ AssistantConfig { systemPrompt }
 5. Модульность: Новые вкладки/страницы создавай как изолированные секции в `src/sections/` (например, `src/sections/git/GitProjectsSection.tsx`), не раздувая `src/App.tsx`.
 6. Используй **навыки (skills)** при работе с Supabase! Читай `.agents/skills/supabase/SKILL.md`.
 7. Не раскрывай `.env` в коде или логах.
+
+### ⚠️ ПРАВИЛО ДЕКОМПОЗИЦИИ ФАЙЛОВ — ОБЯЗАТЕЛЬНО:
+> **ОДИН компонент = ОДИН файл**. Запрещено складывать модалки, тулбары, панели и отдельные блоки внутрь основного компонента.
+
+**Паттерн новой секции:**
+```
+src/sections/<domain>/
+├── <Domain>Section.tsx   ← оркестратор (~150–250 строк)
+├── <Domain>Card.tsx      ← карточка (~100–200 строк)
+├── <Domain>Form.tsx      ← только форма (~200–350 строк)
+├── <Domain>View.tsx      ← только просмотр (~200–350 строк)
+└── XxxModal.tsx          ← отдельная модалка если есть (~100–200 строк)
+```
+
+**Исключения (можно держать большими):**
+- `server.ts` и `api/index.ts` — бэкенд-монолиты (так по архитектуре)
+- `App.tsx` — только state + навигация, НЕ рендер UI
+- Утилиты < 150 строк (`cn.ts`, `buildSelectionZip.ts`)
+
+**Порог:** файл > **~250 строк** или > **~15KB** — обязательно разбить.
 
 ### Vite + Express:
 - Dev: `tsx server.ts` запускает оба (Express + Vite) в одном процессе.

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, Plus, Menu } from 'lucide-react';
 import { AnimatePresence } from 'motion/react';
 import { api } from './services/api';
-import { Prompt, Category, User, MediaType, SkillPackage } from './types';
+import { Prompt, Category, User, MediaType, SkillPackage, GitProject } from './types';
 import { cn } from './utils/cn';
 import { useHotkeys } from './hooks/useHotkeys';
 import { useSkillFilters } from './hooks/useSkillFilters';
@@ -11,6 +11,8 @@ import { useSkillFilters } from './hooks/useSkillFilters';
 import PromptsSection from './sections/prompts/PromptsSection';
 import SkillsSection from './sections/skills/SkillsSection';
 import UsersSection from './sections/admin/UsersSection';
+import GitProjectsSection from './sections/git/GitProjectsSection';
+
 
 // Layout & UI Components
 import LoginForm from './components/auth/LoginForm';
@@ -24,13 +26,17 @@ import PhotoForm from './sections/photo/PhotoForm';
 import PhotoView from './sections/photo/PhotoView';
 import SkillForm from './sections/skills/SkillForm';
 import SkillSpaceView from './sections/skills/SkillSpaceView';
+import GitProjectForm from './sections/git/GitProjectForm';
+import GitProjectView from './sections/git/GitProjectView';
+
 
 export default function App() {
-  const [activeSection, setActiveSection] = useState<'prompts' | 'skills' | 'admin'>('prompts');
+  const [activeSection, setActiveSection] = useState<'prompts' | 'skills' | 'git' | 'admin'>('prompts');
   const [user, setUser] = useState<User | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [skills, setSkills] = useState<SkillPackage[]>([]);
+  const [gitProjects, setGitProjects] = useState<GitProject[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -39,11 +45,14 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSkillFormOpen, setIsSkillFormOpen] = useState(false);
+  const [isGitFormOpen, setIsGitFormOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
   const [viewingPrompt, setViewingPrompt] = useState<Prompt | null>(null);
   const [editingSkill, setEditingSkill] = useState<SkillPackage | null>(null);
   const [spacedSkill, setSpacedSkill] = useState<SkillPackage | null>(null);
+  const [editingGitProject, setEditingGitProject] = useState<GitProject | null>(null);
+  const [viewingGitProject, setViewingGitProject] = useState<GitProject | null>(null);
   const [toasts, setToasts] = useState<{ id: number, message: React.ReactNode, type?: 'success' | 'error' }[]>([]);
   const [sortBy, setSortBy] = useState<'date' | 'name' | 'usage'>('date');
   const [sourceFilter, setSourceFilter] = useState<'all' | 'my-all' | 'my-own' | 'my-web' | 'others'>('all');
@@ -52,6 +61,7 @@ export default function App() {
     isOpen: boolean;
     promptId: string | null;
   }>({ isOpen: false, promptId: null });
+
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const formCloseRef = useRef<(() => void) | null>(null);
@@ -75,14 +85,16 @@ export default function App() {
   const loadData = useCallback(async () => {
     if (!user) return;
     try {
-      const [allPrompts, allCategories, allSkills] = await Promise.all([
+      const [allPrompts, allCategories, allSkills, allGitProjects] = await Promise.all([
         api.getPrompts().catch(() => []),
         api.getCategories().catch(() => []),
         api.getSkills().catch(() => []),
+        api.getGitProjects().catch(() => []),
       ]);
       setPrompts(allPrompts);
       setCategories(allCategories);
       setSkills(allSkills);
+      setGitProjects(allGitProjects);
     } catch (err: any) {
       console.error('Data load exception:', err);
     }
@@ -96,8 +108,10 @@ export default function App() {
       setPrompts([]);
       setCategories([]);
       setSkills([]);
+      setGitProjects([]);
     }
   }, [user, loadData]);
+
 
   const handleCopy = useCallback(
     async (text: string, promptId: string) => {
@@ -241,6 +255,30 @@ export default function App() {
     }
   }, [addToast, loadData]);
 
+  // Git Projects CRUD
+  const handleToggleFavoriteGitProject = useCallback(async (id: string) => {
+    try {
+      const result = await api.toggleFavorite(id, 'git_project' as any);
+      setGitProjects(prev => prev.map(p => ({
+        ...p,
+        isFavorite: result.favorites ? (result.favorites as any).git_projects?.includes(p.id) ?? (p.id === id ? !p.isFavorite : p.isFavorite) : (p.id === id ? !p.isFavorite : p.isFavorite),
+      })));
+    } catch (err: any) {
+      addToast(err.message || 'Ошибка избранного', 'error');
+    }
+  }, [addToast]);
+
+  const handleDeleteGitProject = useCallback(async (id: string) => {
+    try {
+      await api.deleteGitProject(id);
+      setGitProjects(prev => prev.filter(p => p.id !== id));
+      setViewingGitProject(null);
+      addToast('Проект удалён');
+    } catch (err: any) {
+      addToast(err.message || 'Ошибка удаления', 'error');
+    }
+  }, [addToast]);
+
   // Hotkeys
   useHotkeys({
     user,
@@ -248,6 +286,7 @@ export default function App() {
     onOpenNewForm: () => {
       if (activeSection === 'prompts') setIsFormOpen(true);
       else if (activeSection === 'skills') setIsSkillFormOpen(true);
+      else if (activeSection === 'git') setIsGitFormOpen(true);
     },
     onCloseAll: () => {
       if (isCategoryModalOpen) {
@@ -268,8 +307,17 @@ export default function App() {
         setEditingSkill(null);
         return;
       }
+      if (isGitFormOpen) {
+        setIsGitFormOpen(false);
+        setEditingGitProject(null);
+        return;
+      }
       if (viewingPrompt) {
         setViewingPrompt(null);
+        return;
+      }
+      if (viewingGitProject) {
+        setViewingGitProject(null);
         return;
       }
       if (isSidebarOpen) {
@@ -280,6 +328,7 @@ export default function App() {
   });
 
   const skillFilters = useSkillFilters(skills, user);
+
 
   if (loadingUser) {
     return (
@@ -359,6 +408,15 @@ export default function App() {
             >
               <span>📦 Skills & Файлы</span>
             </button>
+            <button
+              onClick={() => setActiveSection('git')}
+              className={cn(
+                "px-4 py-1.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center gap-2",
+                activeSection === 'git' ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20" : "text-zinc-400 hover:text-white"
+              )}
+            >
+              <span>🐙 Git Hub</span>
+            </button>
             {user.role === 'admin' && (
               <button
                 onClick={() => setActiveSection('admin')}
@@ -379,34 +437,53 @@ export default function App() {
           <input 
             ref={searchInputRef}
             type="text" 
-            placeholder={activeSection === 'prompts' ? "Поиск промптов... (Ctrl+K)" : "Поиск скиллов, агентов, MCP... (Ctrl+K)"}
-            value={activeSection === 'prompts' ? searchQuery : skillFilters.searchQuery}
+            placeholder={
+              activeSection === 'prompts' ? "Поиск промптов... (Ctrl+K)" :
+              activeSection === 'skills' ? "Поиск скиллов, агентов, MCP... (Ctrl+K)" :
+              activeSection === 'git' ? "Поиск проектов, агентов, моделей... (Ctrl+K)" :
+              "Поиск... (Ctrl+K)"
+            }
+            value={activeSection === 'prompts' ? searchQuery : activeSection === 'skills' ? skillFilters.searchQuery : searchQuery}
             onChange={(e) => {
               if (activeSection === 'prompts') {
                 setSearchQuery(e.target.value);
-              } else {
+              } else if (activeSection === 'skills') {
                 skillFilters.setSearchQuery(e.target.value);
+              } else {
+                setSearchQuery(e.target.value);
               }
             }}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl py-3 pl-12 pr-4 focus:outline-none focus:border-sky-400 transition-all text-sm text-white placeholder-zinc-500"
+            className={cn(
+              "w-full bg-zinc-900 border border-zinc-800 rounded-2xl py-3 pl-12 pr-4 focus:outline-none transition-all text-sm text-white placeholder-zinc-500",
+              activeSection === 'git' ? "focus:border-emerald-400" : "focus:border-sky-400"
+            )}
           />
         </div>
 
         {/* Actions */}
         <div className="flex items-center gap-3">
-          <button 
-            onClick={() => {
-              if (activeSection === 'prompts') setIsFormOpen(true);
-              else setIsSkillFormOpen(true);
-            }}
-            className={cn(
-              "text-black p-3 rounded-2xl transition-all shadow-lg cursor-pointer",
-              activeSection === 'prompts' ? "bg-sky-400 shadow-sky-400/20" : "bg-purple-500 text-white shadow-purple-500/20"
-            )}
-            title={activeSection === 'prompts' ? 'Создать промпт' : 'Загрузить пакет скиллов'}
-          >
-            <Plus size={20} />
-          </button>
+          {activeSection !== 'admin' && (
+            <button 
+              onClick={() => {
+                if (activeSection === 'prompts') setIsFormOpen(true);
+                else if (activeSection === 'skills') setIsSkillFormOpen(true);
+                else if (activeSection === 'git') setIsGitFormOpen(true);
+              }}
+              className={cn(
+                "text-black p-3 rounded-2xl transition-all shadow-lg cursor-pointer",
+                activeSection === 'prompts' ? "bg-sky-400 shadow-sky-400/20" :
+                activeSection === 'git' ? "bg-emerald-500 text-white shadow-emerald-500/20" :
+                "bg-purple-500 text-white shadow-purple-500/20"
+              )}
+              title={
+                activeSection === 'prompts' ? 'Создать промпт' :
+                activeSection === 'git' ? 'Добавить проект' :
+                'Загрузить пакет скиллов'
+              }
+            >
+              <Plus size={20} />
+            </button>
+          )}
           <button 
             onClick={handleLogout}
             className="p-2 hover:bg-zinc-900 rounded-xl text-zinc-500 hover:text-white transition-all cursor-pointer"
@@ -454,6 +531,18 @@ export default function App() {
               setViewMode={setViewMode}
               onViewSkill={(s) => setSpacedSkill(s)}
               onToggleFavorite={handleToggleFavoriteSkill}
+            />
+          )}
+
+          {activeSection === 'git' && (
+            <GitProjectsSection
+              projects={gitProjects}
+              user={user}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+              onViewProject={(p) => setViewingGitProject(p)}
+              onToggleFavorite={handleToggleFavoriteGitProject}
+              searchQuery={searchQuery}
             />
           )}
 
@@ -520,6 +609,43 @@ export default function App() {
             onSave={() => { setIsSkillFormOpen(false); setEditingSkill(null); void loadData(); }}
             user={user}
             addToast={addToast}
+          />
+        )}
+        {isGitFormOpen && (
+          <GitProjectForm
+            initialData={editingGitProject || undefined}
+            onSave={async (projectData) => {
+              try {
+                if (editingGitProject) {
+                  const updated = await api.updateGitProject(editingGitProject.id, projectData);
+                  setGitProjects(prev => prev.map(p => p.id === editingGitProject.id ? updated : p));
+                  addToast('Проект обновлён ✅');
+                } else {
+                  const created = await api.createGitProject(projectData);
+                  setGitProjects(prev => [created, ...prev]);
+                  addToast('Проект добавлен ✅');
+                }
+                setIsGitFormOpen(false);
+                setEditingGitProject(null);
+              } catch (err: any) {
+                addToast(err.message || 'Ошибка сохранения', 'error');
+                throw err;
+              }
+            }}
+            onClose={() => { setIsGitFormOpen(false); setEditingGitProject(null); }}
+          />
+        )}
+        {viewingGitProject && (
+          <GitProjectView
+            project={viewingGitProject}
+            onClose={() => setViewingGitProject(null)}
+            onEdit={() => {
+              setEditingGitProject(viewingGitProject);
+              setViewingGitProject(null);
+              setIsGitFormOpen(true);
+            }}
+            onDelete={() => handleDeleteGitProject(viewingGitProject.id)}
+            effectiveUser={user}
           />
         )}
       </AnimatePresence>

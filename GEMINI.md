@@ -46,6 +46,7 @@
 
 **Vercel**: `api/index.ts` — тот же Express app, но без `listen()` и без Vite middleware. Экспортирует `default app`.
 **Безопасность**: API ключи удалены из клиентской сборки (vite.config.ts). Все API роуты обёрнуты в try/catch, на POST/PUT эндпоинтах есть валидация.
+**Защита ИИ & Токенов**: Встроен Kill Switch (`DISABLE_AI=true`), Rate Limiter (1 req/3s, max 15/min), таймаут 25s, ограничение входного текста до 12k символов и `maxOutputTokens: 2048`.
 
 ---
 

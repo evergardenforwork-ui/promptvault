@@ -98,6 +98,25 @@ view/CollapsibleText.tsx    ← изолированный текстовый б
 > **Gemini parse-tool** (`/api/gemini/parse-tool`) — ✅ **АКТИВЕН**. Модель `gemini-3.1-flash-lite`. Используется для AI Smart Parser в разделе Git Hub.
 > **Gemini chat/analyze** (`/api/gemini/chat`, `/api/gemini/analyze`) — ⏸️ **Временно отключены**. Файл `AIAssistant.tsx` существует, но НЕ импортируется в PhotoView.tsx. Не модифицировать без явного запроса.
 
+---
+
+## 🛡️ AI Security & Token Protection Rules (Защита токенов и безопасность ИИ)
+
+1. **Глобальный рубильник (Kill Switch)**:
+   - Переменная `DISABLE_AI=true` или `GEMINI_DISABLED=true` моментально блокирует вызовы Gemini на сервере со статусом `503 Service Unavailable` без отправки запросов в Google API.
+2. **Rate Limiting & Cooldown**:
+   - Минимальный интервал: 1 запрос в 3 секунды на пользователя (блокировка дабл-клика и спама).
+   - Минутный лимит: не более 15 запросов в минуту на пользователя (`429 Too Many Requests`).
+3. **Payload Caps (Ограничение входных данных)**:
+   - Текст: аппаратно обрезан до `12 000` символов (клиент + сервер).
+   - URL: ограничен до `500` символов.
+   - Скриншоты: максимум `5 MB`.
+   - Ответ Gemini: `maxOutputTokens: 2048` (защита от зацикливаний и галлюцинаций).
+4. **Timeout Guard**:
+   - Все вызовы Gemini обёрнуты в таймаут `25 секунд` через `Promise.race`.
+5. **UI Protection**:
+   - Клиент обязан блокировать кнопку и клавишу `Enter` при активном флаге `aiLoading === true`.
+
 ## Error Handling & Security Practices
 
 **Backend**:
@@ -112,4 +131,5 @@ view/CollapsibleText.tsx    ← изолированный текстовый б
 
 **Обязательно перед деплоем / коммитом**:
 - [ ] `npm run lint` проходит с 0 ошибок.
+- [ ] `npm run build` проходит без ошибок.
 - [ ] Переменные окружения согласованы в `.env` и `.env.example`.

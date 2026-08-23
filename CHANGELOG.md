@@ -9,6 +9,7 @@
 
 | Тег / Хеш | Дата | Название / Назначение | Описание |
 |---|:---:|---|---|
+| `fbf6879` | 2026-08-23 | **🛡️ AI Token Protection & Security Guards** | Внедрена многоуровневая защита Gemini: Global Kill Switch (`DISABLE_AI=true`), Rate Limiter (1 req/3s, max 15/min), Timeout Guard (25s), Payload Caps (max 12k симв), `maxOutputTokens: 2048`, UI-блокировка дабл-клика и счетчик символов. |
 | `70ecb18` | 2026-08-23 | **🐙 Git Hub & AI Tools Hub — ЗАВЕРШЕНО** | Реализован полный раздел Git Projects: SQL-миграция, CRUD API (5 эндпоинтов), Gemini 3.1 Flash-Lite Smart Parser, `GitProjectsSection`, `GitProjectCard`, `GitProjectForm` (с AI-модалкой), `GitProjectView` (аккордеоны). TypeScript `--noEmit` и `vite build` — ✅ OK. |
 | `e1f83e2` | 2026-08-23 | **Git Tools Hub Prototype v2.1** | Автономный прототип `test/index.html` с аккордеонами гайда по запуску, детальным описанием, личными заметками, кастомными категориями и Gemini ИИ-парсером. |
 | `2632604` | 2026-08-23 | **Plan: Git Projects & Gemini Parser** | Создан мастер-план `plan_git_hub.md` с DDL таблицы `git_projects`, JSON-схемой Gemini Structured Outputs и структурой React-компонентов. |

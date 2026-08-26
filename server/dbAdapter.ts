@@ -1158,7 +1158,8 @@ class SupabaseAdapter implements DbAdapter {
     for (const [tableName, rows] of Object.entries(tables)) {
       if (!Array.isArray(rows) || rows.length === 0) continue;
       const targetTable = tableName === 'favorites' ? 'user_favorites' : tableName;
-      await this.supabase.from(targetTable).upsert(rows, { onConflict: tableName === 'users' ? 'uid' : 'id' });
+      const onConflict = tableName === 'users' ? 'uid' : (targetTable === 'user_favorites' ? 'user_id,item_id,item_type' : 'id');
+      await this.supabase.from(targetTable).upsert(rows, { onConflict });
     }
   }
 }

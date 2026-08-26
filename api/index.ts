@@ -707,6 +707,10 @@ app.post("/api/import", authenticate, async (req, res) => {
         await supabase.from("bookmarks").upsert(rows, { onConflict: "id" });
       } else if (entryName === "categories.json") {
         await supabase.from("categories").upsert(rows, { onConflict: "id" });
+      } else if (entryName === "favorites.json" || entryName === "user_favorites.json") {
+        await supabase.from("user_favorites").upsert(rows, { onConflict: "user_id,item_id,item_type" });
+      } else if (entryName === "chats.json") {
+        await supabase.from("chats").upsert(rows, { onConflict: "id" });
       }
     }
 

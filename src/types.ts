@@ -251,6 +251,7 @@ export interface BookmarkFolder {
   name: string;
   emoji: string;
   color?: string;
+  path?: string;
 }
 
 export const DEFAULT_BOOKMARK_FOLDERS: BookmarkFolder[] = [

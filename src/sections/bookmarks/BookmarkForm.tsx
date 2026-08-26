@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   X, 
@@ -11,35 +11,38 @@ import {
   Sparkles, 
   Lock, 
   Unlock,
-  Image as ImageIcon
+  Image as ImageIcon,
+  FolderTree
 } from 'lucide-react';
 import { BookmarkItem, User, BookmarkFolder } from '../../types';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
+import { splitFolderPath, normalizeFolderPath, getFolderEmoji, buildAllFoldersMap } from './bookmarkTreeUtils';
+import FolderCreateModal from './FolderCreateModal';
 
 interface BookmarkFormProps {
   isOpen: boolean;
   initialData?: BookmarkItem | null;
+  defaultFolder?: string | null;
   folders: BookmarkFolder[];
   existingFolders: string[];
-  existingCategories: { [folder: string]: string[] };
+  existingCategories?: { [folder: string]: string[] };
   user: User;
   onSave: (data: Partial<BookmarkItem>) => Promise<void>;
   onDelete?: (id: string) => void;
   onClose: () => void;
-  onOpenCreateFolderModal?: () => void;
 }
 
 export default function BookmarkForm({
   isOpen,
   initialData,
+  defaultFolder,
   folders,
   existingFolders,
-  existingCategories,
+  existingCategories = {},
   user,
   onSave,
   onDelete,
   onClose,
-  onOpenCreateFolderModal,
 }: BookmarkFormProps) {
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
@@ -56,6 +59,7 @@ export default function BookmarkForm({
   const [isDirty, setIsDirty] = useState(false);
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isInnerFolderModalOpen, setIsInnerFolderModalOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -75,7 +79,7 @@ export default function BookmarkForm({
       setTitle('');
       setUrl('');
       setDescription('');
-      setFolder('Общее');
+      setFolder(defaultFolder ? normalizeFolderPath(defaultFolder) : 'Общее');
       setCategory('');
       setImage(null);
       setFavicon(null);
@@ -83,7 +87,7 @@ export default function BookmarkForm({
       setIsPublic(true);
     }
     setIsDirty(false);
-  }, [initialData, isOpen]);
+  }, [initialData, isOpen, defaultFolder]);
 
   if (!isOpen) return null;
 
@@ -94,13 +98,11 @@ export default function BookmarkForm({
       const parsed = new URL(url.startsWith('http') ? url : `https://${url}`);
       const domain = parsed.hostname.replace(/^www\./, '');
       
-      // Если названия ещё нет, подставим домен
       if (!title.trim()) {
         const cleanName = domain.split('.')[0];
         setTitle(cleanName.charAt(0).toUpperCase() + cleanName.slice(1));
       }
       
-      // Favicon
       if (!favicon) {
         setFavicon(`https://www.google.com/s2/favicons?domain=${domain}&sz=128`);
       }
@@ -161,7 +163,7 @@ export default function BookmarkForm({
         title: title.trim(),
         url: finalUrl,
         description: description.trim() || undefined,
-        folder: folder.trim() || 'Общее',
+        folder: normalizeFolderPath(folder) || 'Общее',
         category: category.trim() || 'default',
         image,
         favicon,
@@ -177,17 +179,29 @@ export default function BookmarkForm({
     }
   };
 
-  // Объединяем список доступных папок
-  const allFolderNames = Array.from(
-    new Set([
-      'Общее',
-      ...folders.map(f => f.name),
-      ...existingFolders,
-      ...(initialData?.folder ? [initialData.folder] : []),
-    ])
-  ).filter(Boolean);
+  // Собираем уникальный отсортированный список всех папок для выпадающего списка
+  const allFolderOptions = useMemo(() => {
+    const set = new Set<string>();
+    set.add('Общее');
+    folders.forEach(f => set.add(normalizeFolderPath(f.name)));
+    existingFolders.forEach(f => {
+      const norm = normalizeFolderPath(f);
+      if (norm) {
+        // Добавляем также все промежуточные сегменты
+        const parts = splitFolderPath(norm);
+        let accum = '';
+        parts.forEach(p => {
+          accum = accum ? `${accum} / ${p}` : p;
+          set.add(accum);
+        });
+      }
+    });
+    if (initialData?.folder) set.add(normalizeFolderPath(initialData.folder));
+    if (folder) set.add(normalizeFolderPath(folder));
 
-  // Категории для текущей выбранной папки
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [folders, existingFolders, initialData, folder]);
+
   const categoriesInFolder = existingCategories[folder] || [];
 
   return (
@@ -293,80 +307,49 @@ export default function BookmarkForm({
               </div>
             </div>
 
-            {/* Folder & Subcategory */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Folder Selector */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs font-bold text-zinc-700 dark:text-zinc-400 uppercase tracking-wider">
-                    Папка / Раздел <span className="text-red-500">*</span>
-                  </label>
-                  {onOpenCreateFolderModal && (
-                    <button
-                      type="button"
-                      onClick={onOpenCreateFolderModal}
-                      className="text-[11px] text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 font-semibold cursor-pointer"
-                    >
-                      + Создать папку
-                    </button>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <select
-                    value={folder}
-                    onChange={e => { setFolder(e.target.value); setIsDirty(true); }}
-                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all cursor-pointer"
-                  >
-                    {allFolderNames.map(fName => (
-                      <option key={fName} value={fName} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">
-                        📁 {fName}
-                      </option>
-                    ))}
-                  </select>
-                  {/* Or Custom Folder input */}
-                  <input
-                    type="text"
-                    placeholder="Или введите новое имя папки..."
-                    value={folder}
-                    onChange={e => { setFolder(e.target.value); setIsDirty(true); }}
-                    className="w-full bg-zinc-50 dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800/60 rounded-xl px-3 py-1.5 text-xs text-zinc-800 dark:text-zinc-300 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-cyan-500 transition-all"
-                  />
-                </div>
+            {/* Folder Selection (Hierarchical Tree) */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-bold text-zinc-700 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <FolderTree size={14} className="text-cyan-500" />
+                  Папка / Раздел <span className="text-red-500">*</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsInnerFolderModalOpen(true)}
+                  className="text-xs text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 font-semibold flex items-center gap-1 cursor-pointer"
+                >
+                  <FolderPlus size={13} />
+                  <span>+ Создать папку / под-папку</span>
+                </button>
               </div>
 
-              {/* Subcategory / Tab inside folder */}
-              <div>
-                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-400 uppercase tracking-wider mb-2">
-                  Подкатегория / Фильтр
-                </label>
-                <div className="space-y-2">
-                  <input
-                    type="text"
-                    placeholder="например, 1С База, UI Kits, Отчеты..."
-                    value={category}
-                    onChange={e => { setCategory(e.target.value); setIsDirty(true); }}
-                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-cyan-500 transition-all"
-                  />
-                  {categoriesInFolder.length > 0 && (
-                    <div className="flex items-center gap-1 flex-wrap">
-                      <span className="text-[10px] text-zinc-500 mr-1">Быстрый выбор:</span>
-                      {categoriesInFolder.map(c => (
-                        <button
-                          key={c}
-                          type="button"
-                          onClick={() => { setCategory(c); setIsDirty(true); }}
-                          className={`text-[10px] px-2 py-0.5 rounded-md border transition-all cursor-pointer ${
-                            category === c
-                              ? 'bg-purple-50 dark:bg-purple-500/20 border-purple-300 dark:border-purple-500/40 text-purple-700 dark:text-purple-300'
-                              : 'bg-zinc-100 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
-                          }`}
-                        >
-                          {c}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+              <div className="space-y-2">
+                <select
+                  value={folder}
+                  onChange={e => { setFolder(e.target.value); setIsDirty(true); }}
+                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all cursor-pointer font-mono"
+                >
+                  {allFolderOptions.map(fPath => {
+                    const depth = splitFolderPath(fPath).length - 1;
+                    const indent = '  '.repeat(depth) + (depth > 0 ? '↳ ' : '');
+                    const emoji = getFolderEmoji(fPath, folders);
+                    return (
+                      <option key={fPath} value={fPath} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">
+                        {indent}{emoji} {fPath}
+                      </option>
+                    );
+                  })}
+                </select>
+
+                {/* Быстрый ввод / редактирование пути */}
+                <input
+                  type="text"
+                  placeholder="Или введите путь папки (например: AI & Нейросети / Фото ИИ)..."
+                  value={folder}
+                  onChange={e => { setFolder(e.target.value); setIsDirty(true); }}
+                  className="w-full bg-zinc-50 dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800/60 rounded-xl px-3 py-1.5 text-xs text-zinc-800 dark:text-zinc-300 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-cyan-500 transition-all font-mono"
+                />
               </div>
             </div>
 
@@ -380,30 +363,85 @@ export default function BookmarkForm({
                 placeholder="Зачем нужен этот сервис, полезные ссылки внутри, логины/заметки..."
                 value={description}
                 onChange={e => { setDescription(e.target.value); setIsDirty(true); }}
-                className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-cyan-500 transition-all resize-none"
+                className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-cyan-500 transition-all resize-none"
               />
             </div>
 
-            {/* Screenshot / Image Preview */}
+            {/* Tags */}
             <div>
               <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-400 uppercase tracking-wider mb-2">
-                Скриншот или Баннер сайта
+                Теги
               </label>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <TagIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={14} />
+                    <input
+                      type="text"
+                      placeholder="Добавить тег (нажмите Enter)..."
+                      value={tagInput}
+                      onChange={e => setTagInput(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddTag();
+                        }
+                      }}
+                      className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl py-2.5 pl-10 pr-4 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-cyan-500 transition-all"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddTag}
+                    className="px-4 py-2.5 rounded-2xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-xs font-bold text-zinc-700 dark:text-zinc-300 transition-all cursor-pointer"
+                  >
+                    + Добавить
+                  </button>
+                </div>
+
+                {tags.length > 0 && (
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {tags.map(t => (
+                      <span
+                        key={t}
+                        className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-xl bg-cyan-50 dark:bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-500/20"
+                      >
+                        #{t}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveTag(t)}
+                          className="hover:text-red-500 transition-colors cursor-pointer"
+                        >
+                          <X size={12} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Screenshot / Image Upload */}
+            <div>
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-400 uppercase tracking-wider mb-2">
+                Скриншот или превью сайта (необязательно)
+              </label>
+
               {image ? (
-                <div className="relative rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden h-40 group">
-                  <img src={image} alt="Превью" className="w-full h-full object-cover" />
+                <div className="relative rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-950 max-h-48 group">
+                  <img src={image} alt="Preview" className="w-full h-48 object-cover" />
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-white transition-all cursor-pointer"
+                      className="px-3 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition-all cursor-pointer"
                     >
                       Заменить
                     </button>
                     <button
                       type="button"
                       onClick={() => { setImage(null); setIsDirty(true); }}
-                      className="px-3 py-2 rounded-xl bg-red-600/80 hover:bg-red-500 text-xs font-semibold text-white transition-all cursor-pointer"
+                      className="px-3 py-1.5 rounded-xl bg-red-500/80 hover:bg-red-500 text-white text-xs font-bold transition-all cursor-pointer"
                     >
                       Удалить
                     </button>
@@ -412,13 +450,18 @@ export default function BookmarkForm({
               ) : (
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-zinc-300 dark:border-zinc-800 hover:border-cyan-500/50 rounded-2xl p-6 text-center cursor-pointer transition-all bg-zinc-50 dark:bg-zinc-950/40 hover:bg-zinc-100 dark:hover:bg-zinc-950 group"
+                  className="w-full border-2 border-dashed border-zinc-200 dark:border-zinc-800 hover:border-cyan-500/50 rounded-2xl p-6 text-center transition-all cursor-pointer bg-zinc-50/50 dark:bg-zinc-950/50 hover:bg-cyan-50/20 dark:hover:bg-cyan-950/10"
                 >
-                  <ImageIcon className="mx-auto text-zinc-400 dark:text-zinc-600 group-hover:text-cyan-500 mb-2 transition-colors" size={28} />
-                  <p className="text-xs text-zinc-600 dark:text-zinc-400 font-semibold">Нажмите для загрузки скриншота</p>
-                  <p className="text-[11px] text-zinc-400 dark:text-zinc-600 mt-1">PNG, JPG, WebP до 5MB</p>
+                  <ImageIcon size={28} className="mx-auto text-zinc-400 dark:text-zinc-600 mb-2" />
+                  <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                    Нажмите чтобы загрузить скриншот
+                  </p>
+                  <p className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5">
+                    PNG, JPG, WebP до 5MB
+                  </p>
                 </div>
               )}
+
               <input
                 ref={fileInputRef}
                 type="file"
@@ -428,91 +471,53 @@ export default function BookmarkForm({
               />
             </div>
 
-            {/* Tags */}
-            <div>
-              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-400 uppercase tracking-wider mb-2">
-                Теги (через Enter)
-              </label>
-              <div className="flex items-center gap-2 mb-2">
-                <div className="relative flex-1">
-                  <TagIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" size={14} />
-                  <input
-                    type="text"
-                    placeholder="Добавить тег..."
-                    value={tagInput}
-                    onChange={e => setTagInput(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter' || e.key === ',') {
-                        e.preventDefault();
-                        handleAddTag();
-                      }
-                    }}
-                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl py-2 pl-9 pr-3 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-cyan-500 transition-all"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={handleAddTag}
-                  className="px-4 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-xs font-semibold text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-transparent transition-all cursor-pointer"
-                >
-                  + Тег
-                </button>
-              </div>
-
-              {tags.length > 0 && (
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {tags.map(t => (
-                    <span
-                      key={t}
-                      className="text-xs px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5"
-                    >
-                      #{t}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveTag(t)}
-                        className="text-zinc-400 hover:text-red-500 cursor-pointer"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Public checkbox */}
-            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+            {/* Visibility Toggle */}
+            <div className="flex items-center justify-between p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
               <div className="flex items-center gap-2.5">
-                {isPublic ? <Unlock size={16} className="text-emerald-500 dark:text-emerald-400" /> : <Lock size={16} className="text-amber-500 dark:text-amber-400" />}
+                {isPublic ? (
+                  <Unlock size={16} className="text-emerald-500" />
+                ) : (
+                  <Lock size={16} className="text-zinc-400" />
+                )}
                 <div>
-                  <p className="text-xs font-bold text-zinc-900 dark:text-white">
+                  <span className="text-xs font-bold text-zinc-900 dark:text-white">
                     {isPublic ? 'Публичная закладка' : 'Приватная закладка'}
-                  </p>
+                  </span>
                   <p className="text-[11px] text-zinc-500">
                     {isPublic ? 'Видна всем пользователям сервиса' : 'Видна только вам'}
                   </p>
                 </div>
               </div>
-              <input
-                type="checkbox"
-                checked={isPublic}
-                onChange={e => { setIsPublic(e.target.checked); setIsDirty(true); }}
-                className="w-4 h-4 rounded text-cyan-500 focus:ring-cyan-400 cursor-pointer"
-              />
+
+              <button
+                type="button"
+                onClick={() => { setIsPublic(!isPublic); setIsDirty(true); }}
+                className={`w-12 h-6 flex items-center rounded-full p-1 transition-colors cursor-pointer ${
+                  isPublic ? 'bg-cyan-500' : 'bg-zinc-300 dark:bg-zinc-700'
+                }`}
+              >
+                <div
+                  className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${
+                    isPublic ? 'translate-x-6' : 'translate-x-0'
+                  }`}
+                />
+              </button>
             </div>
 
-            {/* Actions Bar */}
-            <div className="flex items-center justify-between pt-4 border-t border-zinc-200 dark:border-zinc-800">
-              {initialData && onDelete ? (
-                <button
-                  type="button"
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="px-4 py-2.5 rounded-2xl bg-red-50 dark:bg-red-600/10 hover:bg-red-100 dark:hover:bg-red-600/20 text-red-600 dark:text-red-400 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
-                >
-                  <Trash2 size={15} />
-                  <span>Удалить</span>
-                </button>
-              ) : <div />}
+            {/* Action Buttons */}
+            <div className="flex items-center justify-between gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+              <div>
+                {initialData && onDelete && (
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="p-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-2xl transition-all cursor-pointer"
+                    title="Удалить закладку"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                )}
+              </div>
 
               <div className="flex items-center gap-3">
                 <button
@@ -522,15 +527,13 @@ export default function BookmarkForm({
                 >
                   Отмена
                 </button>
+
                 <button
                   type="submit"
                   disabled={saving || !title.trim() || !url.trim()}
-                  className="px-6 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-black uppercase tracking-wider shadow-lg shadow-cyan-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
+                  className="px-6 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-black uppercase tracking-wider shadow-lg shadow-cyan-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
-                  {saving ? (
-                    <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                  ) : null}
-                  <span>{initialData ? 'Сохранить изменения' : 'Добавить сайт'}</span>
+                  {saving ? 'Сохранение...' : initialData ? 'Сохранить изменения' : 'Добавить сайт'}
                 </button>
               </div>
             </div>
@@ -538,36 +541,47 @@ export default function BookmarkForm({
         </motion.div>
       </div>
 
-      {/* Delete Confirm */}
+      {/* Модалка создания подпапки прямо из формы */}
+      <FolderCreateModal
+        isOpen={isInnerFolderModalOpen}
+        parentPath={folder}
+        availableFolders={allFolderOptions}
+        onClose={() => setIsInnerFolderModalOpen(false)}
+        onCreate={(newPath) => {
+          setFolder(newPath);
+          setIsDirty(true);
+        }}
+      />
+
+      {/* Confirm Dialogs */}
+      <ConfirmDialog
+        isOpen={showCloseConfirm}
+        title="Несохраненные изменения"
+        message="У вас есть несохраненные данные. Закрыть форму без сохранения?"
+        confirmText="Закрыть"
+        cancelText="Остаться"
+        onConfirm={() => {
+          setShowCloseConfirm(false);
+          setIsDirty(false);
+          onClose();
+        }}
+        onCancel={() => setShowCloseConfirm(false)}
+      />
+
       <ConfirmDialog
         isOpen={showDeleteConfirm}
-        title="Удалить закладку?"
+        title="Удаление закладки"
         message="Вы уверены, что хотите удалить эту закладку? Это действие необратимо."
-        confirmText="Да, удалить"
-        cancelText="Отмена"
+        confirmText="Удалить"
         variant="danger"
         onConfirm={() => {
           if (initialData?.id && onDelete) {
             onDelete(initialData.id);
+            setShowDeleteConfirm(false);
             onClose();
           }
         }}
         onCancel={() => setShowDeleteConfirm(false)}
-      />
-
-      {/* Close Confirm */}
-      <ConfirmDialog
-        isOpen={showCloseConfirm}
-        title="Несохранённые изменения"
-        message="У вас есть несохранённые данные. Закрыть форму без сохранения?"
-        confirmText="Закрыть"
-        cancelText="Продолжить редактирование"
-        variant="warning"
-        onConfirm={() => {
-          setShowCloseConfirm(false);
-          onClose();
-        }}
-        onCancel={() => setShowCloseConfirm(false)}
       />
     </>
   );

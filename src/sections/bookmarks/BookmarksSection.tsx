@@ -8,16 +8,32 @@ import {
   Plus, 
   Star, 
   Folder, 
-  Tag as TagIcon, 
   ArrowUpDown,
   Flame,
   Search,
-  ExternalLink
+  ExternalLink,
+  ChevronRight,
+  ArrowLeft,
+  Trash2,
+  FolderTree,
+  FolderOpen
 } from 'lucide-react';
 import { BookmarkItem, User, BookmarkFolder, DEFAULT_BOOKMARK_FOLDERS } from '../../types';
 import { cn } from '../../utils/cn';
 import BookmarkCard from './BookmarkCard';
 import FolderCreateModal from './FolderCreateModal';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
+import { 
+  buildAllFoldersMap, 
+  getDirectSubfolders, 
+  splitFolderPath, 
+  normalizeFolderPath, 
+  getParentFolderPath, 
+  getLeafFolderName,
+  getFolderEmoji,
+  FolderNode,
+  PATH_SEP
+} from './bookmarkTreeUtils';
 
 interface BookmarksSectionProps {
   bookmarks: BookmarkItem[];
@@ -30,7 +46,7 @@ interface BookmarksSectionProps {
   onToggleFavorite: (id: string) => void;
   onOpenWebsite: (bookmark: BookmarkItem) => void;
   onCopyUrl: (bookmark: BookmarkItem) => void;
-  onOpenCreateModal: () => void;
+  onOpenCreateModal: (defaultFolder?: string) => void;
 }
 
 export default function BookmarksSection({
@@ -46,13 +62,14 @@ export default function BookmarksSection({
   onCopyUrl,
   onOpenCreateModal,
 }: BookmarksSectionProps) {
-  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  // Текущий открытый путь папки (null = Все закладки / корень)
+  const [currentPath, setCurrentPath] = useState<string | null>(null);
+  const [includeSubfolders, setIncludeSubfolders] = useState<boolean>(true);
   const [sourceFilter, setSourceFilter] = useState<'all' | 'my' | 'others'>('all');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [sortBy, setSortBy] = useState<'date' | 'clicks' | 'name'>('date');
 
-  // Custom User Folders (LocalStorage)
+  // Пользовательские созданные папки (LocalStorage)
   const [customFolders, setCustomFolders] = useState<BookmarkFolder[]>(() => {
     try {
       const saved = localStorage.getItem('pv_custom_bookmark_folders');
@@ -63,9 +80,9 @@ export default function BookmarksSection({
   });
 
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
-  const [folderModalMode, setFolderModalMode] = useState<'folder' | 'category'>('folder');
+  const [folderToDelete, setFolderToDelete] = useState<FolderNode | null>(null);
 
-  // Save custom folders
+  // Сохраняем кастомные папки
   useEffect(() => {
     try {
       localStorage.setItem('pv_custom_bookmark_folders', JSON.stringify(customFolders));
@@ -74,103 +91,80 @@ export default function BookmarksSection({
     }
   }, [customFolders]);
 
-  // Combine default and custom folders + any folders from existing bookmarks
-  const allFolders = useMemo(() => {
-    const map = new Map<string, BookmarkFolder>();
-    
-    DEFAULT_BOOKMARK_FOLDERS.forEach(f => map.set(f.name.toLowerCase(), f));
-    customFolders.forEach(f => map.set(f.name.toLowerCase(), f));
+  // Полная карта всех известных папок с подсчетом сайтов
+  const folderMap = useMemo(() => {
+    return buildAllFoldersMap(bookmarks, customFolders, DEFAULT_BOOKMARK_FOLDERS);
+  }, [bookmarks, customFolders]);
 
-    bookmarks.forEach(b => {
-      if (b.folder && !map.has(b.folder.toLowerCase())) {
-        map.set(b.folder.toLowerCase(), {
-          id: b.folder.toLowerCase().replace(/\s+/g, '-'),
-          name: b.folder,
-          emoji: '📁',
-        });
-      }
+  // Список всех уникальных путей папок (для модалки выбора родителя)
+  const allFolderPaths = useMemo(() => {
+    return Array.from(folderMap.keys()).sort((a, b) => a.localeCompare(b));
+  }, [folderMap]);
+
+  // Прямые подпапки текущего пути
+  const currentSubfolders = useMemo(() => {
+    return getDirectSubfolders(currentPath, folderMap);
+  }, [currentPath, folderMap]);
+
+  // Сегменты текущего пути для Breadcrumbs: "AI / Фото / Upscale" -> [{ name: "AI", path: "AI" }, ...]
+  const breadcrumbSegments = useMemo(() => {
+    if (!currentPath) return [];
+    const parts = splitFolderPath(currentPath);
+    let accum = '';
+    return parts.map((p, idx) => {
+      accum = accum ? `${accum}${PATH_SEP}${p}` : p;
+      return {
+        name: p,
+        path: accum,
+        emoji: getFolderEmoji(accum, customFolders, DEFAULT_BOOKMARK_FOLDERS),
+        isLast: idx === parts.length - 1,
+      };
     });
+  }, [currentPath, customFolders]);
 
-    return Array.from(map.values());
-  }, [customFolders, bookmarks]);
+  // Родительский путь для кнопки «Назад»
+  const parentPath = useMemo(() => {
+    return getParentFolderPath(currentPath);
+  }, [currentPath]);
 
-  // Subcategories inside the currently selected folder
-  const subcategoriesInSelectedFolder = useMemo(() => {
-    if (!selectedFolder) return [];
-    const set = new Set<string>();
-    bookmarks.forEach(b => {
-      if (b.folder?.toLowerCase() === selectedFolder.toLowerCase() && b.category && b.category !== 'default') {
-        set.add(b.category);
-      }
-    });
-    return Array.from(set);
-  }, [bookmarks, selectedFolder]);
-
-  // Category counts per folder map
-  const existingCategoriesMap = useMemo(() => {
-    const map: { [folder: string]: string[] } = {};
-    bookmarks.forEach(b => {
-      const f = b.folder || 'Общее';
-      if (!map[f]) map[f] = [];
-      if (b.category && b.category !== 'default' && !map[f].includes(b.category)) {
-        map[f].push(b.category);
-      }
-    });
-    return map;
-  }, [bookmarks]);
-
-  // Folder bookmarks count map
-  const folderCounts = useMemo(() => {
-    const counts: { [folderName: string]: number } = {};
-    bookmarks.forEach(b => {
-      const f = b.folder || 'Общее';
-      counts[f] = (counts[f] || 0) + 1;
-    });
-    return counts;
-  }, [bookmarks]);
-
-  // Subcategory count map inside current folder
-  const subcategoryCounts = useMemo(() => {
-    if (!selectedFolder) return {};
-    const counts: { [cat: string]: number } = {};
-    bookmarks.forEach(b => {
-      if (b.folder?.toLowerCase() === selectedFolder.toLowerCase() && b.category && b.category !== 'default') {
-        counts[b.category] = (counts[b.category] || 0) + 1;
-      }
-    });
-    return counts;
-  }, [bookmarks, selectedFolder]);
-
-  // Filtering Logic
+  // Фильтрация закладок
   const filteredBookmarks = useMemo(() => {
+    const normCurrent = currentPath ? normalizeFolderPath(currentPath) : null;
+
     return bookmarks.filter(b => {
-      // 1. Folder filter
-      if (selectedFolder && b.folder?.toLowerCase() !== selectedFolder.toLowerCase()) {
-        return false;
+      const bFolder = normalizeFolderPath(b.folder || 'Общее');
+
+      // 1. Фильтрация по текущей папке
+      if (normCurrent !== null) {
+        if (includeSubfolders) {
+          // Либо в этой папке, либо в любой её подпапке
+          if (bFolder !== normCurrent && !bFolder.startsWith(`${normCurrent}${PATH_SEP}`)) {
+            return false;
+          }
+        } else {
+          // Только строго в этой папке
+          if (bFolder !== normCurrent) {
+            return false;
+          }
+        }
       }
 
-      // 2. Subcategory filter
-      if (selectedCategory && b.category !== selectedCategory) {
-        return false;
-      }
-
-      // 3. Source ownership filter
+      // 2. Фильтр владельца (Мои / Чужие)
       if (sourceFilter === 'my' && b.userId !== user.uid) return false;
       if (sourceFilter === 'others' && b.userId === user.uid) return false;
 
-      // 4. Favorites filter
+      // 3. Избранное
       if (showFavoritesOnly && !b.isFavorite) return false;
 
-      // 5. Search query
+      // 4. Поиск
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const inTitle = b.title.toLowerCase().includes(q);
         const inUrl = b.url.toLowerCase().includes(q);
         const inDesc = (b.description || '').toLowerCase().includes(q);
         const inFolder = (b.folder || '').toLowerCase().includes(q);
-        const inCat = (b.category || '').toLowerCase().includes(q);
         const inTags = (b.tags || []).some(t => t.toLowerCase().includes(q));
-        if (!inTitle && !inUrl && !inDesc && !inFolder && !inCat && !inTags) return false;
+        if (!inTitle && !inUrl && !inDesc && !inFolder && !inTags) return false;
       }
 
       return true;
@@ -179,154 +173,207 @@ export default function BookmarksSection({
       if (sortBy === 'name') return a.title.localeCompare(b.title);
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
-  }, [bookmarks, selectedFolder, selectedCategory, sourceFilter, showFavoritesOnly, searchQuery, sortBy, user.uid]);
+  }, [bookmarks, currentPath, includeSubfolders, sourceFilter, showFavoritesOnly, searchQuery, sortBy, user.uid]);
 
-  // Handler to create new folder or subcategory
-  const handleCreateFolderOrCategory = (name: string, emoji?: string) => {
-    if (folderModalMode === 'folder') {
-      const newF: BookmarkFolder = {
-        id: name.toLowerCase().replace(/\s+/g, '-'),
-        name,
-        emoji: emoji || '📁',
-      };
-      setCustomFolders(prev => [...prev, newF]);
-      setSelectedFolder(name);
-      setSelectedCategory(null);
-    } else {
-      // Subcategory created
-      setSelectedCategory(name);
+  // Создание новой папки / подпапки
+  const handleCreateFolder = (fullPath: string, emoji?: string) => {
+    const norm = normalizeFolderPath(fullPath);
+    if (!norm) return;
+
+    const newFolder: BookmarkFolder = {
+      id: norm.toLowerCase().replace(/[^a-zа-я0-9]+/gi, '-'),
+      name: norm,
+      path: norm,
+      emoji: emoji || '📁',
+    };
+
+    setCustomFolders(prev => {
+      // Исключаем дубликаты
+      const filtered = prev.filter(f => normalizeFolderPath(f.path || f.name) !== norm);
+      return [...filtered, newFolder];
+    });
+
+    // Переходим в созданную папку
+    setCurrentPath(norm);
+  };
+
+  // Удаление кастомной папки
+  const handleConfirmDeleteFolder = () => {
+    if (!folderToDelete) return;
+    const targetPath = normalizeFolderPath(folderToDelete.path);
+
+    setCustomFolders(prev => prev.filter(f => {
+      const p = normalizeFolderPath(f.path || f.name);
+      return p !== targetPath && !p.startsWith(`${targetPath}${PATH_SEP}`);
+    }));
+
+    // Если удаляем текущую открытую папку, переходим к родителю
+    if (currentPath && (currentPath === targetPath || currentPath.startsWith(`${targetPath}${PATH_SEP}`))) {
+      setCurrentPath(parentPath);
     }
+
+    setFolderToDelete(null);
   };
 
   return (
     <div className="space-y-6">
-      {/* ─── LEVEL 1: FOLDERS / TABS BAR ─────────────────────────────────────── */}
-      <div className="bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-3 shadow-sm dark:shadow-xl space-y-3">
-        <div className="flex items-center justify-between px-2">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400">
-              📂 Папки закладок
-            </span>
-            <span className="text-xs text-zinc-500 font-mono">({bookmarks.length} сайтов)</span>
+      {/* ─── HIERARCHICAL FOLDERS & BREADCRUMBS CONTAINER ─────────────────────── */}
+      <div className="bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-5 shadow-sm dark:shadow-xl space-y-4">
+        
+        {/* Top Bar: Breadcrumb Trail + Actions */}
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          
+          {/* Breadcrumb Navigation */}
+          <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+            {/* Кнопка «Назад» на один уровень */}
+            {currentPath !== null && (
+              <button
+                onClick={() => setCurrentPath(parentPath)}
+                title="На один уровень вверх"
+                className="p-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition-all cursor-pointer mr-1"
+              >
+                <ArrowLeft size={16} />
+              </button>
+            )}
+
+            {/* Корень: Все закладки */}
+            <button
+              onClick={() => setCurrentPath(null)}
+              className={cn(
+                "px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer",
+                currentPath === null
+                  ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/20"
+                  : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white"
+              )}
+            >
+              <span>📁 Все закладки</span>
+              <span className={cn(
+                "text-[10px] px-1.5 py-0.2 rounded-full font-mono font-black",
+                currentPath === null ? "bg-black/20 text-black" : "bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300"
+              )}>
+                {bookmarks.length}
+              </span>
+            </button>
+
+            {/* Сегменты пути */}
+            {breadcrumbSegments.map(seg => (
+              <React.Fragment key={seg.path}>
+                <ChevronRight size={14} className="text-zinc-400 dark:text-zinc-600 shrink-0" />
+                <button
+                  onClick={() => setCurrentPath(seg.path)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer max-w-[200px] truncate",
+                    seg.isLast
+                      ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/20"
+                      : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white"
+                  )}
+                  title={seg.path}
+                >
+                  <span>{seg.emoji}</span>
+                  <span className="truncate">{seg.name}</span>
+                  <span className={cn(
+                    "text-[10px] px-1.5 py-0.2 rounded-full font-mono font-black",
+                    seg.isLast ? "bg-black/20 text-black" : "bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300"
+                  )}>
+                    {folderMap.get(seg.path)?.totalCount || 0}
+                  </span>
+                </button>
+              </React.Fragment>
+            ))}
           </div>
 
+          {/* Кнопка создания папки / подпапки */}
           <button
             type="button"
-            onClick={() => {
-              setFolderModalMode('folder');
-              setIsFolderModalOpen(true);
-            }}
-            className="text-xs font-bold text-cyan-700 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-300 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-50 dark:bg-cyan-500/10 hover:bg-cyan-100 dark:hover:bg-cyan-500/20 border border-cyan-200 dark:border-cyan-500/20 transition-all cursor-pointer"
+            onClick={() => setIsFolderModalOpen(true)}
+            className="text-xs font-bold text-cyan-700 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-300 flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-cyan-50 dark:bg-cyan-500/10 hover:bg-cyan-100 dark:hover:bg-cyan-500/20 border border-cyan-200 dark:border-cyan-500/20 transition-all cursor-pointer shrink-0"
           >
-            <FolderPlus size={14} />
-            <span>+ Создать вкладку / папку</span>
+            <FolderPlus size={15} />
+            <span>{currentPath ? '+ Создать под-папку' : '+ Создать папку'}</span>
           </button>
         </div>
 
-        {/* Scrollable Folder Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-zinc-800">
-          <button
-            onClick={() => {
-              setSelectedFolder(null);
-              setSelectedCategory(null);
-            }}
-             className={cn(
-              "px-4 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
-              selectedFolder === null
-                ? "bg-cyan-500 text-black shadow-lg shadow-cyan-500/20 scale-105"
-                : "bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none"
-            )}
-          >
-            <span>📁 Все закладки</span>
-            <span className={cn(
-              "text-[10px] px-1.5 py-0.5 rounded-full font-mono font-black",
-              selectedFolder === null ? "bg-black/20 text-black" : "bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-400"
-            )}>
-              {bookmarks.length}
-            </span>
-          </button>
+        {/* ─── SUBFOLDER CARDS GRID ────────────────────────────────────────── */}
+        {currentSubfolders.length > 0 ? (
+          <div>
+            <div className="flex items-center justify-between mb-2.5">
+              <span className="text-[11px] font-black uppercase tracking-wider text-zinc-400 dark:text-zinc-500 flex items-center gap-1.5">
+                <FolderTree size={12} className="text-cyan-500" />
+                {currentPath ? 'Вложенные под-папки' : 'Разделы закладок'}
+              </span>
+              <span className="text-[11px] text-zinc-400 font-mono">
+                {currentSubfolders.length} {currentSubfolders.length === 1 ? 'папка' : 'папок'}
+              </span>
+            </div>
 
-          {allFolders.map(f => {
-            const count = folderCounts[f.name] || 0;
-            const isSelected = selectedFolder?.toLowerCase() === f.name.toLowerCase();
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5">
+              {currentSubfolders.map(sub => (
+                <div
+                  key={sub.path}
+                  onClick={() => setCurrentPath(sub.path)}
+                  className="group relative bg-zinc-50 dark:bg-zinc-950/80 hover:bg-cyan-50/50 dark:hover:bg-cyan-950/20 border border-zinc-200 dark:border-zinc-800/80 hover:border-cyan-500/50 rounded-2xl p-3 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer flex flex-col justify-between min-h-[72px]"
+                >
+                  <div className="flex items-start justify-between gap-1.5">
+                    <span className="text-xl group-hover:scale-110 transition-transform">
+                      {sub.emoji}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 group-hover:bg-cyan-500/20 group-hover:text-cyan-700 dark:group-hover:text-cyan-300 transition-colors">
+                        {sub.totalCount}
+                      </span>
+                      {sub.isCustom && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setFolderToDelete(sub);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-500 transition-opacity text-zinc-400"
+                          title="Удалить пустую папку"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
 
-            return (
-              <button
-                key={f.id || f.name}
-                onClick={() => {
-                  setSelectedFolder(isSelected ? null : f.name);
-                  setSelectedCategory(null);
-                }}
-                className={cn(
-                  "px-4 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
-                  isSelected
-                    ? "bg-cyan-500 text-black shadow-lg shadow-cyan-500/20 scale-105"
-                    : "bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none"
-                )}
-              >
-                <span>{f.emoji || '📁'} {f.name}</span>
-                {count > 0 && (
-                  <span className={cn(
-                    "text-[10px] px-1.5 py-0.5 rounded-full font-mono font-black",
-                    isSelected ? "bg-black/20 text-black" : "bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-400"
-                  )}>
-                    {count}
+                  <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors truncate mt-1">
+                    {sub.leafName}
                   </span>
-                )}
+                </div>
+              ))}
+
+              {/* Быстрая карточка «+ Добавить под-папку» */}
+              <button
+                type="button"
+                onClick={() => setIsFolderModalOpen(true)}
+                className="border-2 border-dashed border-zinc-200 dark:border-zinc-800/80 hover:border-cyan-500/50 rounded-2xl p-3 flex flex-col items-center justify-center gap-1 text-zinc-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all cursor-pointer min-h-[72px] bg-zinc-50/40 dark:bg-zinc-950/40 hover:bg-cyan-50/30"
+              >
+                <FolderPlus size={18} />
+                <span className="text-[11px] font-bold">
+                  {currentPath ? '+ Под-папка' : '+ Папка'}
+                </span>
               </button>
-            );
-          })}
-        </div>
+            </div>
+          </div>
+        ) : (
+          currentPath && (
+            <div className="flex items-center justify-between py-1 text-xs text-zinc-500">
+              <span>В этой папке пока нет вложенных под-папок.</span>
+              <button
+                type="button"
+                onClick={() => setIsFolderModalOpen(true)}
+                className="text-cyan-600 dark:text-cyan-400 hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+              >
+                <FolderPlus size={13} />
+                <span>Создать первую под-папку</span>
+              </button>
+            </div>
+          )
+        )}
       </div>
 
-      {/* ─── LEVEL 2: SUBCATEGORIES ACCORDION / PILLS (IF A FOLDER IS SELECTED) ─── */}
-      {selectedFolder && subcategoriesInSelectedFolder.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2 overflow-x-auto p-2 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl"
-        >
-          <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 shrink-0 px-2">
-            Подкатегории:
-          </span>
-
-          <div className="flex items-center gap-1.5 flex-1 overflow-x-auto">
-            {subcategoriesInSelectedFolder.map(cat => {
-              const isCatSelected = selectedCategory === cat;
-              const cCount = subcategoryCounts[cat] || 0;
-
-              return (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(isCatSelected ? null : cat)}
-                  className={cn(
-                    "px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap",
-                    isCatSelected
-                      ? "bg-purple-600 text-white shadow-md shadow-purple-500/20"
-                      : "bg-white dark:bg-zinc-950 text-zinc-700 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none"
-                  )}
-                >
-                  <span>🏷️ {cat}</span>
-                  {cCount > 0 && <span className="text-[10px] opacity-75">({cCount})</span>}
-                </button>
-              );
-            })}
-          </div>
-
-          <button
-            type="button"
-            onClick={() => {
-              setFolderModalMode('category');
-              setIsFolderModalOpen(true);
-            }}
-            className="text-xs font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 flex items-center gap-1 px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-100 dark:hover:bg-purple-500/20 border border-purple-200 dark:border-purple-500/20 transition-all cursor-pointer whitespace-nowrap"
-          >
-            <span>+ Подкатегория</span>
-          </button>
-        </motion.div>
-      )}
-
-      {/* ─── LEVEL 3: TOOLBAR (FILTERS, SEARCH, SORT & ACTIONS) ───────────────── */}
+      {/* ─── TOOLBAR: SEARCH, FILTERS, SORT & ACTIONS ────────────────────────── */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         {/* Left: Source & Favorite Filters */}
         <div className="flex items-center gap-2 flex-wrap">
@@ -374,6 +421,21 @@ export default function BookmarksSection({
             <Star size={14} fill={showFavoritesOnly ? "currentColor" : "none"} />
             <span>Избранное</span>
           </button>
+
+          {/* Toggle "Включая под-папки" (только когда внутри папки) */}
+          {currentPath && (
+            <button
+              onClick={() => setIncludeSubfolders(!includeSubfolders)}
+              className={cn(
+                "px-3 py-2 rounded-2xl text-xs font-semibold transition-all border cursor-pointer",
+                includeSubfolders
+                  ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-700 dark:text-cyan-300"
+                  : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-500"
+              )}
+            >
+              {includeSubfolders ? '✓ Включая под-папки' : 'Только в этой папке'}
+            </button>
+          )}
         </div>
 
         {/* Right: Sort, View Toggle, Add Button */}
@@ -418,7 +480,7 @@ export default function BookmarksSection({
 
           {/* Add Bookmark Button */}
           <button
-            onClick={onOpenCreateModal}
+            onClick={() => onOpenCreateModal(currentPath || undefined)}
             className="px-4 py-2.5 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-black uppercase tracking-wider shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2 cursor-pointer"
           >
             <Plus size={16} />
@@ -427,7 +489,7 @@ export default function BookmarksSection({
         </div>
       </div>
 
-      {/* ─── LEVEL 4: CARDS GRID / LIST ──────────────────────────────────────── */}
+      {/* ─── CARDS GRID / LIST ───────────────────────────────────────────────── */}
       {filteredBookmarks.length > 0 ? (
         <div className={cn(
           "transition-all",
@@ -447,8 +509,7 @@ export default function BookmarksSection({
                 onEdit={onEditBookmark}
                 onDelete={onDeleteBookmark}
                 onToggleFavorite={onToggleFavorite}
-                onPickFolder={f => { setSelectedFolder(f); setSelectedCategory(null); }}
-                onPickCategory={c => setSelectedCategory(c)}
+                onPickFolder={f => setCurrentPath(f)}
               />
             ))}
           </AnimatePresence>
@@ -459,32 +520,45 @@ export default function BookmarksSection({
             <Globe size={32} />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-zinc-900 dark:text-white">Закладки не найдены</h3>
+            <h3 className="text-lg font-bold text-zinc-900 dark:text-white">
+              {currentPath ? `В папке «${getLeafFolderName(currentPath)}» пока нет сайтов` : 'Закладки не найдены'}
+            </h3>
             <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
               {searchQuery
                 ? 'Ни один сайт не соответствует поисковому запросу.'
-                : selectedFolder
-                ? `В папке «${selectedFolder}» пока нет сохраненных сайтов.`
+                : currentPath
+                ? `Сохраните первый сайт в раздел «${currentPath}».`
                 : 'Сохраняйте полезные веб-сайты, онлайн-сервисы, дизайн-вдохновения и базы знаний.'}
             </p>
           </div>
           <button
-            onClick={onOpenCreateModal}
+            onClick={() => onOpenCreateModal(currentPath || undefined)}
             className="px-6 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-black uppercase tracking-wider shadow-lg shadow-cyan-500/20 transition-all inline-flex items-center gap-2 cursor-pointer"
           >
             <Plus size={16} />
-            <span>Добавить первый сайт</span>
+            <span>{currentPath ? `Добавить сайт в эту папку` : 'Добавить первый сайт'}</span>
           </button>
         </div>
       )}
 
-      {/* ─── MODAL: CREATE FOLDER / CATEGORY ─────────────────────────────────── */}
+      {/* ─── MODAL: CREATE FOLDER / SUBFOLDER ────────────────────────────────── */}
       <FolderCreateModal
         isOpen={isFolderModalOpen}
-        mode={folderModalMode}
-        activeFolder={selectedFolder || undefined}
+        parentPath={currentPath}
+        availableFolders={allFolderPaths}
         onClose={() => setIsFolderModalOpen(false)}
-        onCreate={handleCreateFolderOrCategory}
+        onCreate={handleCreateFolder}
+      />
+
+      {/* ─── CONFIRM DELETE FOLDER DIALOG ─────────────────────────────────────── */}
+      <ConfirmDialog
+        isOpen={Boolean(folderToDelete)}
+        title="Удаление папки"
+        message={`Вы уверены, что хотите удалить папку «${folderToDelete?.leafName}»? Закладки останутся в базе данных.`}
+        confirmText="Удалить папку"
+        variant="danger"
+        onConfirm={handleConfirmDeleteFolder}
+        onCancel={() => setFolderToDelete(null)}
       />
     </div>
   );

@@ -1292,14 +1292,20 @@ app.post("/api/gemini/parse-tool", authenticate, async (req, res) => {
     const rateCheck = checkAiRateLimit(user.uid);
     if (!rateCheck.allowed) return res.status(429).json({ message: rateCheck.message });
 
-    const { url, text, imageBase64 } = req.body;
-    if (!url && !text && !imageBase64) return res.status(400).json({ error: "Нужен url, text или imageBase64" });
+    const { url, text, imageBase64, imagesBase64 } = req.body;
+    // Нормализуем: собираем все изображения в один массив (новый формат + старый)
+    const allImages: string[] = [];
+    if (Array.isArray(imagesBase64)) allImages.push(...imagesBase64.slice(0, 4));
+    else if (imageBase64) allImages.push(imageBase64);
+
+    if (!url && !text && allImages.length === 0) return res.status(400).json({ error: "Нужен url, text или imagesBase64" });
 
     const safeUrl = url ? String(url).trim().slice(0, 500) : "";
     const safeText = text ? String(text).trim().slice(0, 12000) : "";
 
     const PARSE_SYSTEM_PROMPT = `Ты — экспертный технический аналитик программных инструментов и ИИ-проектов.
-Тебе предоставлен скриншот поста из Telegram/Twitter, ссылка на GitHub-репозиторий или текстовое описание инструмента.
+Тебе предоставлены скриншоты постов из Telegram/Twitter, ссылка на GitHub-репозиторий или текстовое описание инструмента.
+Если предоставлено несколько скриншотов — объедини информацию из всех и создай единый связный результат.
 Твоя задача — извлечь ключевую информацию и вернуть строгий JSON по схеме без каких-либо пояснений.
 
 Правила:
@@ -1314,13 +1320,19 @@ app.post("/api/gemini/parse-tool", authenticate, async (req, res) => {
 - tags: массив из 4-7 технических тегов на английском в нижнем регистре
 - pricing: ТОЛЬКО одно из: free | freemium | paid`;
 
+    // Добавляем все изображения в parts (Gemini поддерживает несколько inline_data)
     const parts: any[] = [];
-    if (imageBase64) { const p = dataUrlToInlinePart(imageBase64); if (p) parts.push(p); }
+    for (const imgBase64 of allImages) {
+      const p = dataUrlToInlinePart(imgBase64);
+      if (p) parts.push(p);
+    }
     let userText = "Проанализируй следующий материал и верни JSON с информацией о проекте:\n\n";
     if (safeUrl) userText += `GitHub URL: ${safeUrl}\n`;
     if (safeText) userText += `Текст описания:\n${safeText}\n`;
-    if (imageBase64 && !safeUrl && !safeText) userText += "Анализируй предоставленный скриншот.";
+    if (allImages.length > 0 && !safeUrl && !safeText) userText += `Анализируй предоставленные скриншоты (${allImages.length} шт.).`;
+    else if (allImages.length > 0) userText += `Дополнительно предоставлено ${allImages.length} скриншот(а/ов) — учти их.`;
     parts.push({ text: userText });
+
 
     const response = await generateWithTimeout({
       model: GEMINI_MODEL,

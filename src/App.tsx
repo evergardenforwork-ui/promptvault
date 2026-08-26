@@ -68,6 +68,7 @@ export default function App() {
   const [viewingGitProject, setViewingGitProject] = useState<GitProject | null>(null);
   const [editingCommand, setEditingCommand] = useState<CommandItem | null>(null);
   const [editingBookmark, setEditingBookmark] = useState<BookmarkItem | null>(null);
+  const [defaultBookmarkFolder, setDefaultBookmarkFolder] = useState<string | null>(null);
   const [toasts, setToasts] = useState<{ id: number, message: React.ReactNode, type?: 'success' | 'error' | 'info' }[]>([]);
   const [sortBy, setSortBy] = useState<'date' | 'name' | 'usage'>('date');
   const [sourceFilter, setSourceFilter] = useState<'all' | 'my-all' | 'my-own' | 'my-web' | 'others'>('all');
@@ -847,14 +848,16 @@ export default function App() {
               searchQuery={searchQuery}
               onEditBookmark={(b) => {
                 setEditingBookmark(b);
+                setDefaultBookmarkFolder(b.folder || null);
                 setIsBookmarkFormOpen(true);
               }}
               onDeleteBookmark={handleDeleteBookmark}
               onToggleFavorite={handleToggleFavoriteBookmark}
               onOpenWebsite={handleOpenBookmark}
               onCopyUrl={handleCopyBookmarkUrl}
-              onOpenCreateModal={() => {
+              onOpenCreateModal={(folder) => {
                 setEditingBookmark(null);
+                setDefaultBookmarkFolder(folder || null);
                 setIsBookmarkFormOpen(true);
               }}
             />
@@ -1016,6 +1019,7 @@ export default function App() {
           <BookmarkForm
             isOpen={isBookmarkFormOpen}
             initialData={editingBookmark}
+            defaultFolder={defaultBookmarkFolder}
             folders={DEFAULT_BOOKMARK_FOLDERS}
             existingFolders={Array.from(new Set(bookmarks.map(b => b.folder).filter(Boolean)))}
             existingCategories={bookmarks.reduce((acc, b) => {
@@ -1043,6 +1047,7 @@ export default function App() {
                 }
                 setIsBookmarkFormOpen(false);
                 setEditingBookmark(null);
+                setDefaultBookmarkFolder(null);
               } catch (err: any) {
                 addToast(err.message || 'Ошибка сохранения закладки', 'error');
                 throw err;
@@ -1052,6 +1057,7 @@ export default function App() {
             onClose={() => {
               setIsBookmarkFormOpen(false);
               setEditingBookmark(null);
+              setDefaultBookmarkFolder(null);
             }}
           />
         )}

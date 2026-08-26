@@ -106,6 +106,7 @@ export default function BookmarkCard({
                 <span 
                   onClick={() => onPickFolder?.(bookmark.folder)}
                   className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800/40 hover:bg-cyan-100 dark:hover:bg-cyan-900/60 transition-colors cursor-pointer"
+                  title={bookmark.folder}
                 >
                   📁 {bookmark.folder}
                 </span>

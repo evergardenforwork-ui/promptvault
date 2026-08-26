@@ -1042,6 +1042,7 @@ export default function App() {
             isOpen={isBookmarkFormOpen}
             initialData={editingBookmark}
             defaultFolder={defaultBookmarkFolder}
+            bookmarks={bookmarks}
             folders={DEFAULT_BOOKMARK_FOLDERS}
             existingFolders={Array.from(new Set(bookmarks.map(b => b.folder).filter(Boolean)))}
             existingCategories={bookmarks.reduce((acc, b) => {

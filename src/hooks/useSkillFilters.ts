@@ -6,6 +6,7 @@ export function useSkillFilters(skills: SkillPackage[], user: User | null) {
   const [selectedSkillTypes, setSelectedSkillTypes] = useState<string[]>([]);
   const [selectedTargetAi, setSelectedTargetAi] = useState<string>('all');
   const [sourceFilter, setSourceFilter] = useState<'all' | 'my-all' | 'my-own' | 'my-web' | 'others'>('all');
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [sortBy, setSortBy] = useState<'date' | 'name'>('date');
 
   const filteredSkills = useMemo(() => {
@@ -22,7 +23,12 @@ export function useSkillFilters(skills: SkillPackage[], user: User | null) {
         }
       }
 
-      // 2. Источник (Ownership)
+      // 2. Избранное
+      if (showFavoritesOnly && !skill.isFavorite) {
+        return false;
+      }
+
+      // 3. Источник (Ownership)
       if (sourceFilter === 'my-all') {
         if (skill.userId !== user?.uid) return false;
       } else if (sourceFilter === 'my-own') {
@@ -33,7 +39,7 @@ export function useSkillFilters(skills: SkillPackage[], user: User | null) {
         if (skill.userId === user?.uid) return false;
       }
 
-      // 3. Тип скилла (AND логика: должны присутствовать все выбранные типы)
+      // 4. Тип скилла (AND логика: должны присутствовать все выбранные типы)
       if (selectedSkillTypes.length > 0) {
         if (!skill.skillTypes) return false;
         for (const reqType of selectedSkillTypes) {
@@ -41,7 +47,7 @@ export function useSkillFilters(skills: SkillPackage[], user: User | null) {
         }
       }
 
-      // 4. Целевой ИИ / Платформа
+      // 5. Целевой ИИ / Платформа
       if (selectedTargetAi !== 'all') {
         if (!skill.targetAis || !skill.targetAis.includes(selectedTargetAi)) {
           return false;
@@ -56,7 +62,7 @@ export function useSkillFilters(skills: SkillPackage[], user: User | null) {
         return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
       }
     });
-  }, [skills, searchQuery, selectedSkillTypes, selectedTargetAi, sourceFilter, sortBy, user]);
+  }, [skills, searchQuery, selectedSkillTypes, selectedTargetAi, sourceFilter, showFavoritesOnly, sortBy, user]);
 
   const counts = useMemo(() => {
     if (!user) return { all: 0, myAll: 0, own: 0, web: 0, others: 0 };
@@ -91,9 +97,10 @@ export function useSkillFilters(skills: SkillPackage[], user: User | null) {
     setSelectedSkillTypes([]);
     setSelectedTargetAi('all');
     setSourceFilter('all');
+    setShowFavoritesOnly(false);
   };
 
-  const isFiltered = searchQuery !== '' || selectedSkillTypes.length > 0 || selectedTargetAi !== 'all' || sourceFilter !== 'all';
+  const isFiltered = searchQuery !== '' || selectedSkillTypes.length > 0 || selectedTargetAi !== 'all' || sourceFilter !== 'all' || showFavoritesOnly;
 
   return {
     searchQuery,
@@ -104,6 +111,8 @@ export function useSkillFilters(skills: SkillPackage[], user: User | null) {
     setSelectedTargetAi,
     sourceFilter,
     setSourceFilter,
+    showFavoritesOnly,
+    setShowFavoritesOnly,
     sortBy,
     setSortBy,
     filteredSkills,

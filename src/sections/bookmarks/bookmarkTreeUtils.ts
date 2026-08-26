@@ -1,6 +1,33 @@
-﻿import { BookmarkItem, BookmarkFolder, DEFAULT_BOOKMARK_FOLDERS } from '../../types';
+import { BookmarkItem, BookmarkFolder, DEFAULT_BOOKMARK_FOLDERS } from '../../types';
 
 export const PATH_SEP = ' / ';
+export const CUSTOM_FOLDERS_STORAGE_KEY = 'pv_custom_bookmark_folders';
+
+/**
+ * Получает список сохраненных кастомных папок из LocalStorage
+ */
+export function getSavedCustomFolders(): BookmarkFolder[] {
+  try {
+    const saved = localStorage.getItem(CUSTOM_FOLDERS_STORAGE_KEY);
+    return saved ? JSON.parse(saved) : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Сохраняет список кастомных папок в LocalStorage и уведомляет слушателей
+ */
+export function saveCustomFolders(folders: BookmarkFolder[]): void {
+  try {
+    localStorage.setItem(CUSTOM_FOLDERS_STORAGE_KEY, JSON.stringify(folders));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('pv_custom_folders_updated', { detail: folders }));
+    }
+  } catch {
+    // ignore storage errors
+  }
+}
 
 /**
  * Нормализует путь папки: убирает лишние пробелы и слэши
@@ -72,21 +99,32 @@ export function getFolderEmoji(
   defaultFolders: BookmarkFolder[] = DEFAULT_BOOKMARK_FOLDERS
 ): string {
   const norm = normalizeFolderPath(path);
+  if (!norm) return '📁';
   const leaf = getLeafFolderName(norm);
 
-  // 1. Поиск в кастомных папках
-  const custom = customFolders.find(
-    f => normalizeFolderPath(f.path || f.name).toLowerCase() === norm.toLowerCase() ||
-         f.name.toLowerCase() === leaf.toLowerCase()
+  // 1. Точное совпадение по полному пути в кастомных папках
+  const exactCustom = customFolders.find(
+    f => normalizeFolderPath(f.path || f.name).toLowerCase() === norm.toLowerCase()
   );
-  if (custom?.emoji) return custom.emoji;
+  if (exactCustom?.emoji) return exactCustom.emoji;
 
-  // 2. Поиск в дефолтных папках
-  const def = defaultFolders.find(
-    f => f.name.toLowerCase() === norm.toLowerCase() ||
-         f.name.toLowerCase() === leaf.toLowerCase()
+  // 2. Точное совпадение по имени в дефолтных папках
+  const exactDef = defaultFolders.find(
+    f => f.name.toLowerCase() === norm.toLowerCase()
   );
-  if (def?.emoji) return def.emoji;
+  if (exactDef?.emoji) return exactDef.emoji;
+
+  // 3. Совпадение по leafName в кастомных папках
+  const leafCustom = customFolders.find(
+    f => getLeafFolderName(f.path || f.name).toLowerCase() === leaf.toLowerCase()
+  );
+  if (leafCustom?.emoji) return leafCustom.emoji;
+
+  // 4. Совпадение по leafName в дефолтных папках
+  const leafDef = defaultFolders.find(
+    f => f.name.toLowerCase() === leaf.toLowerCase()
+  );
+  if (leafDef?.emoji) return leafDef.emoji;
 
   // 3. Эвристический подбор по ключевым словам
   const lower = norm.toLowerCase();

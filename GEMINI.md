@@ -290,10 +290,11 @@ AssistantConfig { systemPrompt }
 
 ### ✅ Всё реализовано и работает:
 - Модульная архитектура секций (`PromptsSection.tsx`, `SkillsSection.tsx`, `UsersSection.tsx`, `GitProjectsSection.tsx`, `CommandsSection.tsx`, `BookmarksSection.tsx`)
+- **⭐ Личное Избранное**: 100% паритет фильтрации и переключения избранного во всех 5 хабах (`Prompts`, `Skills`, `Git`, `Commands`, `Bookmarks`) с каскадной автоочисткой `user_favorites` при удалении карточек
 - **🚀 Dual-Engine Architecture**: Cloud Supabase (PostgreSQL + Storage) ИЛИ Zero-Config Local SQLite (`better-sqlite3` + `data/uploads/`) с автоматическим переключением через `server/dbAdapter.ts`
-- **💾 Full-Media Backup & Workspaces Export**: `backupService.ts` выгружает картинки в ZIP, подменяет пути, импортирует на лету и поддерживает выгрузку конкретного воркспейса
+- **💾 Full-Media Backup & Workspaces Export**: `backupService.ts` выгружает все 5 типов сущностей и бинарные картинки в ZIP, подменяет пути, импортирует на лету и поддерживает выгрузку конкретного воркспейса
 - **🐙 Раздел «Git Hub & AI Tools»**:
-  - CRUD API `/api/git-projects`, Gemini 3.1 Smart Parser (мультимодальный ввод: URL + текст + до 4 скриншотов одновременно), `GitProjectsSection`, `GitProjectCard`, `GitProjectForm`, `GitProjectView`.
+  - CRUD API `/api/git-projects`, Gemini 3.1 Flash-Lite Smart Parser (мультимодальный ввод: URL + текст + до 4 скриншотов одновременно), `GitProjectsSection`, `GitProjectCard`, `GitProjectForm`, `GitProjectView`.
 - **⚡ Раздел «AI Commands & Workflows»**:
   - CRUD API `/api/commands`, 1-клик копирование, смарт-параметры `{{param}}` (`CommandFillModal`), привязка к скиллам, `CommandsSection`, `CommandCard`, `CommandForm`.
 - **🌐 Раздел «Web Bookmarks & Sites Hub»**:
@@ -303,10 +304,8 @@ AssistantConfig { systemPrompt }
 - Единый скрипт: [`scripts/all_new_tables_migration.sql`](scripts/all_new_tables_migration.sql) — создать все 4 новые таблицы (`git_projects`, `commands`, `bookmarks`, `skill_hints`) в один клик.
 
 ### 🔴 Следующий этап (будущие задачи):
-- Включить Gemini ИИ-ассистент в промптах (убрать заглушку)
-- Добавить `git_projects`, `commands`, `bookmarks` в backup export/import ZIP
-- Профиль пользователя со статистикой
-- Каскадное удаление favorites при удалении сущности (tech debt)
+- Включить Gemini ИИ-ассистент в промптах (убрать заглушку в `PhotoView.tsx`)
+- Профиль пользователя со статистикой и сменой пароля самим пользователем
 
 ---
 

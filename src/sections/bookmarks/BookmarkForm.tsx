@@ -14,17 +14,25 @@ import {
   Image as ImageIcon,
   FolderTree
 } from 'lucide-react';
-import { BookmarkItem, User, BookmarkFolder } from '../../types';
+import { BookmarkItem, User, BookmarkFolder, DEFAULT_BOOKMARK_FOLDERS } from '../../types';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
-import { splitFolderPath, normalizeFolderPath, getFolderEmoji, buildAllFoldersMap } from './bookmarkTreeUtils';
+import { 
+  splitFolderPath, 
+  normalizeFolderPath, 
+  getFolderEmoji, 
+  buildAllFoldersMap, 
+  getSavedCustomFolders, 
+  saveCustomFolders 
+} from './bookmarkTreeUtils';
 import FolderCreateModal from './FolderCreateModal';
 
 interface BookmarkFormProps {
   isOpen: boolean;
   initialData?: BookmarkItem | null;
   defaultFolder?: string | null;
-  folders: BookmarkFolder[];
-  existingFolders: string[];
+  folders?: BookmarkFolder[];
+  bookmarks?: BookmarkItem[];
+  existingFolders?: string[];
   existingCategories?: { [folder: string]: string[] };
   user: User;
   onSave: (data: Partial<BookmarkItem>) => Promise<void>;
@@ -37,6 +45,7 @@ export default function BookmarkForm({
   initialData,
   defaultFolder,
   folders,
+  bookmarks,
   existingFolders,
   existingCategories = {},
   user,
@@ -62,6 +71,18 @@ export default function BookmarkForm({
   const [isInnerFolderModalOpen, setIsInnerFolderModalOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Пользовательские созданные папки
+  const [customFolders, setCustomFolders] = useState<BookmarkFolder[]>(getSavedCustomFolders);
+
+  // Синхронизация кастомных папок при изменении в других окнах / модалках
+  useEffect(() => {
+    const handleSync = () => {
+      setCustomFolders(getSavedCustomFolders());
+    };
+    window.addEventListener('pv_custom_folders_updated', handleSync);
+    return () => window.removeEventListener('pv_custom_folders_updated', handleSync);
+  }, []);
 
   // Initialize form state
   useEffect(() => {
@@ -179,28 +200,65 @@ export default function BookmarkForm({
     }
   };
 
-  // Собираем уникальный отсортированный список всех папок для выпадающего списка
+  // Собираем полный список всех папок и подпапок с сохранением иерархии
   const allFolderOptions = useMemo(() => {
-    const set = new Set<string>();
-    set.add('Общее');
-    folders.forEach(f => set.add(normalizeFolderPath(f.name)));
-    existingFolders.forEach(f => {
-      const norm = normalizeFolderPath(f);
-      if (norm) {
-        // Добавляем также все промежуточные сегменты
+    const folderMap = buildAllFoldersMap(
+      bookmarks || [],
+      customFolders,
+      folders || DEFAULT_BOOKMARK_FOLDERS
+    );
+
+    // Добавляем папки из existingFolders (если переданы)
+    if (existingFolders && existingFolders.length > 0) {
+      existingFolders.forEach(f => {
+        const norm = normalizeFolderPath(f);
+        if (norm && !folderMap.has(norm)) {
+          const parts = splitFolderPath(norm);
+          let accum = '';
+          parts.forEach((p, idx) => {
+            accum = accum ? `${accum} / ${p}` : p;
+            if (!folderMap.has(accum)) {
+              folderMap.set(accum, {
+                path: accum,
+                name: accum,
+                leafName: p,
+                emoji: getFolderEmoji(accum, customFolders, folders || DEFAULT_BOOKMARK_FOLDERS),
+                depth: idx,
+                directCount: 0,
+                totalCount: 0,
+              });
+            }
+          });
+        }
+      });
+    }
+
+    // Гарантируем присутствие initialData, defaultFolder и текущего folder
+    const extraPaths = [initialData?.folder, defaultFolder, folder].filter(Boolean) as string[];
+    extraPaths.forEach(p => {
+      const norm = normalizeFolderPath(p);
+      if (norm && !folderMap.has(norm)) {
         const parts = splitFolderPath(norm);
         let accum = '';
-        parts.forEach(p => {
-          accum = accum ? `${accum} / ${p}` : p;
-          set.add(accum);
+        parts.forEach((part, idx) => {
+          accum = accum ? `${accum} / ${part}` : part;
+          if (!folderMap.has(accum)) {
+            folderMap.set(accum, {
+              path: accum,
+              name: accum,
+              leafName: part,
+              emoji: getFolderEmoji(accum, customFolders, folders || DEFAULT_BOOKMARK_FOLDERS),
+              depth: idx,
+              directCount: 0,
+              totalCount: 0,
+            });
+          }
         });
       }
     });
-    if (initialData?.folder) set.add(normalizeFolderPath(initialData.folder));
-    if (folder) set.add(normalizeFolderPath(folder));
 
-    return Array.from(set).sort((a, b) => a.localeCompare(b));
-  }, [folders, existingFolders, initialData, folder]);
+    return Array.from(folderMap.keys()).sort((a, b) => a.localeCompare(b));
+  }, [bookmarks, customFolders, folders, existingFolders, initialData?.folder, defaultFolder, folder]);
 
   const categoriesInFolder = existingCategories[folder] || [];
 
@@ -332,8 +390,8 @@ export default function BookmarkForm({
                 >
                   {allFolderOptions.map(fPath => {
                     const depth = splitFolderPath(fPath).length - 1;
-                    const indent = '  '.repeat(depth) + (depth > 0 ? '↳ ' : '');
-                    const emoji = getFolderEmoji(fPath, folders);
+                    const indent = '\u00A0\u00A0\u00A0\u00A0'.repeat(depth) + (depth > 0 ? '↳ ' : '');
+                    const emoji = getFolderEmoji(fPath, customFolders, folders || DEFAULT_BOOKMARK_FOLDERS);
                     return (
                       <option key={fPath} value={fPath} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">
                         {indent}{emoji} {fPath}
@@ -547,9 +605,24 @@ export default function BookmarkForm({
         parentPath={folder}
         availableFolders={allFolderOptions}
         onClose={() => setIsInnerFolderModalOpen(false)}
-        onCreate={(newPath) => {
-          setFolder(newPath);
-          setIsDirty(true);
+        onCreate={(newPath, emoji) => {
+          const norm = normalizeFolderPath(newPath);
+          if (norm) {
+            const newFolder: BookmarkFolder = {
+              id: norm.toLowerCase().replace(/[^a-zа-я0-9]+/gi, '-'),
+              name: norm,
+              path: norm,
+              emoji: emoji || '📁',
+            };
+            const updated = [
+              ...customFolders.filter(f => normalizeFolderPath(f.path || f.name) !== norm),
+              newFolder,
+            ];
+            setCustomFolders(updated);
+            saveCustomFolders(updated);
+            setFolder(norm);
+            setIsDirty(true);
+          }
         }}
       />
 

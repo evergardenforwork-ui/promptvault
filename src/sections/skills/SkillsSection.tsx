@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutGrid, List, X, Cpu } from 'lucide-react';
+import { LayoutGrid, List, X, Cpu, Star } from 'lucide-react';
 import { AnimatePresence } from 'motion/react';
 import { SkillPackage, User, SKILL_TYPE_OPTIONS, TARGET_AI_OPTIONS } from '../../types';
 import { cn } from '../../utils/cn';
@@ -98,6 +98,20 @@ export default function SkillsSection({
                 </button>
               ))}
             </div>
+
+            {/* Favorite Toggle Button */}
+            <button
+              onClick={() => skillFilters.setShowFavoritesOnly(!skillFilters.showFavoritesOnly)}
+              className={cn(
+                "px-3 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border shrink-0",
+                skillFilters.showFavoritesOnly
+                  ? "bg-amber-500/20 border-amber-500/40 text-amber-500 shadow-md shadow-amber-500/10"
+                  : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-amber-500"
+              )}
+            >
+              <Star size={14} fill={skillFilters.showFavoritesOnly ? "currentColor" : "none"} />
+              <span>Избранное</span>
+            </button>
           </div>
 
           <div className="text-sm text-zinc-500 font-medium shrink-0 flex items-center gap-3">

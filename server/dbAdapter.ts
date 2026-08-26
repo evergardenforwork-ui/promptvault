@@ -1080,7 +1080,7 @@ class SupabaseAdapter implements DbAdapter {
   }
 
   async toggleFavorite(userId: string, itemId: string, itemType: string): Promise<{ added: boolean }> {
-    const { data } = await this.supabase.from('user_favorites').select('item_id').eq('user_id', userId).eq('item_id', itemId).eq('item_type', itemType).single();
+    const { data } = await this.supabase.from('user_favorites').select('item_id').eq('user_id', userId).eq('item_id', itemId).eq('item_type', itemType).maybeSingle();
     if (data) {
       await this.supabase.from('user_favorites').delete().eq('user_id', userId).eq('item_id', itemId).eq('item_type', itemType);
       return { added: false };

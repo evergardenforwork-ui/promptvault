@@ -546,7 +546,7 @@ app.post("/api/favorites/toggle", authenticate, async (req, res) => {
     const user = (req as any).user;
     const { itemId, itemType } = req.body;
     if (!itemId || !itemType) return res.status(400).json({ error: "itemId и itemType обязательны" });
-    const { data: existing } = await supabase.from("user_favorites").select("*").eq("user_id", user.uid).eq("item_id", itemId).eq("item_type", itemType).single();
+    const { data: existing } = await supabase.from("user_favorites").select("item_id").eq("user_id", user.uid).eq("item_id", itemId).eq("item_type", itemType).maybeSingle();
     let added: boolean;
     if (existing) {
       await supabase.from("user_favorites").delete().eq("user_id", user.uid).eq("item_id", itemId).eq("item_type", itemType);

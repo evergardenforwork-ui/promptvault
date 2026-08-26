@@ -1,7 +1,7 @@
-﻿import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, FolderPlus, Folder, ArrowRight } from 'lucide-react';
-import { joinFolderPath, normalizeFolderPath, splitFolderPath, PATH_SEP } from './bookmarkTreeUtils';
+import { joinFolderPath, normalizeFolderPath, splitFolderPath, getFolderEmoji, PATH_SEP } from './bookmarkTreeUtils';
 
 interface FolderCreateModalProps {
   isOpen: boolean;
@@ -109,10 +109,11 @@ export default function FolderCreateModal({
               <option value="">📁 Корневой уровень (Главная страница)</option>
               {availableFolders.map(f => {
                 const depth = splitFolderPath(f).length - 1;
-                const indent = '  '.repeat(depth) + (depth > 0 ? '↳ ' : '');
+                const indent = '\u00A0\u00A0\u00A0\u00A0'.repeat(depth) + (depth > 0 ? '↳ ' : '');
+                const fEmoji = getFolderEmoji(f);
                 return (
                   <option key={f} value={f}>
-                    {indent}📁 {f}
+                    {indent}{fEmoji} {f}
                   </option>
                 );
               })}

@@ -31,6 +31,8 @@ import {
   getParentFolderPath, 
   getLeafFolderName,
   getFolderEmoji,
+  getSavedCustomFolders,
+  saveCustomFolders,
   FolderNode,
   PATH_SEP
 } from './bookmarkTreeUtils';
@@ -72,25 +74,23 @@ export default function BookmarksSection({
   const [sortBy, setSortBy] = useState<'date' | 'clicks' | 'name'>('date');
 
   // Пользовательские созданные папки (LocalStorage)
-  const [customFolders, setCustomFolders] = useState<BookmarkFolder[]>(() => {
-    try {
-      const saved = localStorage.getItem('pv_custom_bookmark_folders');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [customFolders, setCustomFolders] = useState<BookmarkFolder[]>(getSavedCustomFolders);
 
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
   const [folderToDelete, setFolderToDelete] = useState<FolderNode | null>(null);
 
-  // Сохраняем кастомные папки
+  // Синхронизация кастомных папок при изменении в других модалках / компонентах
   useEffect(() => {
-    try {
-      localStorage.setItem('pv_custom_bookmark_folders', JSON.stringify(customFolders));
-    } catch {
-      // ignore
-    }
+    const handleSync = () => {
+      setCustomFolders(getSavedCustomFolders());
+    };
+    window.addEventListener('pv_custom_folders_updated', handleSync);
+    return () => window.removeEventListener('pv_custom_folders_updated', handleSync);
+  }, []);
+
+  // Сохраняем кастомные папки при их обновлении
+  useEffect(() => {
+    saveCustomFolders(customFolders);
   }, [customFolders]);
 
   // Полная карта всех известных папок с подсчетом сайтов

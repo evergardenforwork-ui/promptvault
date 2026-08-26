@@ -479,6 +479,9 @@ async function startServer() {
         return res.status(400).json({ message: "Нельзя удалить главного администратора" });
       }
 
+      // Каскадно чистим избранное пользователя
+      await supabase.from("user_favorites").delete().eq("user_id", uid);
+
       const { error } = await supabase.from("users").delete().eq("uid", uid);
       if (error) throw error;
 
@@ -665,7 +668,12 @@ async function startServer() {
         return res.status(403).json({ message: "Нет доступа" });
       }
 
-      // CASCADE удаляет связанные chats и user_favorites (если настроены FK)
+      // Каскадно чистим связанные chats и user_favorites
+      await Promise.allSettled([
+        supabase.from("chats").delete().eq("prompt_id", id),
+        supabase.from("user_favorites").delete().eq("item_id", id),
+      ]);
+
       const { error } = await supabase.from("prompts").delete().eq("id", id);
       if (error) throw error;
 
@@ -681,20 +689,24 @@ async function startServer() {
   app.get("/api/skills", authenticate, async (req, res) => {
     try {
       const user = (req as any).user;
+      const favIds = await getUserFavoriteIds(user.uid);
 
-      let query = supabase.from("skills").select("*").order("created_at", { ascending: false });
+      let query = supabase
+        .from("skills")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (user.role !== "admin") {
-        query = query.or(`is_public.eq.true,user_id.eq.${user.uid}`);
+        query = query.or(`user_id.eq.${user.uid},is_public.eq.true`);
       }
 
       const { data, error } = await query;
       if (error) throw error;
 
-      const favIds = await getUserFavoriteIds(user.uid);
-      const favSet = new Set(favIds.skills);
-
-      res.json((data || []).map((row) => skillFromDb(row, favSet.has(row.id))));
+      const rows = (data || []).map((row) =>
+        skillFromDb(row, favIds.skills.includes(row.id))
+      );
+      res.json(rows);
     } catch (err) {
       console.error("Route error:", err);
       res.status(500).json({ error: "Внутренняя ошибка сервера" });
@@ -703,20 +715,20 @@ async function startServer() {
 
   app.post("/api/skills", authenticate, async (req, res) => {
     try {
+      const user = (req as any).user;
       if (!req.body.title || typeof req.body.title !== "string") {
         return res.status(400).json({ error: "Поле title обязательно" });
       }
 
-      const user = (req as any).user;
-      const dbRow = {
+      const dbData = {
         ...skillToDb(req.body, user.uid),
-        author_name: user.displayName || "User",
-        author_email: user.email,
+        author_name: user.displayName || "",
+        author_email: user.email || "",
       };
 
       const { data, error } = await supabase
         .from("skills")
-        .insert(dbRow)
+        .insert(dbData)
         .select()
         .single();
 
@@ -790,6 +802,12 @@ async function startServer() {
       if (existing.user_id !== user.uid && user.role !== "admin") {
         return res.status(403).json({ message: "Нет доступа" });
       }
+
+      // Каскадно чистим связанные skill_hints и user_favorites
+      await Promise.allSettled([
+        supabase.from("skill_hints").delete().eq("skill_id", id),
+        supabase.from("user_favorites").delete().eq("item_id", id),
+      ]);
 
       const { error } = await supabase.from("skills").delete().eq("id", id);
       if (error) throw error;

@@ -349,7 +349,10 @@ app.delete("/api/prompts/:id", authenticate, async (req, res) => {
     const { data: existing, error: fetchErr } = await supabase.from("prompts").select("user_id").eq("id", id).single();
     if (fetchErr || !existing) return res.status(404).json({ message: "Промпт не найден" });
     if (existing.user_id !== user.uid && user.role !== "admin") return res.status(403).json({ message: "Нет доступа" });
-    await supabase.from("chats").delete().eq("prompt_id", id);
+    await Promise.allSettled([
+      supabase.from("chats").delete().eq("prompt_id", id),
+      supabase.from("user_favorites").delete().eq("item_id", id),
+    ]);
     const { error } = await supabase.from("prompts").delete().eq("id", id);
     if (error) throw error;
     res.json({ message: "Промпт удален" });
@@ -403,6 +406,10 @@ app.delete("/api/skills/:id", authenticate, async (req, res) => {
     const { data: existing, error: fetchErr } = await supabase.from("skills").select("user_id").eq("id", id).single();
     if (fetchErr || !existing) return res.status(404).json({ message: "Пакет скиллов не найден" });
     if (existing.user_id !== user.uid && user.role !== "admin") return res.status(403).json({ message: "Нет доступа" });
+    await Promise.allSettled([
+      supabase.from("skill_hints").delete().eq("skill_id", id),
+      supabase.from("user_favorites").delete().eq("item_id", id),
+    ]);
     const { error } = await supabase.from("skills").delete().eq("id", id);
     if (error) throw error;
     res.json({ message: "Пакет скиллов удален" });
@@ -581,6 +588,7 @@ app.delete("/api/users/:uid", authenticate, async (req, res) => {
     if (user.role !== "admin") return res.status(403).json({ message: "Только администратор" });
     const { uid } = req.params;
     if (uid === "admin-uid") return res.status(400).json({ message: "Нельзя удалить главного администратора" });
+    await supabase.from("user_favorites").delete().eq("user_id", uid);
     const { error } = await supabase.from("users").delete().eq("uid", uid);
     if (error) throw error;
     res.json({ message: "Пользователь удален" });

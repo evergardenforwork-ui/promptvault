@@ -67,7 +67,7 @@ export default function SkillCard({
       whileHover={{ y: -4 }}
       onClick={onView}
       className={cn(
-        'group relative bg-zinc-900/90 border border-zinc-800 hover:border-purple-500/50 rounded-3xl p-6 cursor-pointer transition-all duration-200 hover:shadow-[0_20px_50px_-12px_rgba(147,51,234,0.15)] flex flex-col justify-between gap-4',
+        'group relative bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 hover:border-purple-500/50 rounded-3xl p-6 cursor-pointer transition-all duration-200 shadow-sm hover:shadow-xl dark:shadow-none dark:hover:shadow-[0_20px_50px_-12px_rgba(147,51,234,0.15)] flex flex-col justify-between gap-4 text-zinc-900 dark:text-zinc-100',
         viewMode === 'list' ? 'flex-row items-center' : 'min-h-[220px]'
       )}
     >
@@ -78,14 +78,14 @@ export default function SkillCard({
               skill.skillTypes.map((st) => {
                 const opt = SKILL_TYPE_OPTIONS.find((o) => o.value === st);
                 return (
-                  <span key={st} className="px-2.5 py-1 bg-purple-950/80 text-purple-300 border border-purple-800/40 text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center gap-1.5 shrink-0">
+                  <span key={st} className="px-2.5 py-1 bg-purple-50 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/40 text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center gap-1.5 shrink-0">
                     <span>{opt?.emoji ?? '📦'}</span>
                     <span>{opt?.label ?? st}</span>
                   </span>
                 );
               })
             ) : (
-              <span className="px-2.5 py-1 bg-purple-950/80 text-purple-300 border border-purple-800/40 text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center gap-1.5 shrink-0">
+              <span className="px-2.5 py-1 bg-purple-50 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/40 text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center gap-1.5 shrink-0">
                 <Package className="w-3.5 h-3.5" />
                 <span>{skill.category || 'Скилл'}</span>
               </span>
@@ -93,7 +93,7 @@ export default function SkillCard({
             {skill.targetAis && skill.targetAis.length > 0 && skill.targetAis.map((ai) => {
               const opt = TARGET_AI_OPTIONS.find((o) => o.value === ai);
               return (
-                <span key={ai} className="px-2.5 py-1 bg-sky-950/80 text-sky-300 border border-sky-800/40 text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center gap-1 shrink-0">
+                <span key={ai} className="px-2.5 py-1 bg-sky-50 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800/40 text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center gap-1 shrink-0">
                   <span>{opt?.emoji ?? '⚙️'}</span>
                   <span>{opt?.label ?? ai}</span>
                 </span>
@@ -108,7 +108,7 @@ export default function SkillCard({
               }}
               className={cn(
                 'p-2 rounded-full backdrop-blur-md transition-all duration-200 z-10 cursor-pointer',
-                skill.isFavorite ? 'bg-purple-500 text-white font-bold' : 'bg-zinc-800 text-zinc-500 hover:text-white'
+                skill.isFavorite ? 'bg-purple-500 text-white font-bold' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 hover:text-purple-500 dark:hover:text-white'
               )}
             >
               <Star size={14} fill={skill.isFavorite ? 'currentColor' : 'none'} />
@@ -116,34 +116,34 @@ export default function SkillCard({
           )}
         </div>
 
-        <h3 className="text-xl font-bold text-white group-hover:text-purple-300 transition-colors truncate">
+        <h3 className="text-xl font-bold text-zinc-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors truncate">
           {highlightMatch(skill.title)}
         </h3>
 
         {skill.description && (
-          <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed">
+          <p className="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2 leading-relaxed">
             {highlightMatch(skill.description)}
           </p>
         )}
 
         <div className="flex flex-wrap gap-1.5 pt-1">
           {skill.tags?.slice(0, 5).map((t, i) => (
-            <span key={i} className="px-2 py-0.5 bg-zinc-800/80 text-zinc-400 text-[10px] font-semibold rounded-full border border-zinc-700/40">
+            <span key={i} className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 text-[10px] font-semibold rounded-full border border-zinc-200 dark:border-zinc-700/40">
               #{highlightMatch(t)}
             </span>
           ))}
         </div>
       </div>
 
-      <div className="flex items-center justify-between pt-4 border-t border-zinc-800/80 text-xs text-zinc-500">
+      <div className="flex items-center justify-between pt-4 border-t border-zinc-200 dark:border-zinc-800/80 text-xs text-zinc-500">
         <div className="flex items-center gap-2">
-          <Package className="w-4 h-4 text-purple-400" />
-          <span className="font-mono text-purple-300 font-bold">
-            {total} всего {dirs > 0 && <span className="text-zinc-500 font-normal">({dirs} папок, {files} файлов)</span>}
-            {dirs === 0 && files > 0 && <span className="text-zinc-500 font-normal">({files} файлов)</span>}
+          <Package className="w-4 h-4 text-purple-500 dark:text-purple-400" />
+          <span className="font-mono text-purple-700 dark:text-purple-300 font-bold">
+            {total} всего {dirs > 0 && <span className="text-zinc-400 dark:text-zinc-500 font-normal">({dirs} папок, {files} файлов)</span>}
+            {dirs === 0 && files > 0 && <span className="text-zinc-400 dark:text-zinc-500 font-normal">({files} файлов)</span>}
           </span>
         </div>
-        <div className="flex items-center gap-1 text-[10px] text-zinc-500">
+        <div className="flex items-center gap-1 text-[10px] text-zinc-400 dark:text-zinc-500">
           <Calendar className="w-3 h-3" />
           <span>{skill.createdAt ? new Date(skill.createdAt).toLocaleDateString() : '—'}</span>
         </div>

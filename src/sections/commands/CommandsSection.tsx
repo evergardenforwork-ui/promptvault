@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   LayoutGrid, List, Star, X, Sparkles, Plus, Terminal, Filter 
 } from 'lucide-react';
@@ -157,7 +157,7 @@ export default function CommandsSection({
   return (
     <div className="space-y-6">
       {/* Filter Bar */}
-      <div className="flex flex-col gap-4 border-b border-zinc-900 pb-4">
+      <div className="flex flex-col gap-4 border-b border-zinc-200 dark:border-zinc-900 pb-4">
         {/* Row 1: View mode, Sort, Source, Favorites, Target AI */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-3">
@@ -169,7 +169,7 @@ export default function CommandsSection({
                   "p-2.5 rounded-xl transition-all cursor-pointer",
                   viewMode === 'grid'
                     ? "bg-amber-500 text-black font-bold shadow-md shadow-amber-500/20"
-                    : "bg-zinc-900 text-zinc-500 hover:text-zinc-300"
+                    : "bg-zinc-100 dark:bg-zinc-900 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300"
                 )}
                 title="Сетка"
               >
@@ -181,29 +181,29 @@ export default function CommandsSection({
                   "p-2.5 rounded-xl transition-all cursor-pointer",
                   viewMode === 'list'
                     ? "bg-amber-500 text-black font-bold shadow-md shadow-amber-500/20"
-                    : "bg-zinc-900 text-zinc-500 hover:text-zinc-300"
+                    : "bg-zinc-100 dark:bg-zinc-900 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300"
                 )}
                 title="Компактный список"
               >
                 <List size={17} />
               </button>
 
-              <div className="h-6 w-px bg-zinc-800 mx-1" />
+              <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-800 mx-1" />
 
               {/* Sort By */}
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortBy)}
-                className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-300 focus:outline-none focus:border-amber-500 cursor-pointer"
+                className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-amber-500 cursor-pointer"
               >
-                <option value="date" className="bg-zinc-900">Сначала новые</option>
-                <option value="popular" className="bg-zinc-900">Популярные (🔥)</option>
-                <option value="name" className="bg-zinc-900">По алфавиту</option>
+                <option value="date">Сначала новые</option>
+                <option value="popular">Популярные (🔥)</option>
+                <option value="name">По алфавиту</option>
               </select>
             </div>
 
             {/* Source filter */}
-            <div className="flex bg-zinc-900/60 p-1 rounded-2xl border border-zinc-800 shrink-0">
+            <div className="flex bg-zinc-100 dark:bg-zinc-900/60 p-1 rounded-2xl border border-zinc-200 dark:border-zinc-800 shrink-0">
               {[
                 { id: 'all', name: 'Все' },
                 { id: 'my', name: 'Мои' },
@@ -216,7 +216,7 @@ export default function CommandsSection({
                     "px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap",
                     sourceFilter === tab.id
                       ? "bg-amber-500 text-black shadow-sm"
-                      : "text-zinc-400 hover:text-white"
+                      : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white"
                   )}
                 >
                   {tab.name}
@@ -228,11 +228,11 @@ export default function CommandsSection({
             <select
               value={targetAiFilter}
               onChange={(e) => setTargetAiFilter(e.target.value as any)}
-              className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-300 focus:outline-none focus:border-amber-500 cursor-pointer shrink-0"
+              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-amber-500 cursor-pointer shrink-0"
             >
-              <option value="all" className="bg-zinc-900">🌐 Все платформы ИИ</option>
+              <option value="all">🌐 Все платформы ИИ</option>
               {COMMAND_AI_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value} className="bg-zinc-900">
+                <option key={opt.value} value={opt.value}>
                   {opt.emoji} {opt.label}
                 </option>
               ))}
@@ -243,11 +243,11 @@ export default function CommandsSection({
               <select
                 value={skillFilter}
                 onChange={(e) => setSkillFilter(e.target.value)}
-                className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-indigo-300 focus:outline-none focus:border-indigo-500 cursor-pointer shrink-0 max-w-[180px] truncate"
+                className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-indigo-700 dark:text-indigo-300 focus:outline-none focus:border-indigo-500 cursor-pointer shrink-0 max-w-[180px] truncate"
               >
-                <option value="all" className="bg-zinc-900">📦 Все скиллы</option>
+                <option value="all">📦 Все скиллы</option>
                 {linkedSkills.map((s) => (
-                  <option key={s.id} value={s.id} className="bg-zinc-900">
+                  <option key={s.id} value={s.id}>
                     {s.title}
                   </option>
                 ))}
@@ -262,8 +262,8 @@ export default function CommandsSection({
               className={cn(
                 "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border",
                 showFavoritesOnly
-                  ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
-                  : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white"
+                  ? "bg-amber-500/10 border-amber-500/30 text-amber-500"
+                  : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white"
               )}
             >
               <Star size={14} fill={showFavoritesOnly ? "currentColor" : "none"} />
@@ -273,7 +273,7 @@ export default function CommandsSection({
             {hasActiveFilters && (
               <button
                 onClick={resetFilters}
-                className="flex items-center gap-1 px-2.5 py-2 text-xs text-zinc-500 hover:text-rose-400 transition-colors cursor-pointer"
+                className="flex items-center gap-1 px-2.5 py-2 text-xs text-zinc-400 dark:text-zinc-500 hover:text-rose-500 transition-colors cursor-pointer"
                 title="Сбросить все фильтры"
               >
                 <X size={14} />

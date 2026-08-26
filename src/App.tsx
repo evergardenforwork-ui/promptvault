@@ -290,11 +290,9 @@ export default function App() {
   // Git Projects CRUD
   const handleToggleFavoriteGitProject = useCallback(async (id: string) => {
     try {
-      const result = await api.toggleFavorite(id, 'git_project' as any);
-      setGitProjects(prev => prev.map(p => ({
-        ...p,
-        isFavorite: result.favorites ? (result.favorites as any).git_projects?.includes(p.id) ?? (p.id === id ? !p.isFavorite : p.isFavorite) : (p.id === id ? !p.isFavorite : p.isFavorite),
-      })));
+      const res = await api.toggleFavorite(id, 'git_project' as any);
+      setGitProjects(prev => prev.map(p => p.id === id ? { ...p, isFavorite: res.added } : p));
+      addToast(res.added ? 'Добавлено в избранное ⭐' : 'Удалено из избранного');
     } catch (err: any) {
       addToast(err.message || 'Ошибка избранного', 'error');
     }
@@ -314,11 +312,9 @@ export default function App() {
   // Commands CRUD & Actions
   const handleToggleFavoriteCommand = useCallback(async (id: string) => {
     try {
-      const result = await api.toggleFavorite(id, 'command');
-      setCommands(prev => prev.map(c => ({
-        ...c,
-        isFavorite: result.favorites?.commands ? result.favorites.commands.includes(c.id) : (c.id === id ? !c.isFavorite : c.isFavorite),
-      })));
+      const res = await api.toggleFavorite(id, 'command');
+      setCommands(prev => prev.map(c => c.id === id ? { ...c, isFavorite: res.added } : c));
+      addToast(res.added ? 'Добавлено в избранное ⭐' : 'Удалено из избранного');
     } catch (err: any) {
       addToast(err.message || 'Ошибка избранного', 'error');
     }
@@ -349,11 +345,9 @@ export default function App() {
   // Bookmarks CRUD & Actions
   const handleToggleFavoriteBookmark = useCallback(async (id: string) => {
     try {
-      const result = await api.toggleFavorite(id, 'bookmark');
-      setBookmarks(prev => prev.map(b => ({
-        ...b,
-        isFavorite: result.favorites?.bookmarks ? result.favorites.bookmarks.includes(b.id) : (b.id === id ? !b.isFavorite : b.isFavorite),
-      })));
+      const res = await api.toggleFavorite(id, 'bookmark');
+      setBookmarks(prev => prev.map(b => b.id === id ? { ...b, isFavorite: res.added } : b));
+      addToast(res.added ? 'Добавлено в избранное ⭐' : 'Удалено из избранного');
     } catch (err: any) {
       addToast(err.message || 'Ошибка избранного', 'error');
     }

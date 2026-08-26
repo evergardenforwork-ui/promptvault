@@ -38,7 +38,7 @@ export default function SkillsSection({
                 onClick={() => setViewMode('grid')}
                 className={cn(
                   "p-2.5 rounded-xl transition-all cursor-pointer",
-                  viewMode === 'grid' ? "bg-purple-500 text-white font-bold" : "bg-zinc-900 text-zinc-500 hover:text-zinc-300"
+                  viewMode === 'grid' ? "bg-purple-500 text-white font-bold" : "bg-zinc-100 dark:bg-zinc-900 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300"
                 )}
                 title="Сетка"
               >
@@ -48,25 +48,25 @@ export default function SkillsSection({
                 onClick={() => setViewMode('list')}
                 className={cn(
                   "p-2.5 rounded-xl transition-all cursor-pointer",
-                  viewMode === 'list' ? "bg-purple-500 text-white font-bold" : "bg-zinc-900 text-zinc-500 hover:text-zinc-300"
+                  viewMode === 'list' ? "bg-purple-500 text-white font-bold" : "bg-zinc-100 dark:bg-zinc-900 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300"
                 )}
                 title="Список"
               >
                 <List size={18} />
               </button>
-              <div className="h-6 w-px bg-zinc-800 mx-1" />
+              <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-800 mx-1" />
               <select 
                 value={skillFilters.sortBy}
                 onChange={(e) => skillFilters.setSortBy(e.target.value as any)}
-                className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm text-zinc-400 focus:outline-none focus:border-purple-500 cursor-pointer"
+                className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-sm text-zinc-700 dark:text-zinc-400 focus:outline-none focus:border-purple-500 cursor-pointer"
               >
-                <option value="date" className="bg-zinc-900">Сначала новые</option>
-                <option value="name" className="bg-zinc-900">По алфавиту</option>
+                <option value="date">Сначала новые</option>
+                <option value="name">По алфавиту</option>
               </select>
             </div>
 
             {/* Ownership Tabs */}
-            <div className="flex bg-zinc-900/50 p-1 rounded-2xl border border-zinc-800 shrink-0 overflow-x-auto max-w-full">
+            <div className="flex bg-zinc-100 dark:bg-zinc-900/50 p-1 rounded-2xl border border-zinc-200 dark:border-zinc-800 shrink-0 overflow-x-auto max-w-full">
               {[
                 { id: 'all', name: 'Все (+ чужие)', count: skillFilters.counts.all },
                 { id: 'my-all', name: 'Все мои', count: skillFilters.counts.myAll },
@@ -81,7 +81,7 @@ export default function SkillsSection({
                     "px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shrink-0 whitespace-nowrap",
                     skillFilters.sourceFilter === tab.id 
                       ? "bg-purple-500 text-white font-black shadow-md shadow-purple-500/20" 
-                      : "text-zinc-400 hover:text-zinc-200"
+                      : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-200"
                   )}
                 >
                   <span>{tab.name}</span>
@@ -89,7 +89,7 @@ export default function SkillsSection({
                     "text-[10px] px-1.5 py-0.5 rounded-md font-bold transition-colors",
                     skillFilters.sourceFilter === tab.id
                       ? "bg-white/20 text-white"
-                      : "bg-zinc-850 text-zinc-500"
+                      : "bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-500"
                   )}>
                     {tab.count}
                   </span>
@@ -98,16 +98,16 @@ export default function SkillsSection({
             </div>
           </div>
 
-          <div className="text-sm text-zinc-550 font-medium shrink-0 flex items-center gap-3">
+          <div className="text-sm text-zinc-500 font-medium shrink-0 flex items-center gap-3">
             {skillFilters.isFiltered && (
               <button
                 onClick={() => skillFilters.resetFilters()}
-                className="flex items-center gap-1 text-purple-400 hover:text-purple-300 font-bold transition-colors cursor-pointer"
+                className="flex items-center gap-1 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-bold transition-colors cursor-pointer"
               >
                 Сбросить фильтр <X size={12} />
               </button>
             )}
-            <span>Найдено скиллов: <span className="text-white font-bold">{skillFilters.filteredSkills.length}</span></span>
+            <span>Найдено скиллов: <span className="text-zinc-900 dark:text-white font-bold">{skillFilters.filteredSkills.length}</span></span>
           </div>
         </div>
 

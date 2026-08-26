@@ -77,7 +77,7 @@ export default function PhotoCard({
             }
           }}
           className={cn(
-            "px-2 py-0.5 bg-zinc-800/90 text-zinc-300 text-[10px] font-bold rounded-full border border-zinc-700/50 transition-colors",
+            "px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800/90 text-zinc-700 dark:text-zinc-300 text-[10px] font-bold rounded-full border border-zinc-200 dark:border-zinc-700/50 transition-colors",
             onPickTag && "hover:bg-sky-400 hover:text-black hover:border-sky-400 cursor-pointer"
           )}
         >
@@ -85,7 +85,7 @@ export default function PhotoCard({
         </span>
       ))}
       {(prompt.tags?.length || 0) > 6 && (
-        <span className="text-[10px] text-zinc-600 font-bold">+{prompt.tags.length - 6}</span>
+        <span className="text-[10px] text-zinc-400 dark:text-zinc-600 font-bold">+{prompt.tags.length - 6}</span>
       )}
     </div>
   );
@@ -94,7 +94,7 @@ export default function PhotoCard({
     (prompt.subSections?.length || 0) > 0 ? (
       <div className="flex flex-wrap gap-1">
         {prompt.subSections.map((s, i) => (
-          <span key={i} className="px-1.5 py-0.5 border border-zinc-800 text-zinc-500 text-[9px] font-medium rounded">
+          <span key={i} className="px-1.5 py-0.5 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-900/60 text-[9px] font-medium rounded">
             + {highlightMatch(s.title)}
           </span>
         ))}
@@ -104,19 +104,19 @@ export default function PhotoCard({
   const metaBlock = (
     <div className="space-y-2">
       <div className="flex items-center gap-2 min-w-0">
-        <div className="w-4 h-4 rounded-full bg-zinc-800 flex items-center justify-center text-[8px] font-bold text-zinc-500 shrink-0">
+        <div className="w-4 h-4 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-[8px] font-bold text-zinc-600 dark:text-zinc-400 shrink-0">
           {prompt.authorName?.[0] || '?'}
         </div>
         <div className="min-w-0">
-          <div className="text-[9px] text-zinc-500 font-bold truncate">{prompt.authorName || 'Unknown'}</div>
+          <div className="text-[9px] text-zinc-600 dark:text-zinc-400 font-bold truncate">{prompt.authorName || 'Unknown'}</div>
           {prompt.authorEmail && (
-            <div className="text-[8px] text-zinc-600 truncate" title={prompt.authorEmail}>
+            <div className="text-[8px] text-zinc-400 dark:text-zinc-600 truncate" title={prompt.authorEmail}>
               {prompt.authorEmail}
             </div>
           )}
         </div>
       </div>
-      <div className="flex items-center justify-between text-[10px] text-zinc-600 font-bold uppercase tracking-widest">
+      <div className="flex items-center justify-between text-[10px] text-zinc-500 dark:text-zinc-500 font-bold uppercase tracking-widest">
         <span>
           {prompt.createdAt
             ? new Date(prompt.createdAt).toLocaleDateString()
@@ -335,7 +335,7 @@ export default function PhotoCard({
       whileHover={{ y: -4 }}
       onClick={onView}
       className={cn(
-        'group relative bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden cursor-pointer transition-all duration-200 hover:border-sky-400/50 hover:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.65)]',
+        'group relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-3xl overflow-hidden cursor-pointer transition-all duration-200 hover:border-sky-400/50 shadow-sm hover:shadow-xl dark:shadow-none dark:hover:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.65)]',
         viewMode === 'list' ? 'flex gap-6 p-4 min-h-[10rem]' : 'flex flex-col'
       )}
     >

@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Globe, 
@@ -230,17 +230,17 @@ export default function BookmarksSection({
               setSelectedFolder(null);
               setSelectedCategory(null);
             }}
-            className={cn(
+             className={cn(
               "px-4 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
               selectedFolder === null
                 ? "bg-cyan-500 text-black shadow-lg shadow-cyan-500/20 scale-105"
-                : "bg-zinc-950 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800"
+                : "bg-white dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none"
             )}
           >
             <span>📁 Все закладки</span>
             <span className={cn(
               "text-[10px] px-1.5 py-0.5 rounded-full font-mono font-black",
-              selectedFolder === null ? "bg-black/20 text-black" : "bg-zinc-800 text-zinc-400"
+              selectedFolder === null ? "bg-black/20 text-black" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
             )}>
               {bookmarks.length}
             </span>
@@ -261,14 +261,14 @@ export default function BookmarksSection({
                   "px-4 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
                   isSelected
                     ? "bg-cyan-500 text-black shadow-lg shadow-cyan-500/20 scale-105"
-                    : "bg-zinc-950 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800"
+                    : "bg-white dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none"
                 )}
               >
                 <span>{f.emoji || '📁'} {f.name}</span>
                 {count > 0 && (
                   <span className={cn(
                     "text-[10px] px-1.5 py-0.5 rounded-full font-mono font-black",
-                    isSelected ? "bg-black/20 text-black" : "bg-zinc-800 text-zinc-400"
+                    isSelected ? "bg-black/20 text-black" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
                   )}>
                     {count}
                   </span>
@@ -279,34 +279,21 @@ export default function BookmarksSection({
         </div>
       </div>
 
-      {/* ─── LEVEL 2: SUBCATEGORIES / FILTER BAR (WHEN IN FOLDER) ─────────────── */}
-      {selectedFolder && (
+      {/* ─── LEVEL 2: SUBCATEGORIES ACCORDION / PILLS (IF A FOLDER IS SELECTED) ─── */}
+      {selectedFolder && subcategoriesInSelectedFolder.length > 0 && (
         <motion.div
-          initial={{ opacity: 0, y: -6 }}
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-zinc-900/60 border border-zinc-800/80 rounded-2xl p-3 flex items-center justify-between gap-3 flex-wrap"
+          className="flex items-center gap-2 overflow-x-auto p-2 bg-zinc-100/80 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl"
         >
-          <div className="flex items-center gap-2 overflow-x-auto flex-1">
-            <span className="text-xs font-bold text-zinc-400 whitespace-nowrap flex items-center gap-1.5">
-              <TagIcon size={13} className="text-purple-400" />
-              <span>Подкатегории «{selectedFolder}»:</span>
-            </span>
+          <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 shrink-0 px-2">
+            Подкатегории:
+          </span>
 
-            <button
-              onClick={() => setSelectedCategory(null)}
-              className={cn(
-                "px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap",
-                selectedCategory === null
-                  ? "bg-purple-500 text-white shadow-md shadow-purple-500/20"
-                  : "bg-zinc-950 text-zinc-400 hover:text-white border border-zinc-800"
-              )}
-            >
-              Все в папке ({folderCounts[selectedFolder] || 0})
-            </button>
-
+          <div className="flex items-center gap-1.5 flex-1 overflow-x-auto">
             {subcategoriesInSelectedFolder.map(cat => {
-              const cCount = subcategoryCounts[cat] || 0;
               const isCatSelected = selectedCategory === cat;
+              const cCount = subcategoryCounts[cat] || 0;
 
               return (
                 <button
@@ -316,7 +303,7 @@ export default function BookmarksSection({
                     "px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap",
                     isCatSelected
                       ? "bg-purple-500 text-white shadow-md shadow-purple-500/20"
-                      : "bg-zinc-950 text-zinc-400 hover:text-white border border-zinc-800"
+                      : "bg-white dark:bg-zinc-950 text-zinc-700 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none"
                   )}
                 >
                   <span>🏷️ {cat}</span>
@@ -332,7 +319,7 @@ export default function BookmarksSection({
               setFolderModalMode('category');
               setIsFolderModalOpen(true);
             }}
-            className="text-xs font-bold text-purple-400 hover:text-purple-300 flex items-center gap-1 px-3 py-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 transition-all cursor-pointer whitespace-nowrap"
+            className="text-xs font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 flex items-center gap-1 px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-100 dark:hover:bg-purple-500/20 border border-purple-200 dark:border-purple-500/20 transition-all cursor-pointer whitespace-nowrap"
           >
             <span>+ Подкатегория</span>
           </button>
@@ -344,12 +331,12 @@ export default function BookmarksSection({
         {/* Left: Source & Favorite Filters */}
         <div className="flex items-center gap-2 flex-wrap">
           {/* Source Tabs */}
-          <div className="flex items-center bg-zinc-900 border border-zinc-800 p-1 rounded-2xl">
+          <div className="flex items-center bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-1 rounded-2xl">
             <button
               onClick={() => setSourceFilter('all')}
               className={cn(
                 "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer",
-                sourceFilter === 'all' ? "bg-zinc-800 text-white" : "text-zinc-400 hover:text-white"
+                sourceFilter === 'all' ? "bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white shadow-sm" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white"
               )}
             >
               Все
@@ -358,7 +345,7 @@ export default function BookmarksSection({
               onClick={() => setSourceFilter('my')}
               className={cn(
                 "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer",
-                sourceFilter === 'my' ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30" : "text-zinc-400 hover:text-white"
+                sourceFilter === 'my' ? "bg-cyan-50 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-500/30" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white"
               )}
             >
               Мои
@@ -367,7 +354,7 @@ export default function BookmarksSection({
               onClick={() => setSourceFilter('others')}
               className={cn(
                 "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer",
-                sourceFilter === 'others' ? "bg-zinc-800 text-white" : "text-zinc-400 hover:text-white"
+                sourceFilter === 'others' ? "bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white shadow-sm" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white"
               )}
             >
               Чужие
@@ -380,8 +367,8 @@ export default function BookmarksSection({
             className={cn(
               "px-3.5 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border",
               showFavoritesOnly
-                ? "bg-amber-500/20 border-amber-500/40 text-amber-400 shadow-md shadow-amber-500/10"
-                : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-amber-400 hover:border-zinc-700"
+                ? "bg-amber-500/20 border-amber-500/40 text-amber-500 shadow-md shadow-amber-500/10"
+                : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-amber-500"
             )}
           >
             <Star size={14} fill={showFavoritesOnly ? "currentColor" : "none"} />

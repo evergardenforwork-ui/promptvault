@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { LayoutGrid, List, X, Star } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { GitProject, GIT_CATEGORY_OPTIONS, GitProjectCategory, User } from '../../types';
@@ -100,7 +100,7 @@ export default function GitProjectsSection({
   return (
     <div className="space-y-6">
       {/* Filter Bar */}
-      <div className="flex flex-col gap-4 border-b border-zinc-900 pb-4">
+      <div className="flex flex-col gap-4 border-b border-zinc-200 dark:border-zinc-900 pb-4">
         {/* Верхняя строка */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-3">
@@ -108,31 +108,31 @@ export default function GitProjectsSection({
             <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={() => setViewMode('grid')}
-                className={cn("p-2.5 rounded-xl transition-all cursor-pointer", viewMode === 'grid' ? "bg-emerald-500 text-white" : "bg-zinc-900 text-zinc-500 hover:text-zinc-300")}
+                className={cn("p-2.5 rounded-xl transition-all cursor-pointer", viewMode === 'grid' ? "bg-emerald-500 text-white" : "bg-zinc-100 dark:bg-zinc-900 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300")}
                 title="Сетка"
               >
                 <LayoutGrid size={18} />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={cn("p-2.5 rounded-xl transition-all cursor-pointer", viewMode === 'list' ? "bg-emerald-500 text-white" : "bg-zinc-900 text-zinc-500 hover:text-zinc-300")}
+                className={cn("p-2.5 rounded-xl transition-all cursor-pointer", viewMode === 'list' ? "bg-emerald-500 text-white" : "bg-zinc-100 dark:bg-zinc-900 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300")}
                 title="Список"
               >
                 <List size={18} />
               </button>
-              <div className="h-6 w-px bg-zinc-800 mx-1" />
+              <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-800 mx-1" />
               <select
                 value={sortBy}
                 onChange={e => setSortBy(e.target.value as SortBy)}
-                className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm text-zinc-400 focus:outline-none focus:border-emerald-500 cursor-pointer"
+                className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-sm text-zinc-700 dark:text-zinc-400 focus:outline-none focus:border-emerald-500 cursor-pointer"
               >
-                <option value="date" className="bg-zinc-900">Сначала новые</option>
-                <option value="name" className="bg-zinc-900">По алфавиту</option>
+                <option value="date">Сначала новые</option>
+                <option value="name">По алфавиту</option>
               </select>
             </div>
 
             {/* Source Filter */}
-            <div className="flex bg-zinc-900/50 p-1 rounded-2xl border border-zinc-800 shrink-0">
+            <div className="flex bg-zinc-100 dark:bg-zinc-900/50 p-1 rounded-2xl border border-zinc-200 dark:border-zinc-800 shrink-0">
               {[
                 { id: 'all', name: 'Все' },
                 { id: 'my', name: 'Мои' },
@@ -143,7 +143,7 @@ export default function GitProjectsSection({
                   onClick={() => setSourceFilter(tab.id as SourceFilter)}
                   className={cn(
                     "px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap",
-                    sourceFilter === tab.id ? "bg-emerald-500 text-white shadow-sm" : "text-zinc-400 hover:text-white"
+                    sourceFilter === tab.id ? "bg-emerald-500 text-white shadow-sm" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white"
                   )}
                 >
                   {tab.name}
@@ -152,7 +152,7 @@ export default function GitProjectsSection({
             </div>
 
             {/* Pricing Filter */}
-            <div className="flex bg-zinc-900/50 p-1 rounded-2xl border border-zinc-800 shrink-0">
+            <div className="flex bg-zinc-100 dark:bg-zinc-900/50 p-1 rounded-2xl border border-zinc-200 dark:border-zinc-800 shrink-0">
               {[
                 { id: 'all', name: 'Любая цена' },
                 { id: 'free', name: '✓ Бесплатно' },
@@ -164,7 +164,7 @@ export default function GitProjectsSection({
                   onClick={() => setPricingFilter(tab.id as any)}
                   className={cn(
                     "px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap",
-                    pricingFilter === tab.id ? "bg-emerald-500 text-white shadow-sm" : "text-zinc-400 hover:text-white"
+                    pricingFilter === tab.id ? "bg-emerald-500 text-white shadow-sm" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white"
                   )}
                 >
                   {tab.name}
@@ -180,8 +180,8 @@ export default function GitProjectsSection({
               className={cn(
                 "flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer",
                 showFavoritesOnly
-                  ? "bg-amber-500/20 border-amber-500/50 text-amber-400"
-                  : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white"
+                  ? "bg-amber-500/20 border-amber-500/50 text-amber-500"
+                  : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white"
               )}
             >
               <Star size={14} fill={showFavoritesOnly ? "currentColor" : "none"} />
@@ -190,7 +190,7 @@ export default function GitProjectsSection({
             {hasActiveFilters && (
               <button
                 onClick={resetFilters}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-400 hover:text-white transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white transition-all cursor-pointer"
               >
                 <X size={14} />
                 <span>Сбросить</span>

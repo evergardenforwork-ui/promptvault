@@ -823,8 +823,15 @@ class SqliteAdapter implements DbAdapter {
       const b = localDb.prepare('UPDATE bookmarks SET user_id = ?' + (authorName ? ', author_name = ?, author_email = ?' : '')).run(...(authorName ? [targetUserId, authorName, authorEmail || ''] : [targetUserId]));
       const w = localDb.prepare('UPDATE workspaces SET user_id = ?').run(targetUserId);
       const sh = localDb.prepare('UPDATE skill_hints SET user_id = ?').run(targetUserId);
-      const uf = localDb.prepare('UPDATE user_favorites SET user_id = ?').run(targetUserId);
       const ch = localDb.prepare('UPDATE chats SET user_id = ?').run(targetUserId);
+
+      // Safely migrate favorites without duplicate PK collision
+      localDb.prepare(`
+        INSERT OR IGNORE INTO user_favorites (user_id, item_id, item_type)
+        SELECT ?, item_id, item_type FROM user_favorites WHERE user_id != ?
+      `).run(targetUserId, targetUserId);
+      localDb.prepare('DELETE FROM user_favorites WHERE user_id != ?').run(targetUserId);
+
       count = p.changes + s.changes + g.changes + c.changes + b.changes + w.changes + sh.changes;
     })();
     return { updatedCount: count };
@@ -1197,8 +1204,15 @@ class SupabaseAdapter implements DbAdapter {
       this.supabase.from('workspaces').update({ user_id: targetUserId }).neq('user_id', targetUserId),
       this.supabase.from('skill_hints').update({ user_id: targetUserId }).neq('user_id', targetUserId),
       this.supabase.from('chats').update({ user_id: targetUserId }).neq('user_id', targetUserId),
-      this.supabase.from('user_favorites').update({ user_id: targetUserId }).neq('user_id', targetUserId),
     ]);
+
+    const { data: otherFavs } = await this.supabase.from('user_favorites').select('item_id, item_type').neq('user_id', targetUserId);
+    if (otherFavs && otherFavs.length > 0) {
+      const newFavs = otherFavs.map((f: any) => ({ user_id: targetUserId, item_id: f.item_id, item_type: f.item_type }));
+      await this.supabase.from('user_favorites').upsert(newFavs, { onConflict: 'user_id,item_id,item_type' });
+      await this.supabase.from('user_favorites').delete().neq('user_id', targetUserId);
+    }
+
     return { updatedCount: 1 };
   }
 }

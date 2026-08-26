@@ -751,8 +751,14 @@ app.post("/api/admin/claim-all", authenticate, async (req, res) => {
       supabase.from("workspaces").update({ user_id: user.uid }).neq("user_id", user.uid),
       supabase.from("skill_hints").update({ user_id: user.uid }).neq("user_id", user.uid),
       supabase.from("chats").update({ user_id: user.uid }).neq("user_id", user.uid),
-      supabase.from("user_favorites").update({ user_id: user.uid }).neq("user_id", user.uid),
     ]);
+
+    const { data: otherFavs } = await supabase.from("user_favorites").select("item_id, item_type").neq("user_id", user.uid);
+    if (otherFavs && otherFavs.length > 0) {
+      const newFavs = otherFavs.map((f: any) => ({ user_id: user.uid, item_id: f.item_id, item_type: f.item_type }));
+      await supabase.from("user_favorites").upsert(newFavs, { onConflict: "user_id,item_id,item_type" });
+      await supabase.from("user_favorites").delete().neq("user_id", user.uid);
+    }
 
     res.json({
       message: `Все материалы успешно привязаны к вашему профилю (${user.name || user.email})`,

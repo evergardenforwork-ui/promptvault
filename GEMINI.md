@@ -247,7 +247,8 @@ AssistantConfig { systemPrompt }
 | POST | `/api/chats` | Добавить сообщение |
 | POST | `/api/chats/clear` | Очистить чат |
 | GET | `/api/export` | Скачать бэкап ZIP (admin only) |
-| POST | `/api/import` | Восстановить из ZIP (admin only) |
+| POST | `/api/import` | Восстановить из ZIP с авто-привязкой владения (admin only) |
+| POST | `/api/admin/claim-all` | Привязать все материалы в базе к текущему профилю (admin only) |
 | GET | `/api/favorites` | Личное избранное пользователя |
 | POST | `/api/favorites/toggle` | Добавить/убрать из избранного |
 | GET | `/api/users` | Список пользователей (admin only) |

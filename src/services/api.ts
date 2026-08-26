@@ -176,10 +176,17 @@ export const api = {
     });
   },
 
-  async importBackup(base64Zip: string): Promise<{ message: string }> {
+  async importBackup(base64Zip: string, claimOwnership = true): Promise<{ message: string; importedCount?: number }> {
     return request('/import', {
       method: 'POST',
-      body: JSON.stringify({ file: base64Zip }),
+      body: JSON.stringify({ file: base64Zip, claimOwnership }),
+    });
+  },
+
+  // 👑 Ownership Claiming
+  async claimAllData(): Promise<{ message: string; count?: number }> {
+    return request('/admin/claim-all', {
+      method: 'POST',
     });
   },
 

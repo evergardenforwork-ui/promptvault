@@ -1171,7 +1171,7 @@ async function startServer() {
       return res.status(403).json({ message: "Только администратор может импортировать данные" });
     }
 
-    const { file } = req.body;
+    const { file, claimOwnership } = req.body;
     if (!file) {
       return res.status(400).json({ message: "Файл не передан" });
     }
@@ -1183,11 +1183,33 @@ async function startServer() {
       const base64Data = matches ? matches[1] : file;
       const buffer = Buffer.from(base64Data, "base64");
 
-      const result = await processImportZip(db, buffer);
+      const result = await processImportZip(db, buffer, {
+        targetUserId: user.uid,
+        claimOwnership: claimOwnership ?? true,
+      });
       res.json(result);
     } catch (e: any) {
       console.error("Import Error:", e);
       res.status(500).json({ message: e.message || "Ошибка импорта данных" });
+    }
+  });
+
+  // 👑 API: Claim All Materials to Current User
+  app.post("/api/admin/claim-all", authenticate, async (req, res) => {
+    const user = (req as any).user;
+    if (user.role !== "admin") {
+      return res.status(403).json({ message: "Только администратор может управлять правами владения" });
+    }
+
+    try {
+      const result = await db.claimAllData(user.uid, user.name, user.email);
+      res.json({
+        message: `Все материалы успешно привязаны к вашему профилю (${user.name || user.email})`,
+        count: result.updatedCount,
+      });
+    } catch (e: any) {
+      console.error("Claim All Error:", e);
+      res.status(500).json({ message: e.message || "Ошибка привязки материалов" });
     }
   });
 

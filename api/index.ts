@@ -672,8 +672,10 @@ app.post("/api/import", authenticate, async (req, res) => {
   const user = (req as any).user;
   if (user.role !== "admin") return res.status(403).json({ message: "Только администратор" });
 
-  const { file } = req.body;
+  const { file, claimOwnership } = req.body;
   if (!file) return res.status(400).json({ message: "Файл не передан" });
+
+  const shouldClaim = claimOwnership !== false;
 
   try {
     const matches =
@@ -684,12 +686,22 @@ app.post("/api/import", authenticate, async (req, res) => {
 
     const zip = new AdmZip(buffer);
     const zipEntries = zip.getEntries();
+    let totalImported = 0;
 
     for (const entry of zipEntries) {
       const entryName = entry.entryName;
+      if (!entryName.endsWith('.json')) continue;
       const content = entry.getData().toString("utf8");
       const rows = JSON.parse(content);
       if (!Array.isArray(rows) || rows.length === 0) continue;
+
+      if (shouldClaim) {
+        for (const row of rows) {
+          if (entryName !== "users.json" && 'user_id' in row) {
+            row.user_id = user.uid;
+          }
+        }
+      }
 
       if (entryName === "workspaces.json") {
         await supabase.from("workspaces").upsert(rows, { onConflict: "id" });
@@ -712,12 +724,42 @@ app.post("/api/import", authenticate, async (req, res) => {
       } else if (entryName === "chats.json") {
         await supabase.from("chats").upsert(rows, { onConflict: "id" });
       }
+      if (entryName !== "users.json") totalImported += rows.length;
     }
 
-    res.json({ message: "Импорт успешно завершен" });
+    const claimMsg = shouldClaim ? " и привязаны к вашему профилю" : "";
+    res.json({ message: `Импорт успешно завершен (${totalImported} объектов загружено${claimMsg})` });
   } catch (e: any) {
     console.error("Import Error:", e);
     res.status(500).json({ message: e.message || "Ошибка импорта данных" });
+  }
+});
+
+// 👑 API: Claim All Materials to Current User
+app.post("/api/admin/claim-all", authenticate, async (req, res) => {
+  const user = (req as any).user;
+  if (user.role !== "admin") return res.status(403).json({ message: "Только администратор" });
+
+  try {
+    const authorUpdates = { user_id: user.uid, author_name: user.name, author_email: user.email };
+    await Promise.all([
+      supabase.from("prompts").update(authorUpdates).neq("user_id", user.uid),
+      supabase.from("skills").update(authorUpdates).neq("user_id", user.uid),
+      supabase.from("git_projects").update(authorUpdates).neq("user_id", user.uid),
+      supabase.from("commands").update(authorUpdates).neq("user_id", user.uid),
+      supabase.from("bookmarks").update(authorUpdates).neq("user_id", user.uid),
+      supabase.from("workspaces").update({ user_id: user.uid }).neq("user_id", user.uid),
+      supabase.from("skill_hints").update({ user_id: user.uid }).neq("user_id", user.uid),
+      supabase.from("chats").update({ user_id: user.uid }).neq("user_id", user.uid),
+      supabase.from("user_favorites").update({ user_id: user.uid }).neq("user_id", user.uid),
+    ]);
+
+    res.json({
+      message: `Все материалы успешно привязаны к вашему профилю (${user.name || user.email})`,
+    });
+  } catch (e: any) {
+    console.error("Claim All Error:", e);
+    res.status(500).json({ message: e.message || "Ошибка привязки материалов" });
   }
 });
 

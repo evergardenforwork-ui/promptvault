@@ -70,9 +70,22 @@ export default function LoginForm({ onLoginSuccess, onToast }: LoginFormProps) {
           >
             {loading ? 'Вход...' : 'Войти в систему'}
           </button>
+
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('admin@promptvault.local');
+                setPassword('admin123');
+              }}
+              className="w-full py-2.5 px-3 text-xs font-bold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 rounded-xl transition-all cursor-pointer text-center bg-zinc-100/60 dark:bg-zinc-800/40 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            >
+              ⚡ Быстрое заполнение: Admin (admin123)
+            </button>
+          </div>
         </form>
 
-        <p className="text-center text-xs text-zinc-600">
+        <p className="text-center text-xs text-zinc-500 dark:text-zinc-500">
           Для доступа к системе используйте учетные данные, выданные администратором.
         </p>
       </motion.div>

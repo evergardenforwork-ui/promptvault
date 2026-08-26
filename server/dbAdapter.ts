@@ -72,9 +72,10 @@ export interface DbAdapter {
   createChatMessage(data: any): Promise<any>;
   clearChats(promptId: string): Promise<void>;
 
-  // Backup
+  // Backup & Ownership
   getAllDataForExport(workspaceId?: string | null): Promise<Record<string, any[]>>;
   importAllData(tables: Record<string, any[]>): Promise<void>;
+  claimAllData(targetUserId: string, authorName?: string, authorEmail?: string): Promise<{ updatedCount: number }>;
 }
 
 // ─── SQLITE ADAPTER IMPLEMENTATION ──────────────────────────────────────────
@@ -811,6 +812,23 @@ class SqliteAdapter implements DbAdapter {
       if (tables.user_favorites || tables.favorites) runUpsert('user_favorites', tables.user_favorites || tables.favorites);
     })();
   }
+
+  async claimAllData(targetUserId: string, authorName?: string, authorEmail?: string): Promise<{ updatedCount: number }> {
+    let count = 0;
+    localDb.transaction(() => {
+      const p = localDb.prepare('UPDATE prompts SET user_id = ?' + (authorName ? ', author_name = ?, author_email = ?' : '')).run(...(authorName ? [targetUserId, authorName, authorEmail || ''] : [targetUserId]));
+      const s = localDb.prepare('UPDATE skills SET user_id = ?' + (authorName ? ', author_name = ?, author_email = ?' : '')).run(...(authorName ? [targetUserId, authorName, authorEmail || ''] : [targetUserId]));
+      const g = localDb.prepare('UPDATE git_projects SET user_id = ?' + (authorName ? ', author_name = ?, author_email = ?' : '')).run(...(authorName ? [targetUserId, authorName, authorEmail || ''] : [targetUserId]));
+      const c = localDb.prepare('UPDATE commands SET user_id = ?' + (authorName ? ', author_name = ?, author_email = ?' : '')).run(...(authorName ? [targetUserId, authorName, authorEmail || ''] : [targetUserId]));
+      const b = localDb.prepare('UPDATE bookmarks SET user_id = ?' + (authorName ? ', author_name = ?, author_email = ?' : '')).run(...(authorName ? [targetUserId, authorName, authorEmail || ''] : [targetUserId]));
+      const w = localDb.prepare('UPDATE workspaces SET user_id = ?').run(targetUserId);
+      const sh = localDb.prepare('UPDATE skill_hints SET user_id = ?').run(targetUserId);
+      const uf = localDb.prepare('UPDATE user_favorites SET user_id = ?').run(targetUserId);
+      const ch = localDb.prepare('UPDATE chats SET user_id = ?').run(targetUserId);
+      count = p.changes + s.changes + g.changes + c.changes + b.changes + w.changes + sh.changes;
+    })();
+    return { updatedCount: count };
+  }
 }
 
 // ─── SUPABASE ADAPTER IMPLEMENTATION ────────────────────────────────────────
@@ -1162,6 +1180,26 @@ class SupabaseAdapter implements DbAdapter {
       const onConflict = tableName === 'users' ? 'uid' : (targetTable === 'user_favorites' ? 'user_id,item_id,item_type' : 'id');
       await this.supabase.from(targetTable).upsert(rows, { onConflict });
     }
+  }
+
+  async claimAllData(targetUserId: string, authorName?: string, authorEmail?: string): Promise<{ updatedCount: number }> {
+    const authorUpdates: any = { user_id: targetUserId };
+    if (authorName) {
+      authorUpdates.author_name = authorName;
+      authorUpdates.author_email = authorEmail || '';
+    }
+    await Promise.all([
+      this.supabase.from('prompts').update(authorUpdates).neq('user_id', targetUserId),
+      this.supabase.from('skills').update(authorUpdates).neq('user_id', targetUserId),
+      this.supabase.from('git_projects').update(authorUpdates).neq('user_id', targetUserId),
+      this.supabase.from('commands').update(authorUpdates).neq('user_id', targetUserId),
+      this.supabase.from('bookmarks').update(authorUpdates).neq('user_id', targetUserId),
+      this.supabase.from('workspaces').update({ user_id: targetUserId }).neq('user_id', targetUserId),
+      this.supabase.from('skill_hints').update({ user_id: targetUserId }).neq('user_id', targetUserId),
+      this.supabase.from('chats').update({ user_id: targetUserId }).neq('user_id', targetUserId),
+      this.supabase.from('user_favorites').update({ user_id: targetUserId }).neq('user_id', targetUserId),
+    ]);
+    return { updatedCount: 1 };
   }
 }
 

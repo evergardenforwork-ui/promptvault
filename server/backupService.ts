@@ -91,7 +91,11 @@ export async function createFullBackupZip(db: DbAdapter, workspaceId?: string | 
   };
 }
 
-export async function processImportZip(db: DbAdapter, zipBuffer: Buffer): Promise<{ message: string }> {
+export async function processImportZip(
+  db: DbAdapter,
+  zipBuffer: Buffer,
+  options?: { targetUserId?: string; claimOwnership?: boolean }
+): Promise<{ message: string; importedCount: number }> {
   const zip = new AdmZip(zipBuffer);
   const zipEntries = zip.getEntries();
 
@@ -140,6 +144,8 @@ export async function processImportZip(db: DbAdapter, zipBuffer: Buffer): Promis
   }
 
   const tablesToImport: Record<string, any[]> = {};
+  let totalItemsCount = 0;
+  const shouldClaim = options?.claimOwnership !== false && Boolean(options?.targetUserId);
 
   for (const entry of zipEntries) {
     if (entry.entryName.endsWith('.json')) {
@@ -166,9 +172,17 @@ export async function processImportZip(db: DbAdapter, zipBuffer: Buffer): Promis
             if (Array.isArray(addImgs)) {
               row.additional_images = addImgs.map(resolveImgUrl);
             }
+
+            // 👑 Auto-Claim Ownership for imported items
+            if (shouldClaim && options?.targetUserId) {
+              if (tableName !== 'users') {
+                row.user_id = options.targetUserId;
+              }
+            }
           }
 
           tablesToImport[tableName] = rows;
+          if (tableName !== 'users') totalItemsCount += rows.length;
         }
       } catch (err) {
         console.warn(`Could not parse JSON table ${entry.entryName}:`, err);
@@ -178,5 +192,9 @@ export async function processImportZip(db: DbAdapter, zipBuffer: Buffer): Promis
 
   await db.importAllData(tablesToImport);
 
-  return { message: 'Импорт бэкапа успешно завершен' };
+  const claimMsg = shouldClaim ? ' и привязаны к вашему профилю' : '';
+  return { 
+    message: `Импорт бэкапа успешно завершен (${totalItemsCount} объектов загружено${claimMsg})`,
+    importedCount: totalItemsCount
+  };
 }

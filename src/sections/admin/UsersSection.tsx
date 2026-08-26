@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Users, Plus, Trash2, Key, Shield, User, X, Eye, EyeOff } from 'lucide-react';
+import { Users, Plus, Trash2, Key, Shield, User, X, Eye, EyeOff, Sparkles, CheckCircle2 } from 'lucide-react';
 import { api } from '../../services/api';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 
@@ -31,6 +31,10 @@ interface PasswordFormState {
 export default function UsersSection({ addToast }: UsersSectionProps) {
   const [users, setUsers] = useState<UserEntry[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Claim all ownership state
+  const [showClaimConfirm, setShowClaimConfirm] = useState(false);
+  const [claiming, setClaiming] = useState(false);
 
   // Create user modal
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -71,6 +75,19 @@ export default function UsersSection({ addToast }: UsersSectionProps) {
   useEffect(() => {
     void loadUsers();
   }, [loadUsers]);
+
+  const handleClaimAll = async () => {
+    setShowClaimConfirm(false);
+    setClaiming(true);
+    try {
+      const res = await api.claimAllData();
+      addToast(res.message || 'Все материалы успешно привязаны к вашему профилю ⭐', 'success');
+    } catch (err: any) {
+      addToast(err.message || 'Ошибка привязки материалов', 'error');
+    } finally {
+      setClaiming(false);
+    }
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,25 +137,49 @@ export default function UsersSection({ addToast }: UsersSectionProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-violet-500/20 border border-violet-500/30 rounded-2xl">
             <Users size={22} className="text-violet-600 dark:text-violet-400" />
           </div>
           <div>
             <h2 className="text-xl font-black text-zinc-900 dark:text-white tracking-tight">Управление пользователями</h2>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Создавайте аккаунты для друзей и управляйте доступом</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Создавайте аккаунты для друзей, управляйте доступом и владением</p>
           </div>
         </div>
-        <button
-          id="create-user-btn"
-          onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-violet-600 hover:bg-violet-500 text-white font-bold text-sm rounded-2xl transition-all shadow-lg shadow-violet-500/25 cursor-pointer"
-        >
-          <Plus size={16} />
-          Добавить пользователя
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowClaimConfirm(true)}
+            disabled={claiming}
+            title="Сделать текущий профиль владельцем всех существующих карточек и воркспейсов"
+            className="flex items-center gap-2 px-3.5 py-2.5 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-600 dark:text-amber-400 font-bold text-xs rounded-2xl transition-all cursor-pointer disabled:opacity-50"
+          >
+            <Sparkles size={15} />
+            {claiming ? 'Привязка...' : '⚡ Привязать всё ко мне'}
+          </button>
+
+          <button
+            id="create-user-btn"
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-violet-600 hover:bg-violet-500 text-white font-bold text-sm rounded-2xl transition-all shadow-lg shadow-violet-500/25 cursor-pointer"
+          >
+            <Plus size={16} />
+            Добавить пользователя
+          </button>
+        </div>
       </div>
+
+      {/* Claim Ownership Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showClaimConfirm}
+        title="Привязать все материалы к текущему профилю?"
+        message="Все существующие карточки (промпты, скиллы, git-инструменты, команды, закладки и воркспейсы) будут назначены вашему текущему аккаунту. Они сразу станут отображаться в фильтрах как «Мои авторские». Продолжить?"
+        confirmText="Да, сделать все материалы моими"
+        cancelText="Отмена"
+        variant="warning"
+        onConfirm={handleClaimAll}
+        onCancel={() => setShowClaimConfirm(false)}
+      />
 
       {/* Users List */}
       {loading ? (

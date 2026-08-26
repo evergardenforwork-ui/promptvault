@@ -19,6 +19,7 @@ interface PhotoFormProps {
   user: User;
   addToast: (message: React.ReactNode, type?: 'success' | 'error') => void;
   onCloseRef?: React.MutableRefObject<(() => void) | null>;
+  selectedWorkspace?: string | null;
 }
 
 export default function PhotoForm({
@@ -27,8 +28,10 @@ export default function PhotoForm({
   onClose,
   onSave,
   onAddCategory,
+  user,
   addToast,
   onCloseRef,
+  selectedWorkspace,
 }: PhotoFormProps) {
   const [title, setTitle] = useState(prompt?.title || '');
   const [category, setCategory] = useState(prompt?.category || categories[0]?.name || '');
@@ -454,6 +457,7 @@ export default function PhotoForm({
       usageNotes: usageNotes.trim(),
       filePackageUrl,
       fileStructure,
+      workspaceId: prompt?.workspaceId !== undefined ? prompt.workspaceId : (selectedWorkspace || undefined),
     };
 
     setIsSaving(true);

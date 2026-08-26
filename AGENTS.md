@@ -1,4 +1,4 @@
-﻿# 🤖 AGENTS.md — Универсальная инструкция для ИИ-Агентов (Universal AI Context)
+# 🤖 AGENTS.md — Универсальная инструкция для ИИ-Агентов (Universal AI Context)
 
 > **ДЛЯ ВСЕХ ИИ-АГЕНТОВ**: Этот файл является главным универсальным источником контекста, правил и структуры проекта PromptVault для любых агентов (Claude Code, Antigravity/Gemini, Cursor, Windsurf, Codex, Aider и др.).
 > **Последнее обновление**: 2026-08-26
@@ -94,7 +94,8 @@ superbasetest/
 │   └── plan_file_system.md ← [✅ ВЫПОЛНЕНО] План файловой системы ZIP
 │
 ├── scripts/                ← 🗄️ SQL МИГРАЦИИ И УТИЛИТЫ
-│   ├── all_new_tables_migration.sql ← 🚀 ЕДИНЫЙ SQL-СКРИПТ ДЛЯ ВСЕХ 4 НОВЫХ ТАБЛИЦ
+│   ├── all_new_tables_migration.sql ← 🚀 ЕДИНЫЙ SQL-СКРИПТ ДЛЯ ВСЕХ ТАБЛИЦ
+│   ├── create_workspaces_table.sql  ← 💼 Создание таблицы workspaces и workspace_id
 │   ├── create_git_projects_table.sql
 │   ├── create_commands_table.sql
 │   ├── create_bookmarks_table.sql
@@ -106,7 +107,7 @@ superbasetest/
     ├── App.tsx             ← Центральный контейнер: глобальный state + навигация
     ├── types.ts            ← Единый источник всех TypeScript интерфейсов
     ├── index.css           ← Tailwind CSS v4 (@theme токены)
-    ├── components/         ← Общие компоненты (auth/LoginForm, layout/Sidebar, ui/*)
+    ├── components/         ← Общие компоненты (auth/LoginForm, layout/Sidebar, ui/*, ui/WorkspaceModal)
     ├── hooks/              ← Кастомные хуки (useHotkeys, usePromptFilters, useSkillFilters)
     ├── services/           ← api.ts (бэкенд клиент), gemini.ts
     ├── utils/              ← cn.ts, zipParser.ts, buildSelectionZip.ts

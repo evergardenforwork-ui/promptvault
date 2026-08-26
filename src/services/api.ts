@@ -317,5 +317,28 @@ export const api = {
   async clickBookmark(id: string): Promise<{ clickCount: number }> {
     return request(`/bookmarks/${id}/click`, { method: 'POST' });
   },
+
+  // Workspaces (Рабочие пространства)
+  async getWorkspaces(): Promise<import('../types').Workspace[]> {
+    return request('/workspaces');
+  },
+
+  async createWorkspace(ws: { name: string; icon?: string; color?: string }): Promise<import('../types').Workspace> {
+    return request('/workspaces', {
+      method: 'POST',
+      body: JSON.stringify(ws),
+    });
+  },
+
+  async updateWorkspace(id: string, ws: { name?: string; icon?: string; color?: string }): Promise<import('../types').Workspace> {
+    return request(`/workspaces/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(ws),
+    });
+  },
+
+  async deleteWorkspace(id: string): Promise<void> {
+    return request(`/workspaces/${id}`, { method: 'DELETE' });
+  },
 };
 

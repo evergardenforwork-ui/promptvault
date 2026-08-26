@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, Plus, Menu, Sun, Moon } from 'lucide-react';
+import { Search, Plus, Menu, Sun, Moon, Sparkles, X as CloseIcon } from 'lucide-react';
 import { AnimatePresence } from 'motion/react';
 import { api } from './services/api';
-import { Prompt, Category, User, MediaType, SkillPackage, GitProject, CommandItem, BookmarkItem, DEFAULT_BOOKMARK_FOLDERS } from './types';
+import { Prompt, Category, User, MediaType, SkillPackage, GitProject, CommandItem, BookmarkItem, Workspace, DEFAULT_BOOKMARK_FOLDERS } from './types';
 import { cn } from './utils/cn';
 import { useHotkeys } from './hooks/useHotkeys';
 import { useSkillFilters } from './hooks/useSkillFilters';
@@ -16,13 +16,13 @@ import GitProjectsSection from './sections/git/GitProjectsSection';
 import CommandsSection from './sections/commands/CommandsSection';
 import BookmarksSection from './sections/bookmarks/BookmarksSection';
 
-
 // Layout & UI Components
 import LoginForm from './components/auth/LoginForm';
 import Sidebar from './components/layout/Sidebar';
 import Toast from './components/ui/Toast';
 import CategoryForm from './components/ui/CategoryForm';
 import ConfirmDialog from './components/ui/ConfirmDialog';
+import { WorkspaceModal } from './components/ui/WorkspaceModal';
 
 // Modal Forms & Overlays
 import PhotoForm from './sections/photo/PhotoForm';
@@ -34,7 +34,6 @@ import GitProjectView from './sections/git/GitProjectView';
 import CommandForm from './sections/commands/CommandForm';
 import BookmarkForm from './sections/bookmarks/BookmarkForm';
 
-
 export default function App() {
   const { theme, toggleTheme, isDark } = useTheme();
   const [activeSection, setActiveSection] = useState<'prompts' | 'skills' | 'git' | 'commands' | 'bookmarks' | 'admin'>('prompts');
@@ -45,6 +44,10 @@ export default function App() {
   const [gitProjects, setGitProjects] = useState<GitProject[]>([]);
   const [commands, setCommands] = useState<CommandItem[]>([]);
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [selectedWorkspace, setSelectedWorkspace] = useState<string | null>(() => localStorage.getItem('pv_workspace_id') || null);
+  const [isWorkspaceModalOpen, setIsWorkspaceModalOpen] = useState(false);
+  const [editingWorkspace, setEditingWorkspace] = useState<Workspace | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -74,7 +77,6 @@ export default function App() {
     promptId: string | null;
   }>({ isOpen: false, promptId: null });
 
-
   const searchInputRef = useRef<HTMLInputElement>(null);
   const formCloseRef = useRef<(() => void) | null>(null);
 
@@ -82,6 +84,15 @@ export default function App() {
     const id = Date.now();
     setToasts((prev) => [...prev, { id, message, type }]);
     setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), durationMs);
+  }, []);
+
+  const handleSelectWorkspace = useCallback((id: string | null) => {
+    setSelectedWorkspace(id);
+    if (id) {
+      localStorage.setItem('pv_workspace_id', id);
+    } else {
+      localStorage.removeItem('pv_workspace_id');
+    }
   }, []);
 
   // Check auth state on mount
@@ -97,13 +108,14 @@ export default function App() {
   const loadData = useCallback(async () => {
     if (!user) return;
     try {
-      const [allPrompts, allCategories, allSkills, allGitProjects, allCommands, allBookmarks] = await Promise.all([
+      const [allPrompts, allCategories, allSkills, allGitProjects, allCommands, allBookmarks, allWorkspaces] = await Promise.all([
         api.getPrompts().catch(() => []),
         api.getCategories().catch(() => []),
         api.getSkills().catch(() => []),
         api.getGitProjects().catch(() => []),
         api.getCommands().catch(() => []),
         api.getBookmarks().catch(() => []),
+        api.getWorkspaces().catch(() => []),
       ]);
       setPrompts(allPrompts);
       setCategories(allCategories);
@@ -111,6 +123,7 @@ export default function App() {
       setGitProjects(allGitProjects);
       setCommands(allCommands);
       setBookmarks(allBookmarks);
+      setWorkspaces(allWorkspaces);
     } catch (err: any) {
       console.error('Data load exception:', err);
     }
@@ -127,6 +140,7 @@ export default function App() {
       setGitProjects([]);
       setCommands([]);
       setBookmarks([]);
+      setWorkspaces([]);
     }
   }, [user, loadData]);
 
@@ -371,6 +385,60 @@ export default function App() {
     }
   }, [addToast]);
 
+  // Workspaces CRUD & Actions
+  const handleSaveWorkspace = useCallback(async (data: { name: string; icon: string; color: string }) => {
+    try {
+      if (editingWorkspace) {
+        const updated = await api.updateWorkspace(editingWorkspace.id, data);
+        setWorkspaces(prev => prev.map(w => w.id === updated.id ? updated : w));
+        addToast('Пространство обновлено! ✨');
+      } else {
+        const created = await api.createWorkspace(data);
+        setWorkspaces(prev => [...prev, created]);
+        handleSelectWorkspace(created.id);
+        addToast(`Пространство "${created.name}" создано! ✨`);
+      }
+      setEditingWorkspace(null);
+      setIsWorkspaceModalOpen(false);
+    } catch (err: any) {
+      addToast(err.message || 'Ошибка сохранения пространства', 'error');
+      throw err;
+    }
+  }, [editingWorkspace, handleSelectWorkspace, addToast]);
+
+  const handleDeleteWorkspace = useCallback(async (id: string) => {
+    try {
+      await api.deleteWorkspace(id);
+      setWorkspaces(prev => prev.filter(w => w.id !== id));
+      if (selectedWorkspace === id) {
+        handleSelectWorkspace(null);
+      }
+      addToast('Пространство удалено');
+      setEditingWorkspace(null);
+      setIsWorkspaceModalOpen(false);
+    } catch (err: any) {
+      addToast(err.message || 'Ошибка удаления', 'error');
+      throw err;
+    }
+  }, [selectedWorkspace, handleSelectWorkspace, addToast]);
+
+  // Workspace-filtered datasets
+  const displayedPrompts = selectedWorkspace ? prompts.filter(p => p.workspaceId === selectedWorkspace) : prompts;
+  const displayedSkills = selectedWorkspace ? skills.filter(s => s.workspaceId === selectedWorkspace) : skills;
+  const displayedGitProjects = selectedWorkspace ? gitProjects.filter(g => g.workspaceId === selectedWorkspace) : gitProjects;
+  const displayedCommands = selectedWorkspace ? commands.filter(c => c.workspaceId === selectedWorkspace) : commands;
+  const displayedBookmarks = selectedWorkspace ? bookmarks.filter(b => b.workspaceId === selectedWorkspace) : bookmarks;
+
+  const sidebarStats = {
+    promptsCount: displayedPrompts.length,
+    skillsCount: displayedSkills.length,
+    gitCount: displayedGitProjects.length,
+    commandsCount: displayedCommands.length,
+    bookmarksCount: displayedBookmarks.length,
+  };
+
+  const currentWorkspaceObj = workspaces.find(w => w.id === selectedWorkspace);
+
   // Hotkeys
   useHotkeys({
     user,
@@ -389,6 +457,11 @@ export default function App() {
       }
     },
     onCloseAll: () => {
+      if (isWorkspaceModalOpen) {
+        setIsWorkspaceModalOpen(false);
+        setEditingWorkspace(null);
+        return;
+      }
       if (isCategoryModalOpen) {
         setIsCategoryModalOpen(false);
         return;
@@ -437,8 +510,7 @@ export default function App() {
     },
   });
 
-  const skillFilters = useSkillFilters(skills, user);
-
+  const skillFilters = useSkillFilters(displayedSkills, user);
 
   if (loadingUser) {
     return (
@@ -494,9 +566,27 @@ export default function App() {
           >
             <Menu size={24} />
           </button>
-          <h1 className="text-2xl font-black tracking-tighter hidden sm:block text-zinc-900 dark:text-white">
-            PROMPT<span className="text-sky-500 dark:text-sky-400">VAULT</span>
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-black tracking-tighter hidden sm:block text-zinc-900 dark:text-white">
+              PROMPT<span className="text-sky-500 dark:text-sky-400">VAULT</span>
+            </h1>
+
+            {/* Активное пространство badge */}
+            {currentWorkspaceObj && (
+              <div className="hidden md:flex items-center gap-1.5 px-3 py-1 bg-sky-500/10 border border-sky-500/30 rounded-xl text-xs font-semibold text-sky-400">
+                <span className="text-sm">{currentWorkspaceObj.icon}</span>
+                <span className="max-w-[140px] truncate">{currentWorkspaceObj.name}</span>
+                <button
+                  type="button"
+                  onClick={() => handleSelectWorkspace(null)}
+                  className="p-0.5 hover:bg-sky-500/20 rounded-md text-sky-400/70 hover:text-sky-300 transition-colors ml-0.5 cursor-pointer"
+                  title="Показать все материалы"
+                >
+                  <CloseIcon size={12} />
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Главное Меню Разделов */}
           <div className="flex items-center bg-zinc-200/70 dark:bg-zinc-900/90 border border-zinc-300/60 dark:border-zinc-800 p-1 rounded-2xl transition-colors">
@@ -658,7 +748,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto space-y-8">
           {activeSection === 'prompts' && (
             <PromptsSection
-              prompts={prompts}
+              prompts={displayedPrompts}
               categories={categories}
               user={user}
               searchQuery={searchQuery}
@@ -683,7 +773,7 @@ export default function App() {
 
           {activeSection === 'skills' && (
             <SkillsSection
-              skills={skills}
+              skills={displayedSkills}
               user={user}
               skillFilters={skillFilters}
               viewMode={viewMode}
@@ -695,7 +785,7 @@ export default function App() {
 
           {activeSection === 'git' && (
             <GitProjectsSection
-              projects={gitProjects}
+              projects={displayedGitProjects}
               user={user}
               viewMode={viewMode}
               setViewMode={setViewMode}
@@ -707,8 +797,8 @@ export default function App() {
 
           {activeSection === 'commands' && (
             <CommandsSection
-              commands={commands}
-              skills={skills}
+              commands={displayedCommands}
+              skills={displayedSkills}
               user={user}
               viewMode={viewMode}
               setViewMode={setViewMode}
@@ -736,7 +826,7 @@ export default function App() {
 
           {activeSection === 'bookmarks' && (
             <BookmarksSection
-              bookmarks={bookmarks}
+              bookmarks={displayedBookmarks}
               user={user}
               viewMode={viewMode}
               setViewMode={setViewMode}
@@ -766,12 +856,19 @@ export default function App() {
       <Sidebar 
         isOpen={isSidebarOpen} 
         onClose={() => setIsSidebarOpen(false)}
+        workspaces={workspaces}
+        selectedWorkspace={selectedWorkspace}
+        onSelectWorkspace={handleSelectWorkspace}
+        onOpenCreateWorkspace={() => { setEditingWorkspace(null); setIsWorkspaceModalOpen(true); }}
+        onOpenEditWorkspace={(ws) => { setEditingWorkspace(ws); setIsWorkspaceModalOpen(true); }}
+        stats={sidebarStats}
+        activeSection={activeSection}
         categories={categories}
         selectedCategory={selectedCategory}
         onSelectCategory={setSelectedCategory}
         showFavoritesOnly={showFavoritesOnly}
         onToggleFavorites={() => setShowFavoritesOnly(!showFavoritesOnly)}
-        prompts={prompts}
+        prompts={displayedPrompts}
         user={user}
         searchQuery={searchQuery}
         onPickTag={setSearchQuery}
@@ -782,6 +879,18 @@ export default function App() {
 
       {/* Modals & Overlays */}
       <AnimatePresence>
+        {isWorkspaceModalOpen && (
+          <WorkspaceModal
+            isOpen={isWorkspaceModalOpen}
+            workspace={editingWorkspace}
+            onClose={() => {
+              setIsWorkspaceModalOpen(false);
+              setEditingWorkspace(null);
+            }}
+            onSave={handleSaveWorkspace}
+            onDelete={handleDeleteWorkspace}
+          />
+        )}
         {isCategoryModalOpen && (
           <CategoryForm 
             onClose={() => setIsCategoryModalOpen(false)}
@@ -798,6 +907,7 @@ export default function App() {
             user={user}
             addToast={addToast}
             onCloseRef={formCloseRef}
+            selectedWorkspace={selectedWorkspace}
           />
         )}
         {viewingPrompt && (
@@ -819,6 +929,7 @@ export default function App() {
             onSave={() => { setIsSkillFormOpen(false); setEditingSkill(null); void loadData(); }}
             user={user}
             addToast={addToast}
+            selectedWorkspace={selectedWorkspace}
           />
         )}
         {isGitFormOpen && (
@@ -831,7 +942,10 @@ export default function App() {
                   setGitProjects(prev => prev.map(p => p.id === editingGitProject.id ? updated : p));
                   addToast('Проект обновлён ✅');
                 } else {
-                  const created = await api.createGitProject(projectData);
+                  const created = await api.createGitProject({
+                    ...projectData,
+                    workspaceId: projectData.workspaceId !== undefined ? projectData.workspaceId : (selectedWorkspace || undefined),
+                  });
                   setGitProjects(prev => [created, ...prev]);
                   addToast('Проект добавлен ✅');
                 }
@@ -871,7 +985,10 @@ export default function App() {
                   setCommands(prev => prev.map(c => c.id === editingCommand.id ? updated : c));
                   addToast('Команда обновлена ✅');
                 } else {
-                  const created = await api.createCommand(cmdData as any);
+                  const created = await api.createCommand({
+                    ...cmdData,
+                    workspaceId: cmdData.workspaceId !== undefined ? cmdData.workspaceId : (selectedWorkspace || undefined),
+                  } as any);
                   setCommands(prev => [created, ...prev]);
                   addToast('Команда добавлена ✅');
                 }
@@ -911,7 +1028,10 @@ export default function App() {
                   setBookmarks(prev => prev.map(b => b.id === editingBookmark.id ? updated : b));
                   addToast('Закладка обновлена ✅');
                 } else {
-                  const created = await api.createBookmark(bookmarkData as any);
+                  const created = await api.createBookmark({
+                    ...bookmarkData,
+                    workspaceId: bookmarkData.workspaceId !== undefined ? bookmarkData.workspaceId : (selectedWorkspace || undefined),
+                  } as any);
                   setBookmarks(prev => [created, ...prev]);
                   addToast('Сайт добавлен в закладки ✅');
                 }

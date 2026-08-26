@@ -81,6 +81,7 @@ export interface Prompt {
   isFavorite: boolean;
   isPublic: boolean;
   promptOrigin?: 'own' | 'web';
+  workspaceId?: string | null;
   authorName: string;
   authorEmail: string;
   usageCount: number;
@@ -103,6 +104,7 @@ export interface SkillPackage {
   isFavorite: boolean;
   isPublic: boolean;
   skillOrigin?: 'own' | 'web';
+  workspaceId?: string | null;
   authorName: string;
   authorEmail: string;
   createdAt: string;
@@ -176,6 +178,7 @@ export interface GitProject {
   pricing: GitProjectPricing;
   isFavorite?: boolean;
   isPublic?: boolean;
+  workspaceId?: string | null;
   authorName: string;
   authorEmail: string;
   createdAt: string;
@@ -234,6 +237,7 @@ export interface CommandItem {
   variables?: string[];
   isFavorite?: boolean;
   isPublic?: boolean;
+  workspaceId?: string | null;
   authorName: string;
   authorEmail: string;
   usageCount: number;
@@ -272,9 +276,33 @@ export interface BookmarkItem {
   tags: string[];
   isFavorite?: boolean;
   isPublic?: boolean;
+  workspaceId?: string | null;
   authorName: string;
   authorEmail: string;
   clickCount: number;
   createdAt: string;
 }
+
+// ─── Workspaces (Рабочие пространства / Под-аккаунты) ─────────────────────────
+
+export interface Workspace {
+  id: string;
+  userId: string;
+  name: string;
+  icon: string;
+  color: string;
+  isDefault?: boolean;
+  createdAt?: string;
+}
+
+export const WORKSPACE_COLOR_OPTIONS = [
+  { value: 'sky-400',     label: 'Голубой',     bg: 'bg-sky-400' },
+  { value: 'purple-500',  label: 'Фиолетовый',  bg: 'bg-purple-500' },
+  { value: 'emerald-500', label: 'Изумрудный',  bg: 'bg-emerald-500' },
+  { value: 'amber-500',   label: 'Янтарный',    bg: 'bg-amber-500' },
+  { value: 'rose-500',    label: 'Розовый',     bg: 'bg-rose-500' },
+  { value: 'cyan-400',    label: 'Бирюзовый',   bg: 'bg-cyan-400' },
+  { value: 'indigo-500',  label: 'Индиго',      bg: 'bg-indigo-500' },
+  { value: 'zinc-400',    label: 'Нейтральный', bg: 'bg-zinc-400' },
+];
 

@@ -9,6 +9,7 @@
 
 | Тег / Хеш | Дата | Название / Назначение | Описание |
 |---|:---:|---|---|
+| `a4f891b` | 2026-08-26 | **💼 Isolated Workspaces Engine (Рабочие пространства & Под-профили)** | Реализована изолированная система рабочих пространств: DDL таблица `workspaces`, связь `workspace_id` со всеми 5 хабами (промпты, скиллы, git, команды, закладки), CRUD API в `server.ts` и `api/index.ts`, компонент `WorkspaceModal` (эмодзи, цвета, название), обновлённый `Sidebar` с переключением пространств и сводкой статистики, бейдж в Header и фильтрация в `App.tsx`. |
 | `a8afbf2` | 2026-08-26 | **🎨 Dual Theme Engine (ThoughtLab Dark & shadcn Light)** | Внедрена полноценная система переключения тем (Тёмная 🌙 / Светлая ☀️) на базе CSS-токенов Tailwind v4, кастомного хука `useTheme`, автосохранения в `localStorage` и стильного тумблера в Header. Адаптированы Header, Sidebar, LoginForm и поверхности. |
 | `7cd9892` | 2026-08-26 | **🤖 Universal AI Agent Ecosystem & Onboarding** | Созданы универсальные инструкции `AGENTS.md`, `CLAUDE.md`, `.cursorrules` и строгий «Протокол первого действия» (First-Action Protocol) для исключения хаотичного чтения файлов любыми ИИ-агентами. |
 | `b34673a` | 2026-08-26 | **🧹 Cascade Deletion of Favorites & Relations** | Реализована автоматическая очистка связанных записей в `user_favorites`, `chats` и `skill_hints` при удалении любых сущностей (промпты, скиллы, git, команды, закладки, юзеры) на обоих бэкендах (`server.ts` и `api/index.ts`). |
@@ -26,6 +27,21 @@
 ---
 
 ## 🗓️ Хронологический журнал изменений
+
+### 💼 2026-08-26 — Изолированные рабочие пространства (Workspaces / Под-профили)
+- **База данных Supabase (`scripts/create_workspaces_table.sql`)**:
+  - Создана таблица `workspaces` (`id` UUID PK, `user_id` TEXT, `name` TEXT, `icon` TEXT, `color` TEXT, `is_default` BOOL, `created_at` TIMESTAMPTZ).
+  - Во все 5 таблиц сущностей (`prompts`, `skills`, `git_projects`, `commands`, `bookmarks`) добавлена колонка `workspace_id UUID REFERENCES workspaces(id) ON DELETE SET NULL` с индексами.
+- **Двойной бэкенд (`server.ts` & `api/index.ts`)**:
+  - 4 CRUD эндпоинта для пространств: `GET /api/workspaces`, `POST /api/workspaces`, `PUT /api/workspaces/:id`, `DELETE /api/workspaces/:id`.
+  - Интеграция `workspace_id` в маппинг в БД и из БД для промптов, скиллов, проектов, команд и закладок.
+- **Интерфейс и Компоненты**:
+  - `src/components/ui/WorkspaceModal.tsx` — модальное окно создания и редактирования пространств с выбором иконки (эмодзи), названия и цветового акцента (`WORKSPACE_COLOR_OPTIONS`).
+  - `src/components/layout/Sidebar.tsx` — обновлённая панель «Библиотека»: быстрый выбор активного пространства, переключение в режим «🌐 Все материалы», сводка статистики по 5 хабам, кнопка создания и редактирования.
+  - `src/App.tsx` — хранение `selectedWorkspace` в `localStorage` (`pv_workspace_id`), бейдж активного пространства в шапке сайта с быстрым сбросом, фильтрация данных во всех разделах.
+  - Автоматическая привязка `workspaceId` при создании новых карточек в активном пространстве.
+
+---
 
 ### 🎨 2026-08-26 — Двухтемная дизайн-система (Dual Theme: ThoughtLab Dark & shadcn Light)
 - **Хук управления темами (`src/hooks/useTheme.ts`)**:

@@ -13,6 +13,7 @@ interface SkillFormProps {
   onSave: () => void;
   user: User;
   addToast: (message: React.ReactNode, type?: 'success' | 'error') => void;
+  selectedWorkspace?: string | null;
 }
 
 export default function SkillForm({
@@ -20,6 +21,7 @@ export default function SkillForm({
   onClose,
   onSave,
   addToast,
+  selectedWorkspace,
 }: SkillFormProps) {
   const [title, setTitle] = useState(skill?.title || '');
   const [description, setDescription] = useState(skill?.description || '');
@@ -123,6 +125,7 @@ export default function SkillForm({
       filePackageUrl,
       isPublic,
       skillOrigin,
+      workspaceId: skill?.workspaceId !== undefined ? skill.workspaceId : (selectedWorkspace || undefined),
       isFavorite: skill?.isFavorite ?? false,
     };
 

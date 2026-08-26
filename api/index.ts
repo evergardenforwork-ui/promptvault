@@ -63,6 +63,7 @@ function promptToDb(data: any, userId: string) {
     file_package_url: data.filePackageUrl || null,
     file_structure: data.fileStructure || [],
     sub_sections: data.subSections || [],
+    workspace_id: data.workspaceId || null,
     author_name: data.authorName || "",
     author_email: data.authorEmail || "",
     usage_count: data.usageCount ?? 0,
@@ -91,6 +92,7 @@ function promptFromDb(row: any, isFavorite = false) {
     filePackageUrl: row.file_package_url || null,
     fileStructure: row.file_structure || [],
     subSections: row.sub_sections || [],
+    workspaceId: row.workspace_id || null,
     authorName: row.author_name || "",
     authorEmail: row.author_email || "",
     usageCount: row.usage_count || 0,
@@ -112,6 +114,7 @@ function skillToDb(data: any, userId: string) {
     is_public: data.isPublic ?? false,
     file_package_url: data.filePackageUrl || null,
     file_structure: data.fileStructure || [],
+    workspace_id: data.workspaceId || null,
     author_name: data.authorName || "",
     author_email: data.authorEmail || "",
   };
@@ -131,6 +134,7 @@ function skillFromDb(row: any, isFavorite = false) {
     isPublic: row.is_public,
     filePackageUrl: row.file_package_url,
     fileStructure: row.file_structure || [],
+    workspaceId: row.workspace_id || null,
     authorName: row.author_name || "",
     authorEmail: row.author_email || "",
     createdAt: row.created_at,
@@ -736,6 +740,7 @@ function gitProjectToDb(data: any, userId: string) {
     tags: data.tags || [],
     pricing: data.pricing || 'free',
     is_public: data.isPublic ?? true,
+    workspace_id: data.workspaceId || null,
     author_name: data.authorName || '',
     author_email: data.authorEmail || '',
   };
@@ -758,6 +763,7 @@ function gitProjectFromDb(row: any, isFavorite = false) {
     tags: row.tags || [],
     pricing: row.pricing || 'free',
     isPublic: row.is_public,
+    workspaceId: row.workspace_id || null,
     authorName: row.author_name || '',
     authorEmail: row.author_email || '',
     createdAt: row.created_at,
@@ -806,6 +812,7 @@ app.put("/api/git-projects/:id", authenticate, async (req, res) => {
       tags: req.body.tags || [], pricing: req.body.pricing || 'free', is_public: req.body.isPublic ?? true,
     };
     if (imageUrl !== undefined) updates.image = imageUrl;
+    if (req.body.workspaceId !== undefined) updates.workspace_id = req.body.workspaceId || null;
     const { data, error } = await supabase.from("git_projects").update(updates).eq("id", id).select().single();
     if (error) throw error;
     res.json(gitProjectFromDb(data));
@@ -849,6 +856,7 @@ function commandToDb(data: any, userId: string) {
     tags: data.tags || [],
     variables: combinedVars,
     is_public: data.isPublic ?? true,
+    workspace_id: data.workspaceId || null,
     author_name: data.authorName || '',
     author_email: data.authorEmail || '',
     usage_count: data.usageCount ?? 0,
@@ -870,6 +878,7 @@ function commandFromDb(row: any, isFavorite = false) {
     variables: row.variables || [],
     isFavorite,
     isPublic: row.is_public,
+    workspaceId: row.workspace_id || null,
     authorName: row.author_name || '',
     authorEmail: row.author_email || '',
     usageCount: row.usage_count || 0,
@@ -917,6 +926,7 @@ app.put("/api/commands/:id", authenticate, async (req, res) => {
       category: req.body.category || 'other', skill_id: req.body.skillId || null, target_ai: req.body.targetAi || 'universal',
       tags: req.body.tags || [], variables: combinedVars, is_public: req.body.isPublic ?? true,
     };
+    if (req.body.workspaceId !== undefined) updates.workspace_id = req.body.workspaceId || null;
     const { data, error } = await supabase.from("commands").update(updates).eq("id", id).select().single();
     if (error) throw error;
     res.json(commandFromDb(data));
@@ -962,6 +972,7 @@ function bookmarkToDb(data: any, userId: string) {
     favicon: data.favicon || null,
     tags: data.tags || [],
     is_public: data.isPublic ?? true,
+    workspace_id: data.workspaceId || null,
     author_name: data.authorName || '',
     author_email: data.authorEmail || '',
     click_count: data.clickCount ?? 0,
@@ -982,6 +993,7 @@ function bookmarkFromDb(row: any, isFavorite = false) {
     tags: row.tags || [],
     isFavorite,
     isPublic: row.is_public,
+    workspaceId: row.workspace_id || null,
     authorName: row.author_name || '',
     authorEmail: row.author_email || '',
     clickCount: row.click_count || 0,
@@ -1046,6 +1058,7 @@ app.put("/api/bookmarks/:id", authenticate, async (req, res) => {
       is_public: req.body.isPublic ?? true,
     };
     if (imageUrl !== undefined) updates.image = imageUrl;
+    if (req.body.workspaceId !== undefined) updates.workspace_id = req.body.workspaceId || null;
 
     const { data, error } = await supabase.from("bookmarks").update(updates).eq("id", id).select().single();
     if (error) throw error;
@@ -1078,6 +1091,113 @@ app.post("/api/bookmarks/:id/click", authenticate, async (req, res) => {
     const newCount = (data.click_count || 0) + 1;
     await supabase.from("bookmarks").update({ click_count: newCount }).eq("id", id);
     res.json({ clickCount: newCount });
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── API: Workspaces ────────────────────────────────────────────────────────
+
+function workspaceFromDb(row: any) {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    name: row.name,
+    icon: row.icon || '📁',
+    color: row.color || 'sky-400',
+    isDefault: row.is_default || false,
+    createdAt: row.created_at,
+  };
+}
+
+app.get("/api/workspaces", authenticate, async (req, res) => {
+  try {
+    const user = (req as any).user;
+    let query = supabase.from("workspaces").select("*").order("created_at", { ascending: true });
+    if (user.role !== "admin") {
+      query = query.eq("user_id", user.uid);
+    }
+    const { data, error } = await query;
+    if (error) throw error;
+    res.json((data || []).map(workspaceFromDb));
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
+app.post("/api/workspaces", authenticate, async (req, res) => {
+  try {
+    const user = (req as any).user;
+    const { name, icon, color } = req.body;
+    if (!name || typeof name !== "string") {
+      return res.status(400).json({ error: "Поле name обязательно" });
+    }
+
+    const { data, error } = await supabase
+      .from("workspaces")
+      .insert({
+        user_id: user.uid,
+        name: name.trim(),
+        icon: icon || '📁',
+        color: color || 'sky-400',
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.status(201).json(workspaceFromDb(data));
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
+app.put("/api/workspaces/:id", authenticate, async (req, res) => {
+  try {
+    const user = (req as any).user;
+    const { id } = req.params;
+    const { name, icon, color } = req.body;
+
+    const { data: existing } = await supabase
+      .from("workspaces")
+      .select("user_id")
+      .eq("id", id)
+      .single();
+
+    if (!existing) return res.status(404).json({ error: "Пространство не найдено" });
+    if (existing.user_id !== user.uid && user.role !== "admin") {
+      return res.status(403).json({ error: "Нет прав" });
+    }
+
+    const updates: any = {};
+    if (name !== undefined) updates.name = name.trim();
+    if (icon !== undefined) updates.icon = icon;
+    if (color !== undefined) updates.color = color;
+
+    const { data, error } = await supabase
+      .from("workspaces")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(workspaceFromDb(data));
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
+app.delete("/api/workspaces/:id", authenticate, async (req, res) => {
+  try {
+    const user = (req as any).user;
+    const { id } = req.params;
+
+    const { data: existing } = await supabase
+      .from("workspaces")
+      .select("user_id")
+      .eq("id", id)
+      .single();
+
+    if (!existing) return res.status(404).json({ error: "Пространство не найдено" });
+    if (existing.user_id !== user.uid && user.role !== "admin") {
+      return res.status(403).json({ error: "Нет прав" });
+    }
+
+    const { error } = await supabase.from("workspaces").delete().eq("id", id);
+    if (error) throw error;
+    res.json({ message: "Пространство удалено" });
   } catch (err: any) { res.status(500).json({ error: err.message }); }
 });
 

@@ -53,6 +53,11 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [gridColumns, setGridColumns] = useState<number>(() => {
+    const saved = localStorage.getItem('pv_grid_columns');
+    const parsed = saved ? parseInt(saved, 10) : 3;
+    return [3, 4, 5].includes(parsed) ? parsed : 3;
+  });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSkillFormOpen, setIsSkillFormOpen] = useState(false);
@@ -94,6 +99,11 @@ export default function App() {
     } else {
       localStorage.removeItem('pv_workspace_id');
     }
+  }, []);
+
+  const handleSetGridColumns = useCallback((cols: number) => {
+    setGridColumns(cols);
+    localStorage.setItem('pv_grid_columns', String(cols));
   }, []);
 
   // Check auth state on mount
@@ -760,7 +770,12 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 px-6 py-8 overflow-y-auto">
-        <div className="max-w-[1680px] mx-auto space-y-8">
+        <div className={cn(
+          "mx-auto space-y-8 transition-all duration-200",
+          gridColumns === 5 ? "max-w-[1920px]" :
+          gridColumns === 4 ? "max-w-[1680px]" :
+          "max-w-7xl"
+        )}>
           {activeSection === 'prompts' && (
             <PromptsSection
               prompts={displayedPrompts}
@@ -783,6 +798,7 @@ export default function App() {
               onViewPrompt={(p) => setViewingPrompt(p)}
               onToggleFavorite={handleToggleFavoritePrompt}
               onOpenCategoryModal={() => setIsCategoryModalOpen(true)}
+              gridColumns={gridColumns}
             />
           )}
 
@@ -795,6 +811,7 @@ export default function App() {
               setViewMode={setViewMode}
               onViewSkill={(s) => setSpacedSkill(s)}
               onToggleFavorite={handleToggleFavoriteSkill}
+              gridColumns={gridColumns}
             />
           )}
 
@@ -807,6 +824,7 @@ export default function App() {
               onViewProject={(p) => setViewingGitProject(p)}
               onToggleFavorite={handleToggleFavoriteGitProject}
               searchQuery={searchQuery}
+              gridColumns={gridColumns}
             />
           )}
 
@@ -828,7 +846,7 @@ export default function App() {
               onOpenSkill={(skillId) => {
                 const s = skills.find(sk => sk.id === skillId);
                 if (s) {
-                  setActiveSection('skills');
+                   setActiveSection('skills');
                   setSpacedSkill(s);
                 }
               }}
@@ -836,6 +854,7 @@ export default function App() {
                 setEditingCommand(null);
                 setIsCommandFormOpen(true);
               }}
+              gridColumns={gridColumns}
             />
           )}
 
@@ -860,6 +879,7 @@ export default function App() {
                 setDefaultBookmarkFolder(folder || null);
                 setIsBookmarkFormOpen(true);
               }}
+              gridColumns={gridColumns}
             />
           )}
 
@@ -878,6 +898,8 @@ export default function App() {
         onSelectWorkspace={handleSelectWorkspace}
         onOpenCreateWorkspace={() => { setEditingWorkspace(null); setIsWorkspaceModalOpen(true); }}
         onOpenEditWorkspace={(ws) => { setEditingWorkspace(ws); setIsWorkspaceModalOpen(true); }}
+        gridColumns={gridColumns}
+        onChangeGridColumns={handleSetGridColumns}
         stats={sidebarStats}
         user={user}
         onExportBackup={handleExportBackup}

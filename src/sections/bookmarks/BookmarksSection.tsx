@@ -47,6 +47,7 @@ interface BookmarksSectionProps {
   onOpenWebsite: (bookmark: BookmarkItem) => void;
   onCopyUrl: (bookmark: BookmarkItem) => void;
   onOpenCreateModal: (defaultFolder?: string) => void;
+  gridColumns?: number;
 }
 
 export default function BookmarksSection({
@@ -61,6 +62,7 @@ export default function BookmarksSection({
   onOpenWebsite,
   onCopyUrl,
   onOpenCreateModal,
+  gridColumns = 3,
 }: BookmarksSectionProps) {
   // Текущий открытый путь папки (null = Все закладки / корень)
   const [currentPath, setCurrentPath] = useState<string | null>(null);
@@ -494,8 +496,11 @@ export default function BookmarksSection({
         <div className={cn(
           "transition-all",
           viewMode === 'grid'
-            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-            : "space-y-3"
+            ? (gridColumns === 5 ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6" :
+               gridColumns === 4 ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" :
+               "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6")
+            : "space-y-3",
+          viewMode === 'grid' && "grid"
         )}>
           <AnimatePresence mode="popLayout">
             {filteredBookmarks.map(bookmark => (

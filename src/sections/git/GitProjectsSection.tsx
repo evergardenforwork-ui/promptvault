@@ -13,6 +13,7 @@ interface GitProjectsSectionProps {
   onViewProject: (p: GitProject) => void;
   onToggleFavorite: (id: string) => void;
   searchQuery: string;
+  gridColumns?: number;
 }
 
 type SortBy = 'date' | 'name';
@@ -27,6 +28,7 @@ export default function GitProjectsSection({
   onViewProject,
   onToggleFavorite,
   searchQuery,
+  gridColumns = 3,
 }: GitProjectsSectionProps) {
   const [sortBy, setSortBy] = useState<SortBy>('date');
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
@@ -245,8 +247,11 @@ export default function GitProjectsSection({
         <AnimatePresence mode="popLayout">
           <div className={cn(
             viewMode === 'grid'
-              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
-              : "flex flex-col gap-3"
+              ? (gridColumns === 5 ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4" :
+                 gridColumns === 4 ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" :
+                 "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4")
+              : "flex flex-col gap-3",
+            viewMode === 'grid' && "grid"
           )}>
             {filtered.map(project => (
               <GitProjectCard

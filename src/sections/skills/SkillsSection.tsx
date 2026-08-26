@@ -14,6 +14,7 @@ interface SkillsSectionProps {
   setViewMode: (v: 'grid' | 'list') => void;
   onViewSkill: (s: SkillPackage) => void;
   onToggleFavorite: (id: string) => void;
+  gridColumns?: number;
 }
 
 export default function SkillsSection({
@@ -24,6 +25,7 @@ export default function SkillsSection({
   setViewMode,
   onViewSkill,
   onToggleFavorite,
+  gridColumns = 3,
 }: SkillsSectionProps) {
   return (
     <div className="space-y-8">
@@ -206,7 +208,11 @@ export default function SkillsSection({
       {/* Skills Grid */}
       <div className={cn(
         "grid gap-6",
-        viewMode === 'grid' ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"
+        viewMode === 'grid'
+          ? (gridColumns === 5 ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5" :
+             gridColumns === 4 ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" :
+             "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3")
+          : "grid-cols-1"
       )}>
         <AnimatePresence mode="popLayout">
           {skillFilters.filteredSkills.map((skill) => (

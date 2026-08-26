@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Users, Plus, Settings2, Globe, Sparkles, FolderKanban } from 'lucide-react';
+import { X, Users, Plus, Settings2, Globe, Sparkles, FolderKanban, LayoutGrid } from 'lucide-react';
 import { Workspace } from '../../types';
 
 interface SidebarStats {
@@ -19,6 +19,8 @@ interface SidebarProps {
   onSelectWorkspace?: (id: string | null) => void;
   onOpenCreateWorkspace?: () => void;
   onOpenEditWorkspace?: (ws: Workspace) => void;
+  gridColumns?: number;
+  onChangeGridColumns?: (cols: number) => void;
   stats?: SidebarStats;
   user: any;
   onExportBackup: () => void;
@@ -34,6 +36,8 @@ export default function Sidebar({
   onSelectWorkspace,
   onOpenCreateWorkspace,
   onOpenEditWorkspace,
+  gridColumns = 3,
+  onChangeGridColumns,
   stats,
   user,
   onExportBackup,
@@ -196,6 +200,43 @@ export default function Sidebar({
                     <div className="text-xs">🌐</div>
                     <div className="text-[10px] font-bold mt-0.5 text-cyan-600 dark:text-cyan-400">{stats.bookmarksCount ?? 0}</div>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* 3. КОЛОНКИ СЕТКИ КАРТОЧЕК (3, 4, 5) */}
+            {onChangeGridColumns && (
+              <div className="p-3.5 bg-zinc-50 dark:bg-zinc-900/70 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">
+                    <LayoutGrid size={13} className="text-sky-500" />
+                    <span>Сетка карточек</span>
+                  </div>
+                  <span className="text-[10px] font-bold text-sky-600 dark:text-sky-400 bg-sky-500/10 dark:bg-sky-500/20 px-2 py-0.5 rounded-md">
+                    {gridColumns} {gridColumns === 3 ? 'колонки' : 'колонок'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {[3, 4, 5].map((cols) => {
+                    const isActive = gridColumns === cols;
+                    return (
+                      <button
+                        key={cols}
+                        type="button"
+                        onClick={() => onChangeGridColumns(cols)}
+                        className={`py-2 px-2 rounded-xl text-xs font-bold transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
+                          isActive
+                            ? "bg-sky-500 text-white shadow-md shadow-sky-500/25 border border-sky-400"
+                            : "bg-white dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-950 dark:hover:text-white"
+                        }`}
+                      >
+                        <span className="text-sm font-black">{cols}</span>
+                        <span className="text-[9px] opacity-80 uppercase tracking-tighter">
+                          {cols === 3 ? '3 в ряд' : cols === 4 ? '4 в ряд' : '5 в ряд'}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}

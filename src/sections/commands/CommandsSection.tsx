@@ -28,6 +28,7 @@ interface CommandsSectionProps {
   onCopyCommand: (cmd: CommandItem) => void;
   onOpenSkill?: (skillId: string) => void;
   onOpenCreateModal: () => void;
+  gridColumns?: number;
 }
 
 type SortBy = 'date' | 'popular' | 'name';
@@ -47,6 +48,7 @@ export default function CommandsSection({
   onCopyCommand,
   onOpenSkill,
   onOpenCreateModal,
+  gridColumns = 3,
 }: CommandsSectionProps) {
   const [sortBy, setSortBy] = useState<SortBy>('date');
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
@@ -331,8 +333,11 @@ export default function CommandsSection({
         <div
           className={cn(
             viewMode === 'grid'
-              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
-              : "flex flex-col gap-2.5"
+              ? (gridColumns === 5 ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5" :
+                 gridColumns === 4 ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5" :
+                 "grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5")
+              : "flex flex-col gap-2.5",
+            viewMode === 'grid' && "grid"
           )}
         >
           {filteredCommands.map((command) => (

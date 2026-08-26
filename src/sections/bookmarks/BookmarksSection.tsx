@@ -443,16 +443,16 @@ export default function BookmarksSection({
         {/* Right: Sort, View Toggle, Add Button */}
         <div className="flex items-center gap-3">
           {/* Sort Dropdown */}
-          <div className="flex items-center gap-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-3 py-1.5 rounded-2xl text-xs">
-            <ArrowUpDown size={14} className="text-zinc-500" />
+          <div className="flex items-center gap-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 px-3 py-1.5 rounded-2xl text-xs transition-colors">
+            <ArrowUpDown size={14} className="text-zinc-500 shrink-0" />
             <select
               value={sortBy}
               onChange={e => setSortBy(e.target.value as any)}
-              className="bg-transparent text-zinc-700 dark:text-zinc-300 focus:outline-none cursor-pointer text-xs"
+              className="bg-transparent text-zinc-800 dark:text-zinc-200 font-medium focus:outline-none cursor-pointer text-xs"
             >
-              <option value="date" className="bg-white dark:bg-zinc-900">Сначала новые</option>
-              <option value="clicks" className="bg-white dark:bg-zinc-900">По кликам (🔥)</option>
-              <option value="name" className="bg-white dark:bg-zinc-900">По алфавиту (A-Z)</option>
+              <option value="date" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">Сначала новые</option>
+              <option value="clicks" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">По кликам (🔥)</option>
+              <option value="name" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">По алфавиту (A-Z)</option>
             </select>
           </div>
 

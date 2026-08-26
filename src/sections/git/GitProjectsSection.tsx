@@ -126,10 +126,10 @@ export default function GitProjectsSection({
               <select
                 value={sortBy}
                 onChange={e => setSortBy(e.target.value as SortBy)}
-                className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-sm text-zinc-700 dark:text-zinc-400 focus:outline-none focus:border-emerald-500 cursor-pointer"
+                className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-emerald-500 cursor-pointer transition-colors"
               >
-                <option value="date">Сначала новые</option>
-                <option value="name">По алфавиту</option>
+                <option value="date" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">Сначала новые</option>
+                <option value="name" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">По алфавиту</option>
               </select>
             </div>
 

@@ -20,7 +20,7 @@
 
 ```bash
 # 1. Перейдите в папку проекта
-cd path/to/superbasetest
+cd path/to/promptvault
 
 # 2. Установите зависимости (только при первом запуске)
 npm install

@@ -187,3 +187,56 @@ export interface ParseToolRequest {
   imageBase64?: string;
 }
 
+// ─── AI Commands & Workflows ──────────────────────────────────────────────────
+
+export type CommandCategory = 
+  | 'docs' 
+  | 'refactor' 
+  | 'audit' 
+  | 'tests' 
+  | 'git' 
+  | 'agent' 
+  | 'database' 
+  | 'other';
+
+export const COMMAND_CATEGORY_OPTIONS: { value: CommandCategory; label: string; emoji: string }[] = [
+  { value: 'docs',     label: 'Документация',     emoji: '📝' },
+  { value: 'refactor', label: 'Рефакторинг',      emoji: '🔄' },
+  { value: 'audit',    label: 'Аудит & Защита',   emoji: '🛡️' },
+  { value: 'tests',    label: 'Тестирование',     emoji: '🧪' },
+  { value: 'git',      label: 'Git & Деплой',     emoji: '🐙' },
+  { value: 'agent',    label: 'Агенты & Промпты', emoji: '🤖' },
+  { value: 'database', label: 'База & SQL',       emoji: '🗄️' },
+  { value: 'other',    label: 'Разное',           emoji: '✨' },
+];
+
+export const COMMAND_AI_OPTIONS: { value: TargetAi; label: string; emoji: string }[] = [
+  { value: 'universal', label: 'Универсальная', emoji: '🌐' },
+  { value: 'claude',    label: 'Claude',        emoji: '🟣' },
+  { value: 'gemini',    label: 'Gemini',        emoji: '🔵' },
+  { value: 'chatgpt',   label: 'ChatGPT',       emoji: '🟢' },
+  { value: 'cursor',    label: 'Cursor',        emoji: '🟠' },
+  { value: 'deepseek',  label: 'DeepSeek',      emoji: '🐳' },
+  { value: 'other',     label: 'Другой ИИ',     emoji: '✨' },
+];
+
+export interface CommandItem {
+  id: string;
+  userId: string;
+  title: string;
+  commandText: string;
+  description?: string;
+  category: CommandCategory;
+  skillId?: string | null;
+  skillTitle?: string;
+  targetAi?: TargetAi;
+  tags: string[];
+  variables?: string[];
+  isFavorite?: boolean;
+  isPublic?: boolean;
+  authorName: string;
+  authorEmail: string;
+  usageCount: number;
+  createdAt: string;
+}
+

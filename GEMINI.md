@@ -154,12 +154,18 @@ superbasetest/
     │   │       ├── SpaceSelectionBar.tsx ← Плавающая панель выделения
     │   │       └── SkillHintsPanel.tsx   ← Панель подсказок-промптов к скиллу
     │   │
-    │   └── git/                         ← 🐙 Раздел Git Hub & AI Tools
-    │       ├── GitProjectsSection.tsx    ← Сетка карточек + Toolbar фильтров
-    │       ├── GitProjectCard.tsx        ← Карточка проекта (grid/list)
-    │       ├── GitProjectForm.tsx        ← Форма создания/редактирования
-    │       ├── AiSmartParserModal.tsx    ← 🪄 AI Smart Parser модалка (Gemini 3.1)
-    │       └── GitProjectView.tsx        ← Просмотр проекта с аккордеонами
+    │   ├── git/                         ← 🐙 Раздел Git Hub & AI Tools
+    │   │   ├── GitProjectsSection.tsx    ← Сетка карточек + Toolbar фильтров
+    │   │   ├── GitProjectCard.tsx        ← Карточка проекта (grid/list)
+    │   │   ├── GitProjectForm.tsx        ← Форма создания/редактирования
+    │   │   ├── AiSmartParserModal.tsx    ← 🪄 AI Smart Parser модалка (Gemini 3.1)
+    │   │   └── GitProjectView.tsx        ← Просмотр проекта с аккордеонами
+    │   │
+    │   └── commands/                    ← ⚡ Раздел Команд & Инструкций
+    │       ├── CommandsSection.tsx       ← Сетка карточек + Toolbar фильтров + сортировка
+    │       ├── CommandCard.tsx           ← Карточка команды (grid/list) + 1-клик копирование
+    │       ├── CommandForm.tsx           ← Форма создания/редактирования + вставка параметров
+    │       └── CommandFillModal.tsx      ← Модалка заполнения плейсхолдеров {{...}}
     │
     ├── services/
     │   ├── api.ts
@@ -188,6 +194,9 @@ SkillPackage   { id, userId, title, description, category, skillTypes: string[],
 GitProject     { id, userId, title, category: GitProjectCategory, summary, features?,
                  detailedDescription?, installCommand?, authorNotes?, githubUrl?, demoUrl?,
                  image?, tags: string[], pricing: 'free'|'freemium'|'paid', isFavorite?, isPublic?, createdAt }
+CommandItem    { id, userId, title, commandText, description?, category: CommandCategory,
+                 skillId?, skillTitle?, targetAi?, tags: string[], variables?: string[],
+                 isFavorite?, isPublic?, authorName, authorEmail, usageCount, createdAt }
 SkillHint      { id, skillId, userId, title, text, createdAt }
 SubSection     { title, text, imageBefore?, imageAfter?, originalImage*, additionalImages?, imageLayoutType? }
 FileNode       { name, path, type:'file'|'directory', content?, size?, children? }
@@ -226,6 +235,11 @@ AssistantConfig { systemPrompt }
 | PUT | `/api/git-projects/:id` | Обновить Git проект (с валидацией) |
 | DELETE | `/api/git-projects/:id` | Удалить Git проект |
 | POST | `/api/gemini/parse-tool` | Gemini 3.1 Flash-Lite ИИ-парсер скриншотов/ссылок/текста |
+| GET | `/api/commands` | Список сохранённых команд и инструкций |
+| POST | `/api/commands` | Создать команду (с валидацией) |
+| PUT | `/api/commands/:id` | Обновить команду (с валидацией) |
+| DELETE | `/api/commands/:id` | Удалить команду |
+| POST | `/api/commands/:id/use` | Инкремент счётчика использования команды |
 | GET | `/api/categories` | Список категорий |
 | POST | `/api/categories` | Создать категорию |
 | DELETE | `/api/categories/:id` | Удалить категорию |

@@ -1,8 +1,8 @@
-# 🚀 PromptVault (Skills, Git & AI Hub)
+# 🚀 PromptVault (Skills, Git, Commands & AI Hub)
 
-Персональное fullstack веб-приложение для хранения, организации и управления промптами для нейросетей, пакетами скиллов, субагентов и MCP-серверов, а также каталогом полезных репозиториев, ИИ-инструментов и моделей с 🪄 AI Smart Parser.
+Персональное fullstack веб-приложение для хранения, организации и управления промптами для нейросетей, пакетами скиллов, субагентов и MCP-серверов, каталогом полезных репозиториев и ИИ-инструментов, а также базой быстрых команд и инструкций (AI Workflows).
 
-> **Последнее обновление**: 2026-08-23
+> **Последнее обновление**: 2026-08-26
 
 ---
 
@@ -11,7 +11,7 @@
 | Характеристика | Описание |
 |---|---|
 | **Название** | PromptVault |
-| **Описание** | Персональное веб-приложение для хранения промптов с макетами изображений, веб-IDE пространств скиллов (Skills, MCP, Agents) и каталога Git Hub & AI Tools. |
+| **Описание** | Персональное веб-приложение для хранения промптов, веб-IDE скиллов, каталога Git Tools и хаба быстрых команд и сниппетов. |
 | **Стек технологий** | React 19, TypeScript, Vite 6, Tailwind CSS v4, Express.js (dev), Vercel Serverless (prod), Supabase (PostgreSQL + Storage), Google Gemini API (`gemini-3.1-flash-lite`) |
 
 ### 🛠️ Как запустить локально
@@ -27,7 +27,8 @@
    GEMINI_API_KEY=your_gemini_api_key
    ```
 3. Выполните SQL миграции в Supabase SQL Editor:
-   - `scripts/create_git_projects_table.sql`
+   - `scripts/create_commands_table.sql` (таблица команд)
+   - `scripts/create_git_projects_table.sql` (таблица git-проектов)
    - `scripts/create_skill_hints_table.sql` (при необходимости)
 4. Запустите dev-сервер:
    ```bash

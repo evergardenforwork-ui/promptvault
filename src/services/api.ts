@@ -187,7 +187,7 @@ export const api = {
     return request('/favorites');
   },
 
-  async toggleFavorite(itemId: string, itemType: 'prompt' | 'skill' | 'git_project'): Promise<{ added: boolean; favorites: { prompts: string[]; skills: string[]; gitProjects?: string[] } }> {
+  async toggleFavorite(itemId: string, itemType: 'prompt' | 'skill' | 'git_project' | 'command'): Promise<{ added: boolean; favorites: { prompts: string[]; skills: string[]; gitProjects?: string[]; commands?: string[] } }> {
     return request('/favorites/toggle', {
       method: 'POST',
       body: JSON.stringify({ itemId, itemType }),
@@ -262,6 +262,33 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(data),
     });
+  },
+
+  // AI Commands & Workflows
+  async getCommands(): Promise<import('../types').CommandItem[]> {
+    return request('/commands');
+  },
+
+  async createCommand(cmd: Omit<import('../types').CommandItem, 'id' | 'createdAt' | 'userId' | 'authorName' | 'authorEmail' | 'usageCount'>): Promise<import('../types').CommandItem> {
+    return request('/commands', {
+      method: 'POST',
+      body: JSON.stringify(cmd),
+    });
+  },
+
+  async updateCommand(id: string, cmd: Partial<import('../types').CommandItem>): Promise<import('../types').CommandItem> {
+    return request(`/commands/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(cmd),
+    });
+  },
+
+  async deleteCommand(id: string): Promise<void> {
+    return request(`/commands/${id}`, { method: 'DELETE' });
+  },
+
+  async useCommand(id: string): Promise<{ usageCount: number }> {
+    return request(`/commands/${id}/use`, { method: 'POST' });
   },
 };
 

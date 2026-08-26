@@ -229,16 +229,17 @@ async function authenticate(
   next();
 }
 
-async function getUserFavoriteIds(uid: string): Promise<{ prompts: string[]; skills: string[]; gitProjects: string[] }> {
+async function getUserFavoriteIds(uid: string): Promise<{ prompts: string[]; skills: string[]; gitProjects: string[]; commands: string[] }> {
   const { data, error } = await supabase
     .from("user_favorites")
     .select("item_id, item_type")
     .eq("user_id", uid);
-  if (error || !data) return { prompts: [], skills: [], gitProjects: [] };
+  if (error || !data) return { prompts: [], skills: [], gitProjects: [], commands: [] };
   return {
     prompts: data.filter((r) => r.item_type === "prompt").map((r) => r.item_id),
     skills: data.filter((r) => r.item_type === "skill").map((r) => r.item_id),
     gitProjects: data.filter((r) => r.item_type === "git_project").map((r) => r.item_id),
+    commands: data.filter((r) => r.item_type === "command").map((r) => r.item_id),
   };
 }
 
@@ -813,6 +814,128 @@ app.delete("/api/git-projects/:id", authenticate, async (req, res) => {
     if (error) throw error;
     await supabase.from("user_favorites").delete().eq("item_id", id).eq("item_type", "git_project");
     res.json({ message: "Проект удалён" });
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── API: Commands & Workflows ────────────────────────────────────────────
+
+function extractVariables(text: string): string[] {
+  if (!text) return [];
+  const matches = text.match(/\{\{([^}]+)\}\}/g);
+  if (!matches) return [];
+  return Array.from(new Set(matches.map(m => m.replace(/[{}]/g, '').trim()))).filter(Boolean);
+}
+
+function commandToDb(data: any, userId: string) {
+  const autoVars = extractVariables(data.commandText || '');
+  const combinedVars = Array.from(new Set([...(data.variables || []), ...autoVars]));
+  return {
+    user_id: userId,
+    title: data.title,
+    command_text: data.commandText,
+    description: data.description || null,
+    category: data.category || 'other',
+    skill_id: data.skillId || null,
+    target_ai: data.targetAi || 'universal',
+    tags: data.tags || [],
+    variables: combinedVars,
+    is_public: data.isPublic ?? true,
+    author_name: data.authorName || '',
+    author_email: data.authorEmail || '',
+    usage_count: data.usageCount ?? 0,
+  };
+}
+
+function commandFromDb(row: any, isFavorite = false) {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    title: row.title,
+    commandText: row.command_text,
+    description: row.description || '',
+    category: row.category || 'other',
+    skillId: row.skill_id || null,
+    skillTitle: row.skills ? row.skills.title : undefined,
+    targetAi: row.target_ai || 'universal',
+    tags: row.tags || [],
+    variables: row.variables || [],
+    isFavorite,
+    isPublic: row.is_public,
+    authorName: row.author_name || '',
+    authorEmail: row.author_email || '',
+    usageCount: row.usage_count || 0,
+    createdAt: row.created_at,
+  };
+}
+
+app.get("/api/commands", authenticate, async (req, res) => {
+  try {
+    const user = (req as any).user;
+    let { data, error } = await supabase.from("commands").select("*, skills(id, title)").order("created_at", { ascending: false });
+    if (error) {
+      const fallback = await supabase.from("commands").select("*").order("created_at", { ascending: false });
+      if (fallback.error) throw fallback.error;
+      data = fallback.data;
+    }
+    const { data: favData } = await supabase.from("user_favorites").select("item_id").eq("user_id", user.uid).eq("item_type", "command");
+    const favIds = new Set((favData || []).map((f: any) => f.item_id));
+    res.json((data || []).map((row: any) => commandFromDb(row, favIds.has(row.id))));
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
+app.post("/api/commands", authenticate, async (req, res) => {
+  try {
+    const user = (req as any).user;
+    if (!req.body.title || !req.body.commandText) return res.status(400).json({ error: "title и commandText обязательны" });
+    const dbRow = commandToDb({ ...req.body, authorName: user.displayName, authorEmail: user.email }, user.uid);
+    const { data, error } = await supabase.from("commands").insert(dbRow).select().single();
+    if (error) throw error;
+    res.status(201).json(commandFromDb(data));
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
+app.put("/api/commands/:id", authenticate, async (req, res) => {
+  try {
+    const user = (req as any).user;
+    const { id } = req.params;
+    const { data: existing } = await supabase.from("commands").select("user_id").eq("id", id).single();
+    if (!existing) return res.status(404).json({ error: "Команда не найдена" });
+    if (existing.user_id !== user.uid && user.role !== "admin") return res.status(403).json({ error: "Нет прав" });
+    const autoVars = extractVariables(req.body.commandText || '');
+    const combinedVars = Array.from(new Set([...(req.body.variables || []), ...autoVars]));
+    const updates: any = {
+      title: req.body.title, command_text: req.body.commandText, description: req.body.description ?? null,
+      category: req.body.category || 'other', skill_id: req.body.skillId || null, target_ai: req.body.targetAi || 'universal',
+      tags: req.body.tags || [], variables: combinedVars, is_public: req.body.isPublic ?? true,
+    };
+    const { data, error } = await supabase.from("commands").update(updates).eq("id", id).select().single();
+    if (error) throw error;
+    res.json(commandFromDb(data));
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
+app.delete("/api/commands/:id", authenticate, async (req, res) => {
+  try {
+    const user = (req as any).user;
+    const { id } = req.params;
+    const { data: existing } = await supabase.from("commands").select("user_id").eq("id", id).single();
+    if (!existing) return res.status(404).json({ error: "Команда не найдена" });
+    if (existing.user_id !== user.uid && user.role !== "admin") return res.status(403).json({ error: "Нет прав" });
+    const { error } = await supabase.from("commands").delete().eq("id", id);
+    if (error) throw error;
+    await supabase.from("user_favorites").delete().eq("item_id", id).eq("item_type", "command");
+    res.json({ message: "Команда удалена" });
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
+app.post("/api/commands/:id/use", authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase.from("commands").select("usage_count").eq("id", id).single();
+    if (error || !data) return res.status(404).json({ error: "Команда не найдена" });
+    const newCount = (data.usage_count || 0) + 1;
+    await supabase.from("commands").update({ usage_count: newCount }).eq("id", id);
+    res.json({ usageCount: newCount });
   } catch (err: any) { res.status(500).json({ error: err.message }); }
 });
 

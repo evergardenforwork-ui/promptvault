@@ -585,21 +585,20 @@ class SqliteAdapter implements DbAdapter {
     const id = data.id || `b-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
     localDb.prepare(`
       INSERT INTO bookmarks (
-        id, user_id, title, url, favicon_url, image, description,
-        category, folder_id, subcategory, tags, is_public, workspace_id,
+        id, user_id, title, url, favicon, image, description,
+        category, folder, tags, is_public, workspace_id,
         author_name, author_email, click_count
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       id,
       data.user_id,
       data.title,
       data.url,
-      data.favicon_url || null,
+      data.favicon || data.favicon_url || null,
       data.image || null,
       data.description || null,
-      data.category || 'general',
-      data.folder_id || 'tools',
-      data.subcategory || '',
+      data.category || 'default',
+      data.folder || data.folder_id || 'Общее',
       JSON.stringify(data.tags || []),
       data.is_public ? 1 : 0,
       data.workspace_id || null,
@@ -616,21 +615,23 @@ class SqliteAdapter implements DbAdapter {
     const existing: any = localDb.prepare('SELECT * FROM bookmarks WHERE id = ?').get(id);
     if (!existing) throw new Error('Закладка не найдена');
 
+    const newFavicon = data.favicon !== undefined ? data.favicon : (data.favicon_url !== undefined ? data.favicon_url : (existing.favicon || existing.favicon_url));
+    const newFolder = data.folder !== undefined ? data.folder : (data.folder_id !== undefined ? data.folder_id : (existing.folder || existing.folder_id));
+
     localDb.prepare(`
       UPDATE bookmarks SET
-        title = ?, url = ?, favicon_url = ?, image = ?, description = ?,
-        category = ?, folder_id = ?, subcategory = ?, tags = ?,
+        title = ?, url = ?, favicon = ?, image = ?, description = ?,
+        category = ?, folder = ?, tags = ?,
         is_public = ?, workspace_id = ?, author_name = ?, author_email = ?
       WHERE id = ?
     `).run(
       data.title ?? existing.title,
       data.url ?? existing.url,
-      data.favicon_url !== undefined ? data.favicon_url : existing.favicon_url,
+      newFavicon,
       data.image !== undefined ? data.image : existing.image,
       data.description !== undefined ? data.description : existing.description,
       data.category ?? existing.category,
-      data.folder_id ?? existing.folder_id,
-      data.subcategory !== undefined ? data.subcategory : existing.subcategory,
+      newFolder,
       data.tags !== undefined ? JSON.stringify(data.tags) : existing.tags,
       data.is_public !== undefined ? (data.is_public ? 1 : 0) : existing.is_public,
       data.workspace_id !== undefined ? data.workspace_id : existing.workspace_id,

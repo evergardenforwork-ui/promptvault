@@ -143,12 +143,11 @@ export function initLocalDatabase() {
       user_id TEXT NOT NULL,
       title TEXT NOT NULL,
       url TEXT NOT NULL,
-      favicon_url TEXT,
-      image TEXT,
       description TEXT,
-      category TEXT DEFAULT 'general',
-      folder_id TEXT DEFAULT 'tools',
-      subcategory TEXT DEFAULT '',
+      folder TEXT DEFAULT 'Общее',
+      category TEXT DEFAULT 'default',
+      image TEXT,
+      favicon TEXT,
       tags TEXT DEFAULT '[]',
       is_public INTEGER DEFAULT 1,
       workspace_id TEXT,
@@ -185,6 +184,18 @@ export function initLocalDatabase() {
       PRIMARY KEY (user_id, item_id, item_type)
     );
   `);
+
+  // Safe schema migrations for existing SQLite databases
+  try {
+    const colInfo: any[] = localDb.prepare('PRAGMA table_info(bookmarks)').all();
+    const colNames = colInfo.map(c => c.name);
+    if (!colNames.includes('folder')) {
+      localDb.exec("ALTER TABLE bookmarks ADD COLUMN folder TEXT DEFAULT 'Общее'");
+    }
+    if (!colNames.includes('favicon')) {
+      localDb.exec("ALTER TABLE bookmarks ADD COLUMN favicon TEXT");
+    }
+  } catch {}
 
   // Seed default admin and default workspace if table is empty
   const userCount = (localDb.prepare('SELECT COUNT(*) as cnt FROM users').get() as any).cnt;

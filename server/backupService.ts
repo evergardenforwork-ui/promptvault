@@ -72,6 +72,7 @@ export async function createFullBackupZip(db: DbAdapter, workspaceId?: string | 
   if (Array.isArray(data.bookmarks)) {
     for (const b of data.bookmarks) {
       if (b.image) b.image = await processImageReference(b.image);
+      if (b.favicon) b.favicon = await processImageReference(b.favicon);
       if (b.favicon_url) b.favicon_url = await processImageReference(b.favicon_url);
     }
   }
@@ -155,6 +156,7 @@ export async function processImportZip(db: DbAdapter, zipBuffer: Buffer): Promis
             if (row.original_image_after) row.original_image_after = resolveImgUrl(row.original_image_after);
             if (row.original_image_slot2) row.original_image_slot2 = resolveImgUrl(row.original_image_slot2);
             if (row.image) row.image = resolveImgUrl(row.image);
+            if (row.favicon) row.favicon = resolveImgUrl(row.favicon);
             if (row.favicon_url) row.favicon_url = resolveImgUrl(row.favicon_url);
 
             let addImgs = row.additional_images;

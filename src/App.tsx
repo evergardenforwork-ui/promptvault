@@ -856,16 +856,7 @@ export default function App() {
         onOpenCreateWorkspace={() => { setEditingWorkspace(null); setIsWorkspaceModalOpen(true); }}
         onOpenEditWorkspace={(ws) => { setEditingWorkspace(ws); setIsWorkspaceModalOpen(true); }}
         stats={sidebarStats}
-        activeSection={activeSection}
-        categories={categories}
-        selectedCategory={selectedCategory}
-        onSelectCategory={setSelectedCategory}
-        showFavoritesOnly={showFavoritesOnly}
-        onToggleFavorites={() => setShowFavoritesOnly(!showFavoritesOnly)}
-        prompts={displayedPrompts}
         user={user}
-        searchQuery={searchQuery}
-        onPickTag={setSearchQuery}
         onExportBackup={handleExportBackup}
         onImportBackup={handleImportBackup}
         onOpenAdmin={user.role === 'admin' ? () => setActiveSection('admin') : undefined}

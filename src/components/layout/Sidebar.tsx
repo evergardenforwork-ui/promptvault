@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Star, Users, Plus, Settings2, Globe, Sparkles, FolderKanban } from 'lucide-react';
-import { Category, Prompt, Workspace } from '../../types';
+import { X, Users, Plus, Settings2, Globe, Sparkles, FolderKanban } from 'lucide-react';
+import { Workspace } from '../../types';
 
 interface SidebarStats {
   promptsCount?: number;
@@ -20,16 +20,7 @@ interface SidebarProps {
   onOpenCreateWorkspace?: () => void;
   onOpenEditWorkspace?: (ws: Workspace) => void;
   stats?: SidebarStats;
-  activeSection?: string;
-  categories: Category[];
-  selectedCategory: string | null;
-  onSelectCategory: (id: string | null) => void;
-  showFavoritesOnly: boolean;
-  onToggleFavorites: () => void;
-  prompts: Prompt[];
   user: any;
-  searchQuery: string;
-  onPickTag: (tag: string) => void;
   onExportBackup: () => void;
   onImportBackup: (file: File) => void;
   onOpenAdmin?: () => void;
@@ -44,21 +35,11 @@ export default function Sidebar({
   onOpenCreateWorkspace,
   onOpenEditWorkspace,
   stats,
-  activeSection = 'prompts',
-  categories,
-  selectedCategory,
-  onSelectCategory,
-  showFavoritesOnly,
-  onToggleFavorites,
-  prompts,
   user,
-  searchQuery,
-  onPickTag,
   onExportBackup,
   onImportBackup,
   onOpenAdmin,
 }: SidebarProps) {
-  const allTags = Array.from(new Set(prompts.flatMap(p => p.tags || [])));
   const currentWorkspaceObj = workspaces.find(w => w.id === selectedWorkspace);
 
   return (
@@ -219,79 +200,7 @@ export default function Sidebar({
               </div>
             )}
 
-            {/* 3. ИЗБРАННОЕ */}
-            <div className="space-y-3">
-              <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Фильтры</h3>
-              <button 
-                onClick={() => { onToggleFavorites(); onClose(); }}
-                className={`w-full flex items-center justify-between p-3 rounded-2xl transition-all cursor-pointer ${
-                  showFavoritesOnly 
-                    ? "bg-sky-400 text-black font-bold shadow-md shadow-sky-500/20" 
-                    : "bg-zinc-50 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <Star size={17} fill={showFavoritesOnly ? "currentColor" : "none"} />
-                  <span className="text-sm font-bold">Избранное</span>
-                </div>
-                <span className="text-xs opacity-70 font-bold">{prompts.filter(p => p.isFavorite).length}</span>
-              </button>
-            </div>
-
-            {/* 4. КАТЕГОРИИ */}
-            {categories.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Категории</h3>
-                <div className="grid gap-1.5 max-h-48 overflow-y-auto pr-1">
-                  {categories.map(cat => {
-                    const count = prompts.filter(p => p.category === cat.name).length;
-                    const isActive = selectedCategory === cat.name;
-                    return (
-                      <button 
-                        key={cat.id}
-                        onClick={() => { onSelectCategory(isActive ? null : cat.name); onClose(); }}
-                        className={`flex items-center justify-between p-2.5 rounded-xl transition-all group cursor-pointer text-xs font-bold ${
-                          isActive 
-                            ? "bg-sky-400 text-black shadow-sm" 
-                            : "bg-zinc-50 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-950 dark:hover:text-zinc-200 border border-zinc-200 dark:border-transparent"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <span className="text-base">{cat.emoji}</span>
-                          <span>{cat.name}</span>
-                        </div>
-                        <span className="text-[10px] opacity-60">{count}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* 5. ТЕГИ */}
-            {allTags.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Облако тегов</h3>
-                <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto">
-                  {allTags.map(tag => (
-                    <button 
-                      key={tag}
-                      type="button"
-                      onClick={() => { onPickTag(tag); onClose(); }}
-                      className={`px-2.5 py-1 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
-                        searchQuery === tag 
-                          ? "border-sky-400 text-sky-500 dark:text-sky-400 bg-sky-500/10" 
-                          : "border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-200"
-                      }`}
-                    >
-                      #{tag}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 6. ADMIN & BACKUP */}
+            {/* 3. ADMIN & BACKUP */}
             {user && user.role === 'admin' && (
               <div className="space-y-3 mt-auto pt-4 border-t border-zinc-200 dark:border-zinc-900 shrink-0">
                 {onOpenAdmin && (

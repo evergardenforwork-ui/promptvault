@@ -77,7 +77,7 @@ promptvault/
         ├── skills/           # SkillsSection, SkillCard, SkillForm, SkillSpaceView, space/*
         ├── git/              # GitProjectsSection, GitProjectCard, GitProjectForm, AiSmartParserModal, GitProjectView
         ├── commands/         # CommandsSection, CommandCard, CommandForm, CommandFillModal
-        └── bookmarks/        # BookmarksSection, BookmarkCard, BookmarkForm, FolderCreateModal
+        └── bookmarks/        # BookmarksSection, BookmarkCard, BookmarkForm, FolderCreateModal, bookmarkTreeUtils.ts
 ```
 
 ---
@@ -85,12 +85,12 @@ promptvault/
 ## 🛠 Технологический стек
 
 *   **Frontend**: React (v19), Vite (v6), Tailwind CSS (v4), Framer Motion (`motion` v12), Lucide React, React Markdown.
-*   **Backend / DB**: Node.js + Express.js (`server.ts` dev, `api/index.ts` prod) + Supabase (PostgreSQL + Supabase Storage).
+*   **Backend / DB**: Node.js + Express.js (`server.ts` dev, `api/index.ts` prod) + Dual-Engine (Cloud Supabase / Zero-Config Local SQLite `better-sqlite3`).
 *   **ИИ**: Google Gemini SDK (`@google/genai`), модель `gemini-3.1-flash-lite` (активна для AI Smart Parser).
 
 ---
 
-## 🗄 Структура Базы Данных (Supabase Cloud PostgreSQL)
+## 🗄 Структура Базы Данных (Supabase Cloud PostgreSQL / Local SQLite)
 
 1. **`users`** — аккаунты, роли (`admin`, `user`), bcrypt-хэши паролей.
 2. **`workspaces`** — изолированные рабочие пространства и под-профили пользователя (1С, Дизайн, Личное и др.).
@@ -99,7 +99,7 @@ promptvault/
 5. **`skill_hints`** — готовые подсказки-промпты для быстрого применения конкретного скилла в ИИ.
 6. **`git_projects`** — каталог полезных репозиториев, агентов и тулзов с фичами, гайдом по установке и AI-парсером.
 7. **`commands`** — хаб быстрых команд, инструкций и сниппетов со смарт-параметрами `{{...}}` и связью со скиллами.
-8. **`bookmarks`** — каталог веб-закладок и сервисов с 2-уровневыми папками, подкатегориями, авто-Favicon и счетчиком кликов.
+8. **`bookmarks`** — каталог веб-закладок и сервисов с бесконечной древовидной структурой папок (`folder: "A / B / C"`), хлебными крошками, авто-Favicon и счетчиком кликов.
 9. **`categories`** — пользовательские и системные категории для группировки.
 10. **`chats`** — история диалогов с Gemini.
 11. **`user_favorites`** — полиморфная таблица личного избранного.

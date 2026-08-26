@@ -439,7 +439,7 @@ npm install bcryptjs @types/bcryptjs
 | Каталог репозиториев и тулзов | ✅ Готово | `GitProjectsSection.tsx`, grid/list |
 | Карточки проектов с бейджами и ссылками | ✅ Готово | `GitProjectCard.tsx` |
 | Полноэкранный просмотр с аккордеонами | ✅ Готово | `GitProjectView.tsx` (Фичи, Установка, Заметки) |
-| 🪄 Gemini 3.1 AI Smart Parser | ✅ Готово | `AiSmartParserModal.tsx` (URL/текст/фото → JSON) |
+| 🪄 Gemini 3.1 AI Smart Parser | ✅ Готово | `AiSmartParserModal.tsx` (мультимодальный ввод: URL + текст + до 4 скриншотов одновременно → JSON) |
 | База данных и CRUD API | ✅ Готово | `scripts/create_git_projects_table.sql`, `/api/git-projects` |
 
 ### Команды & Инструкции (AI Workflows) ⚡
@@ -457,8 +457,11 @@ npm install bcryptjs @types/bcryptjs
 
 | Фича | Статус | Примечание |
 |------|--------|-----------|
-| Двухуровневая система папок и подкатегорий | ✅ Готово | `BookmarksSection.tsx`, как в браузере |
-| Создание кастомных папок и подкатегорий | ✅ Готово | `FolderCreateModal.tsx` с выбором emoji |
+| Древовидная бесконечная структура папок | ✅ Готово | `folder: "A / B / C"`, библиотека `bookmarkTreeUtils.ts` |
+| Интерактивные хлебные крошки & кнопка Назад | ✅ Готово | `BookmarksSection.tsx`, `📁 Все > 🤖 AI > 📷 Фото` |
+| Компактная сетка подпапок над сайтами | ✅ Готово | 72px карточки с emoji, названиями и счётчиками |
+| Древовидный селектор папки в форме | ✅ Готово | `BookmarkForm.tsx` с отступами `↳` и предзаполнением пути |
+| Создание кастомных папок и подкатегорий | ✅ Готово | `FolderCreateModal.tsx` с выбором родительской папки |
 | Карточка сайта с баннером и Favicon | ✅ Готово | `BookmarkCard.tsx`, Grid/List |
 | 1-Click переход и подсчёт переходов | ✅ Готово | `api.clickBookmark` (`🔥 clickCount`) |
 | Авто-парсинг домена и Favicon при вводе URL | ✅ Готово | `BookmarkForm.tsx` |

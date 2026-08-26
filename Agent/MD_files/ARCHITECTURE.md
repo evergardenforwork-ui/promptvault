@@ -142,10 +142,11 @@ promptvault/
 │   │   │   ├── CommandForm.tsx            ← Форма + вставка {{param}} переменных
 │   │   │   └── CommandFillModal.tsx       ← Модалка заполнения параметров
 │   │   └── bookmarks/                 ← 🌐 Web Bookmarks Hub раздел
-│   │       ├── BookmarksSection.tsx       ← Папки-вкладки + Подкатегории + Тулбар
+│   │       ├── BookmarksSection.tsx       ← Браузерная иерархия + Хлебные крошки + Сетка подпапок
 │   │       ├── BookmarkCard.tsx           ← Карточка сайта + 1-Click Open/Copy
-│   │       ├── BookmarkForm.tsx           ← Форма + авто-Favicon/домен
-│   │       └── FolderCreateModal.tsx      ← Модалка создания папок/подкатегорий
+│   │       ├── BookmarkForm.tsx           ← Форма + Древовидный селектор папки + Favicon/скриншот
+│   │       ├── FolderCreateModal.tsx      ← Модалка создания папок/подпапок с выбором родителя
+│   │       └── bookmarkTreeUtils.ts       ← Расчет дерева путей, отступов и счетчиков сайтов
 │   ├── hooks/
 │   │   ├── useTheme.ts                    ← Двухтемный режим (dark/light) + localStorage
 │   │   ├── useHotkeys.ts                  ← Глобальные горячие клавиши (Ctrl+K, Esc, etc.)

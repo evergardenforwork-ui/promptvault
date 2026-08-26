@@ -160,10 +160,11 @@ superbasetest/
     │   │   └── CommandFillModal.tsx      ← Модалка заполнения плейсхолдеров {{...}}
     │   │
     │   └── bookmarks/                   ← 🌐 Раздел Закладок & Веб-сайтов
-    │       ├── BookmarksSection.tsx      ← Оркестратор: папки-вкладки, подкатегории, тулбар, сетка/список
+    │       ├── BookmarksSection.tsx      ← Оркестратор: браузерная иерархия, хлебные крошки, тулбар, сетка/список
     │       ├── BookmarkCard.tsx          ← Карточка сайта (grid/list) + 1-клик открытие и копирование
-    │       ├── BookmarkForm.tsx          ← Форма создания/редактирования + авто-Favicon и скриншот
-    │       └── FolderCreateModal.tsx     ← Модалка создания кастомной папки/подкатегории
+    │       ├── BookmarkForm.tsx          ← Форма создания/редактирования + древовидный выбор папки + Favicon/скриншот
+    │       ├── FolderCreateModal.tsx     ← Модалка создания папки/подпапки с выбором родителя
+    │       └── bookmarkTreeUtils.ts      ← Утилиты расчета дерева папок, путей и счетчиков сайтов
     │
     ├── services/
     │   ├── api.ts
@@ -289,16 +290,14 @@ AssistantConfig { systemPrompt }
 
 ### ✅ Всё реализовано и работает:
 - Модульная архитектура секций (`PromptsSection.tsx`, `SkillsSection.tsx`, `UsersSection.tsx`, `GitProjectsSection.tsx`, `CommandsSection.tsx`, `BookmarksSection.tsx`)
-- Supabase PostgreSQL (таблицы: users, prompts, skills, skill_hints, categories, chats, user_favorites, git_projects, commands, bookmarks)
-- Supabase Storage (бакеты: prompt-images, prompt-files)
-- `vercel.json` и `api/index.ts` готовы к деплою на Vercel
-- Полнофункциональный прототип `test/index.html` v2.1 протестирован и одобрен пользователем
-- **🐙 Раздел «Git Hub & AI Tools»** — ПОЛНОСТЬЮ РЕАЛИЗОВАН:
-  - CRUD API `/api/git-projects`, Gemini 3.1 Smart Parser, `GitProjectsSection`, `GitProjectCard`, `GitProjectForm`, `GitProjectView`.
-- **⚡ Раздел «AI Commands & Workflows»** — ПОЛНОСТЬЮ РЕАЛИЗОВАН:
+- **🚀 Dual-Engine Architecture**: Cloud Supabase (PostgreSQL + Storage) ИЛИ Zero-Config Local SQLite (`better-sqlite3` + `data/uploads/`) с автоматическим переключением через `server/dbAdapter.ts`
+- **💾 Full-Media Backup & Workspaces Export**: `backupService.ts` выгружает картинки в ZIP, подменяет пути, импортирует на лету и поддерживает выгрузку конкретного воркспейса
+- **🐙 Раздел «Git Hub & AI Tools»**:
+  - CRUD API `/api/git-projects`, Gemini 3.1 Smart Parser (мультимодальный ввод: URL + текст + до 4 скриншотов одновременно), `GitProjectsSection`, `GitProjectCard`, `GitProjectForm`, `GitProjectView`.
+- **⚡ Раздел «AI Commands & Workflows»**:
   - CRUD API `/api/commands`, 1-клик копирование, смарт-параметры `{{param}}` (`CommandFillModal`), привязка к скиллам, `CommandsSection`, `CommandCard`, `CommandForm`.
-- **🌐 Раздел «Web Bookmarks & Sites Hub»** — ПОЛНОСТЬЮ РЕАЛИЗОВАН:
-  - CRUD API `/api/bookmarks`, 2-уровневые вкладки папок и подкатегорий, создание папок на лету (`FolderCreateModal`), авто-Favicon/домен, `BookmarksSection`, `BookmarkCard`, `BookmarkForm`.
+- **🌐 Раздел «Web Bookmarks & Sites Hub»**:
+  - CRUD API `/api/bookmarks`, древовидная иерархия папок с бесконечной вложенностью (`folder: "A / B / C"`), интерактивные хлебные крошки (`📁 Все закладки > 🤖 AI > 📷 Фото`), компактная сетка подпапок со счётчиками сайтов, создание папок на лету (`FolderCreateModal`), авто-Favicon/домен, `BookmarksSection`, `BookmarkCard`, `BookmarkForm`, `bookmarkTreeUtils.ts`.
 
 ### 🗄️ SQL Миграция для Supabase:
 - Единый скрипт: [`scripts/all_new_tables_migration.sql`](scripts/all_new_tables_migration.sql) — создать все 4 новые таблицы (`git_projects`, `commands`, `bookmarks`, `skill_hints`) в один клик.

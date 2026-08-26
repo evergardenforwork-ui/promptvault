@@ -26,9 +26,9 @@
 Содержит **5 главных хабов (вкладок)**:
 1. 📷 **Промпты (`prompts`)**: шаблоны промптов с 6 layout-макетами фото (До/После, Сплит и др.), кроппером и подсекциями.
 2. 📦 **Skills & AI (`skills`)**: веб-IDE (VS Code-стиль) с деревом файлов, inline-редактором (Ctrl+S), сборкой кастомных ZIP на лету и панелью подсказок `SkillHintsPanel`.
-3. 🐙 **Git Hub & Tools (`git`)**: каталог репозиториев, тулзов и моделей с аккордеонами и 🪄 **Gemini 3.1 AI Smart Parser** (URL/текст/скриншот → JSON).
+3. 🐙 **Git Hub & Tools (`git`)**: каталог репозиториев, тулзов и моделей с аккордеонами и 🪄 **Gemini 3.1 AI Smart Parser** (мультимодальный ввод: URL + текст + до 4 скриншотов одновременно → JSON).
 4. ⚡ **Команды & Инструкции (`commands`)**: хаб быстрых сниппетов и команд с 1-клик копированием (`usageCount`), смарт-модалкой заполнения параметров `{{param}}` и связью со скиллами.
-5. 🌐 **Закладки & Веб-сайты (`bookmarks`)**: каталог сайтов с 2-уровневыми папками-вкладками, подкатегориями, авто-Favicon/доменом и счетчиком переходов.
+5. 🌐 **Закладки & Веб-сайты (`bookmarks`)**: каталог сайтов с бесконечной древовидной структурой папок (браузерный стиль), хлебными крошками, компактной сеткой подпапок, авто-Favicon/доменом и счетчиком переходов.
 
 ---
 
@@ -123,7 +123,7 @@ superbasetest/
         ├── skills/         ← SkillsSection, SkillCard, SkillForm, SkillSpaceView, space/*
         ├── git/            ← GitProjectsSection, GitProjectCard, GitProjectForm, AiSmartParserModal, GitProjectView
         ├── commands/       ← CommandsSection, CommandCard, CommandForm, CommandFillModal
-        ├── bookmarks/      ← BookmarksSection, BookmarkCard, BookmarkForm, FolderCreateModal
+        ├── bookmarks/      ← BookmarksSection, BookmarkCard, BookmarkForm, FolderCreateModal, bookmarkTreeUtils.ts
         └── admin/          ← UsersSection.tsx
 ```
 

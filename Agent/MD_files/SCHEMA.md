@@ -448,7 +448,7 @@ erDiagram
 |---|---|---|---|
 | POST | `/api/gemini/chat` | ✅ | Чат с историей ⏸️ (временно не используется) |
 | POST | `/api/gemini/analyze` | ✅ | Анализ изображения ⏸️ (временно не используется) |
-| POST | `/api/gemini/parse-tool` | ✅ | 🪄 AI Smart Parser: URL / текст / скриншот → JSON карточки Git-проекта |
+| POST | `/api/gemini/parse-tool` | ✅ | 🪄 AI Smart Parser: мультимодальный ввод (URL + текст + до 4 скриншотов одновременно) → JSON карточки Git-проекта |
 
 ### `/api/git-projects`
 | Метод | Путь | Auth | Описание |

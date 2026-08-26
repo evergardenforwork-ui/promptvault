@@ -619,26 +619,102 @@ app.get("/api/export", authenticate, async (req, res) => {
   const user = (req as any).user;
   if (user.role !== "admin") return res.status(403).json({ message: "Только администратор" });
   try {
-    const [prompts, skills, categories, users, chats, favorites] = await Promise.all([
+    const [
+      prompts,
+      skills,
+      skillHints,
+      gitProjects,
+      commands,
+      bookmarks,
+      workspaces,
+      categories,
+      users,
+      chats,
+      favorites
+    ] = await Promise.all([
       supabase.from("prompts").select("*"),
       supabase.from("skills").select("*"),
+      supabase.from("skill_hints").select("*"),
+      supabase.from("git_projects").select("*"),
+      supabase.from("commands").select("*"),
+      supabase.from("bookmarks").select("*"),
+      supabase.from("workspaces").select("*"),
       supabase.from("categories").select("*"),
       supabase.from("users").select("uid, name, email, role"),
       supabase.from("chats").select("*"),
       supabase.from("user_favorites").select("*"),
     ]);
+
     const zip = new AdmZip();
+    zip.addFile("workspaces.json", Buffer.from(JSON.stringify(workspaces.data || [], null, 2)));
     zip.addFile("prompts.json", Buffer.from(JSON.stringify(prompts.data || [], null, 2)));
     zip.addFile("skills.json", Buffer.from(JSON.stringify(skills.data || [], null, 2)));
+    zip.addFile("skill_hints.json", Buffer.from(JSON.stringify(skillHints.data || [], null, 2)));
+    zip.addFile("git_projects.json", Buffer.from(JSON.stringify(gitProjects.data || [], null, 2)));
+    zip.addFile("commands.json", Buffer.from(JSON.stringify(commands.data || [], null, 2)));
+    zip.addFile("bookmarks.json", Buffer.from(JSON.stringify(bookmarks.data || [], null, 2)));
     zip.addFile("categories.json", Buffer.from(JSON.stringify(categories.data || [], null, 2)));
     zip.addFile("users.json", Buffer.from(JSON.stringify(users.data || [], null, 2)));
     zip.addFile("chats.json", Buffer.from(JSON.stringify(chats.data || [], null, 2)));
     zip.addFile("favorites.json", Buffer.from(JSON.stringify(favorites.data || [], null, 2)));
+
     const buffer = zip.toBuffer();
     res.setHeader("Content-Type", "application/zip");
     res.setHeader("Content-Disposition", `attachment; filename=promptvault_backup_${Date.now()}.zip`);
     res.send(buffer);
-  } catch (e: any) { res.status(500).json({ message: e.message || "Ошибка экспорта" }); }
+  } catch (e: any) {
+    console.error("Export Error:", e);
+    res.status(500).json({ message: e.message || "Ошибка экспорта" });
+  }
+});
+
+app.post("/api/import", authenticate, async (req, res) => {
+  const user = (req as any).user;
+  if (user.role !== "admin") return res.status(403).json({ message: "Только администратор" });
+
+  const { file } = req.body;
+  if (!file) return res.status(400).json({ message: "Файл не передан" });
+
+  try {
+    const matches =
+      file.match(/^data:application\/[a-zA-Z+-]+;base64,(.+)$/) ||
+      file.match(/^data:charset=binary;base64,(.+)$/);
+    const base64Data = matches ? matches[1] : file;
+    const buffer = Buffer.from(base64Data, "base64");
+
+    const zip = new AdmZip(buffer);
+    const zipEntries = zip.getEntries();
+
+    for (const entry of zipEntries) {
+      const entryName = entry.entryName;
+      const content = entry.getData().toString("utf8");
+      const rows = JSON.parse(content);
+      if (!Array.isArray(rows) || rows.length === 0) continue;
+
+      if (entryName === "workspaces.json") {
+        await supabase.from("workspaces").upsert(rows, { onConflict: "id" });
+      } else if (entryName === "prompts.json") {
+        await supabase.from("prompts").upsert(rows, { onConflict: "id" });
+      } else if (entryName === "skills.json") {
+        await supabase.from("skills").upsert(rows, { onConflict: "id" });
+      } else if (entryName === "skill_hints.json") {
+        await supabase.from("skill_hints").upsert(rows, { onConflict: "id" });
+      } else if (entryName === "git_projects.json") {
+        await supabase.from("git_projects").upsert(rows, { onConflict: "id" });
+      } else if (entryName === "commands.json") {
+        await supabase.from("commands").upsert(rows, { onConflict: "id" });
+      } else if (entryName === "bookmarks.json") {
+        await supabase.from("bookmarks").upsert(rows, { onConflict: "id" });
+      } else if (entryName === "categories.json") {
+        await supabase.from("categories").upsert(rows, { onConflict: "id" });
+      }
+    }
+
+    res.json({ message: "Импорт успешно завершен" });
+  } catch (e: any) {
+    console.error("Import Error:", e);
+    res.status(500).json({ message: e.message || "Ошибка импорта данных" });
+  }
 });
 
 // ─── API: Gemini ──────────────────────────────────────────────────────────────
@@ -681,6 +757,13 @@ async function generateWithTimeout(params: any): Promise<any> {
   });
   try {
     return await Promise.race([ai.models.generateContent(params), timeoutPromise]);
+  } catch (err: any) {
+    if (params.model !== "gemini-2.0-flash" && (err?.message?.includes("not found") || err?.message?.includes("404") || err?.status === 404)) {
+      console.warn(`⚠️ [Gemini] Model ${params.model} not available, falling back to gemini-2.0-flash`);
+      const fallbackParams = { ...params, model: "gemini-2.0-flash" };
+      return await Promise.race([ai.models.generateContent(fallbackParams), timeoutPromise]);
+    }
+    throw err;
   } finally {
     clearTimeout(timer!);
   }

@@ -12,27 +12,26 @@
 |---|---|
 | **Название** | PromptVault |
 | **Описание** | Персональное веб-приложение для хранения промптов, веб-IDE скиллов, каталога Git Tools, хаба быстрых команд и браузерных закладок с поддержкой 2 тем (🌙 Dark / ☀️ Light). |
-| **Стек технологий** | React 19, TypeScript, Vite 6, Tailwind CSS v4, Express.js (dev), Vercel Serverless (prod), Supabase (PostgreSQL + Storage), Google Gemini API (`gemini-3.1-flash-lite`) |
+| **Стек технологий** | React 19, TypeScript, Vite 6, Tailwind CSS v4, Express.js, Vercel Serverless, Dual-Engine (☁️ Supabase PostgreSQL / 💻 Local SQLite `better-sqlite3`), Google Gemini API (`gemini-3.1-flash-lite`) |
 
-### 🛠️ Как запустить локально
+### ⚡ Как запустить (1-клик запуск на Windows)
+
+- Просто дважды кликните по файлу **`start_promptvault.bat`** (или `local/start_local.bat`).
+- Всё запустится локально на SQLite без необходимости регистрироваться в облаке!
+- Подробный гайд для друзей: [`local/README_LOCAL.md`](local/README_LOCAL.md).
+
+### 🛠️ Как запустить через Терминал
 
 1. Установите зависимости:
    ```bash
    npm install
    ```
-2. Настройте `.env` (см. `.env.example`):
-   ```env
-   SUPABASE_URL=https://your-project.supabase.co
-   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-   GEMINI_API_KEY=your_gemini_api_key
-   ```
-3. Выполните единый SQL скрипт в Supabase SQL Editor:
-   - `scripts/all_new_tables_migration.sql` (создаст все 4 новые таблицы и обновит favorites)
-4. Запустите dev-сервер:
+2. (Опционально) Настройте `.env` для облачного Supabase режима (см. `.env.example`). Если `.env` отсутствует, сервер автоматически стартует в автономном локальном режиме (SQLite).
+3. Запустите dev-сервер:
    ```bash
    npm run dev
    ```
-5. Откройте браузер по адресу: `http://localhost:3000`
+4. Откройте браузер по адресу: `http://localhost:3000`
 
 ### 🏗️ Сборка и проверка типов
 

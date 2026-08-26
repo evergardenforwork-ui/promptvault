@@ -68,7 +68,7 @@ export default function App() {
   const [viewingGitProject, setViewingGitProject] = useState<GitProject | null>(null);
   const [editingCommand, setEditingCommand] = useState<CommandItem | null>(null);
   const [editingBookmark, setEditingBookmark] = useState<BookmarkItem | null>(null);
-  const [toasts, setToasts] = useState<{ id: number, message: React.ReactNode, type?: 'success' | 'error' }[]>([]);
+  const [toasts, setToasts] = useState<{ id: number, message: React.ReactNode, type?: 'success' | 'error' | 'info' }[]>([]);
   const [sortBy, setSortBy] = useState<'date' | 'name' | 'usage'>('date');
   const [sourceFilter, setSourceFilter] = useState<'all' | 'my-all' | 'my-own' | 'my-web' | 'others'>('all');
   const [mediaFilter, setMediaFilter] = useState<'all' | MediaType>('all');
@@ -80,7 +80,7 @@ export default function App() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const formCloseRef = useRef<(() => void) | null>(null);
 
-  const addToast = useCallback((message: React.ReactNode, type: 'success' | 'error' = 'success', durationMs = 3000) => {
+  const addToast = useCallback((message: React.ReactNode, type: 'success' | 'error' | 'info' = 'success', durationMs = 3000) => {
     const id = Date.now();
     setToasts((prev) => [...prev, { id, message, type }]);
     setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), durationMs);
@@ -250,9 +250,10 @@ export default function App() {
     addToast('Вы вышли из системы');
   };
 
-  const handleExportBackup = useCallback(async () => {
+  const handleExportBackup = useCallback(async (workspaceId?: string) => {
     try {
-      const blob = await api.exportBackup();
+      addToast('Формирование бэкапа со всеми медиафайлами...', 'info');
+      const blob = await api.exportBackup(workspaceId);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -264,6 +265,25 @@ export default function App() {
       addToast('Резервная копия скачана');
     } catch (err: any) {
       addToast(err.message || 'Не удалось экспортировать данные', 'error');
+    }
+  }, [addToast]);
+
+  const handleExportWorkspace = useCallback(async (workspaceId: string, workspaceName: string) => {
+    try {
+      addToast(`Формирование архива для пространства «${workspaceName}»...`, 'info');
+      const blob = await api.exportBackup(workspaceId);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const safeName = workspaceName.toLowerCase().replace(/[^a-z0-9а-яё_-]/gi, '_');
+      a.download = `promptvault_workspace_${safeName}_${new Date().toISOString().split('T')[0]}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      addToast(`Пространство «${workspaceName}» успешно экспортировано!`, 'success');
+    } catch (err: any) {
+      addToast(err.message || 'Не удалось экспортировать пространство', 'error');
     }
   }, [addToast]);
 
@@ -874,6 +894,7 @@ export default function App() {
             }}
             onSave={handleSaveWorkspace}
             onDelete={handleDeleteWorkspace}
+            onExport={handleExportWorkspace}
           />
         )}
         {isCategoryModalOpen && (

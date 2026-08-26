@@ -9,9 +9,10 @@
 ## 📂 Архитектура и структура проекта
 
 - **Frontend**: React 19, TypeScript, Vite 6, Tailwind CSS v4 (@theme), Framer Motion (`motion` v12), Lucide React, React Markdown (GFM + frontmatter).
-- **Backend / API**: Express.js (`server.ts`) для локальной разработки + Vercel Serverless Function (`api/index.ts`) для production.
-- **База данных**: Supabase PostgreSQL (таблицы `users`, `workspaces`, `prompts`, `skills`, `skill_hints`, `git_projects`, `commands`, `bookmarks`, `categories`, `chats`, `user_favorites`).
-- **Файловое хранилище**: Supabase Storage (бакеты `prompt-images`, `prompt-files`).
+- **Backend / API**: Express.js (`server.ts`) с автоопределением движка + Vercel Serverless Function (`api/index.ts`) для production.
+- **База данных & Storage (Dual-Engine)**: 
+  - ☁️ **Cloud Режим**: Supabase PostgreSQL + Supabase Storage (`prompt-images`).
+  - 💻 **Local Режим (Zero-Config)**: локальный SQLite (`data/promptvault.db` через `better-sqlite3`) + локальная папка `data/uploads/` (работает автономно без интернета и регистрации в Supabase).
 - **ИИ-функции**: Google Gemini API (`@google/genai`, модель `gemini-3.1-flash-lite` — активна для AI Smart Parser).
 
 ---

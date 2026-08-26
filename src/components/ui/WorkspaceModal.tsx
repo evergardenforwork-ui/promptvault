@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Check, Trash2, Palette } from 'lucide-react';
+import { X, Check, Trash2, Palette, Download } from 'lucide-react';
 import { Workspace, WORKSPACE_COLOR_OPTIONS } from '../../types';
 
 interface WorkspaceModalProps {
@@ -8,6 +8,7 @@ interface WorkspaceModalProps {
   onClose: () => void;
   onSave: (data: { name: string; icon: string; color: string }) => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
+  onExport?: (id: string, name: string) => Promise<void>;
   workspace?: Workspace | null;
 }
 
@@ -18,6 +19,7 @@ export const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
   onClose,
   onSave,
   onDelete,
+  onExport,
   workspace,
 }) => {
   const [name, setName] = useState('');
@@ -188,18 +190,29 @@ export const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
 
             {/* Actions */}
             <div className="flex items-center justify-between pt-4 border-t border-zinc-200 dark:border-zinc-800">
-              {workspace && onDelete ? (
-                <button
-                  type="button"
-                  onClick={handleDelete}
-                  disabled={isSubmitting}
-                  className="px-3 py-2 text-xs font-medium text-rose-500 hover:text-rose-600 dark:text-rose-400 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/30 border border-rose-200 dark:border-rose-900/40 rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <Trash2 className="w-3.5 h-3.5" /> Удалить
-                </button>
-              ) : (
-                <div />
-              )}
+              <div className="flex items-center gap-2">
+                {workspace && onDelete && (
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    disabled={isSubmitting}
+                    className="px-3 py-2 text-xs font-medium text-rose-500 hover:text-rose-600 dark:text-rose-400 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/30 border border-rose-200 dark:border-rose-900/40 rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" /> Удалить
+                  </button>
+                )}
+                {workspace && onExport && (
+                  <button
+                    type="button"
+                    onClick={() => onExport(workspace.id, workspace.name)}
+                    disabled={isSubmitting}
+                    className="px-3 py-2 text-xs font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 hover:bg-sky-50 dark:hover:bg-sky-950/30 border border-sky-200 dark:border-sky-900/40 rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer"
+                    title="Скачать ZIP со всеми материалами и фото этого пространства"
+                  >
+                    <Download className="w-3.5 h-3.5" /> Экспорт в ZIP
+                  </button>
+                )}
+              </div>
 
               <div className="flex items-center gap-2">
                 <button

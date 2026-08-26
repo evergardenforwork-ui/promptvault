@@ -20,16 +20,16 @@
 | Frontend | React 19, TypeScript, Vite 6, Tailwind CSS v4 |
 | Темизация | Dual Theme Engine (ThoughtLab Dark / shadcn Light) |
 | Анимации | Framer Motion (`motion` v12) |
-| Backend | Express.js (`server.ts`) — API + Vite dev-сервер |
+| Backend | Express.js (`server.ts`) — API + Vite dev-сервер (Cloud & Local SQLite dual-engine) |
 | Serverless | `api/index.ts` — Express adapter для Vercel Functions |
-| База данных | Supabase (PostgreSQL) + Supabase Storage (бакеты `prompt-images`, `prompt-files`) |
+| База данных | **Dual-Engine**: ☁️ Supabase (PostgreSQL + Storage) ИЛИ 💻 Local SQLite (`better-sqlite3` + `data/uploads/`) |
 | ИИ | Google Gemini API (`gemini-3.1-flash-lite` в `/api/gemini/parse-tool`) |
 | Иконки | `lucide-react` |
 | Markdown | `react-markdown` + `remark-gfm` + `remark-frontmatter` |
 | ZIP | `jszip` (клиент) + `adm-zip` (сервер) |
 | Пароли | `bcryptjs` |
 
-**Запуск**: `npm run dev` → `http://localhost:3000` (через `tsx server.ts`)
+**Запуск**: `npm run dev` → `http://localhost:3000` (через `tsx server.ts` — работает с Supabase или офлайн на SQLite)
 **Сборка**: `npm run build`
 **Очистка**: `npm run clean` (`npx rimraf dist`)
 **Линтинг**: `npm run lint` (TypeScript `--noEmit`)
@@ -44,7 +44,12 @@ superbasetest/
 ├── AGENTS.md               ← 🤖 Универсальная инструкция для всех ИИ-агентов
 ├── CLAUDE.md               ← 🟣 Входной файл для Claude Code
 ├── CHANGELOG.md            ← 📜 Глобальный журнал изменений и Git-история
-├── server.ts               ← Express API + Vite dev-сервер (единый процесс, dev only)
+├── server.ts               ← Express API + Vite dev-сервер (Cloud & Local SQLite dual-engine)
+├── server/                 ← ⚙️ Серверные модули хранилища и бэкапа
+│   ├── localDb.ts          ← Инициализатор SQLite базы (data/promptvault.db)
+│   ├── dbAdapter.ts        ← Универсальный адаптер БД (Cloud Supabase ↔ Local SQLite)
+│   ├── mediaStorage.ts     ← Унифицированное сохранение и чтение медиа (Storage ↔ data/uploads/)
+│   └── backupService.ts    ← Умный Full-Media экспорт/импорт (выгрузка и распаковка картинок в ZIP)
 ├── api/
 │   └── index.ts            ← Express adapter для Vercel Serverless (production)
 ├── vercel.json             ← Vercel конфиг: /api/* → api/index.ts, /* → dist/

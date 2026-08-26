@@ -18,11 +18,23 @@ promptvault/
 ├── Dark_design.md            # 🌑 Спецификация тёмной темы (ThoughtLab Obsidian)
 ├── light_design.md           # ☀️ Спецификация светлой темы (shadcn Frosted Paper)
 ├── .env.example              # Шаблон переменных окружения (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GEMINI_API_KEY)
+├── start_promptvault.bat     # ⚡ Запуск локального сервера в 1 клик для Windows 11/10
 ├── vercel.json               # Конфигурация Vercel Serverless деплоя
 ├── api/
 │   └── index.ts              # Express Serverless Adapter для Vercel Functions
+├── server/                   # ⚙️ Модули хранилища и Full-Media бэкапа
+│   ├── localDb.ts            # Инициализатор SQLite базы (data/promptvault.db)
+│   ├── dbAdapter.ts          # Универсальный адаптер БД (Cloud Supabase ↔ Local SQLite)
+│   ├── mediaStorage.ts       # Унифицированное сохранение и чтение медиа (Storage ↔ data/uploads/)
+│   └── backupService.ts      # Умный Full-Media экспорт/импорт (упаковка/распаковка картинок в ZIP)
+├── local/                    # 🚀 Пакет для локального деплоя и автономного запуска
+│   ├── README_LOCAL.md       # Пошаговый гайд по локальному запуску и передаче друзьям
+│   ├── start_local.bat       # Батник запуска для Windows
+│   ├── start_local.sh        # Скрипт запуска для macOS/Linux
+│   ├── backups/              # Папка для складирования .zip архивов
+│   └── exports/              # Папка для экспорта архивов
 ├── package.json              # Скрипты и зависимости Node.js
-├── server.ts                 # Express.js dev-сервер для API + Vite middleware
+├── server.ts                 # Express.js dev-сервер (Cloud & Local SQLite dual-engine) + Vite middleware
 ├── vite.config.ts            # Конфигурация сборщика Vite
 ├── tsconfig.json             # TypeScript конфигурация
 ├── .agents/skills/           # 🧠 Локальные навыки для ИИ-агентов (supabase, postgres, etc.)

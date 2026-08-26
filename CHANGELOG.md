@@ -9,6 +9,7 @@
 
 | Тег / Хеш | Дата | Название / Назначение | Описание |
 | :--- | :--- | :--- | :--- |
+| `c5b19e4` | 2026-08-26 | **🚀 Dual-Engine Architecture (Cloud Supabase ☁️ / Zero-Config Local SQLite 💻) & Full-Media Backup** | Разработана универсальная двухрежимная архитектура: Cloud-режим (Supabase PostgreSQL + Storage) для онлайна и Zero-Config Local-режим (SQLite `better-sqlite3` + `data/uploads/`) для автономной работы и передачи проекта друзьям без настройки Supabase. Реализован Full-Media умный экспорт/импорт (выгрузка и упаковка бинарных картинок в ZIP, авто-подмена путей) и по-пространственный экспорт («Экспорт в ZIP» конкретного воркспейса). |
 | `9d3c52a` | 2026-08-26 | **🧹 Clean Workspaces Sidebar UI** | Очищено боковое меню «Библиотека»: убраны устаревшие рудиментарные блоки первой вкладки (фильтры избранного, категории промптов и облако тегов), которые уже присутствуют на главной рабочей панели каждого хаба. Сайдбар полностью сфокусирован на управлении рабочими пространствами, статистике и администрировании. |
 | `00a98ef` | 2026-08-26 | **✨ Comprehensive Dual-Theme (Light/Dark) Engine & UI Audit** | Полная адаптация всех компонентов, модалок, IDE-панелей и форм под спецификации `Dark_design.md` и `light_design.md`. Устранены хардкодные тёмные стили в `SkillSpaceView`, `SkillHintsPanel`, `SpaceFilePreview`, `SpaceFileTree`, `SkillForm`, `FileTreeViewer`, `CommandsSection`, `CommandForm`, `CommandFillModal`, `BookmarksSection`, `BookmarkForm`, `FolderCreateModal`, `GitProjectsSection`, `GitProjectForm`, `GitProjectView`, `AiSmartParserModal`, `UsersSection`, `PhotoForm`, `PhotoView`, `PhotoCard`, `CategoryForm`, `ImageCropper`. Zero warnings/errors в `npm run lint` и `npm run build`. |
 | `f2488aa` | 2026-08-26 | **🎨 Full Dual-Theme Engine & Favorites Audit** | Исправлен `@custom-variant dark` в Tailwind v4, все 5 карточек (`PhotoCard`, `SkillCard`, `GitProjectCard`, `CommandCard`, `BookmarkCard`) и тулбары секций переведены на двухтемные стили (`bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800`), унифицированы хэндлеры избранного в `App.tsx` и проведена глобальная синхронизация документации. |
@@ -30,6 +31,24 @@
 ---
 
 ## 🗓️ Хронологический журнал изменений
+
+### 🚀 2026-08-26 — Dual-Engine Architecture (Cloud Supabase ☁️ / Zero-Config Local SQLite 💻) & Full-Media Backup
+- **Локальный движок базы данных (`server/localDb.ts`)**:
+  - Создана локальная SQLite-база (`better-sqlite3`) с автоматической инициализацией всех 11 таблиц, дефолтным админом и дефолтным пространством при первом старте.
+  - Нулевая настройка: для запуска локальной версии достаточно `npm run dev` без регистрации в Supabase или создания бакетов.
+- **Универсальный адаптер данных (`server/dbAdapter.ts`)**:
+  - Единый интерфейс `DbAdapter` с автоматическим переключением: если в `.env` есть `SUPABASE_URL` — работает облачный PostgreSQL, если нет или `DB_MODE=local` — работает SQLite.
+- **Хранилище медиа (`server/mediaStorage.ts`)**:
+  - В локальном режиме изображения сохраняются в `data/uploads/images/`, а сервер раздаёт их через `express.static('/uploads')`.
+  - В облачном режиме сохраняется загрузка в Supabase Storage `prompt-images`.
+- **Умный Full-Media Экспорт/Импорт (`server/backupService.ts`)**:
+  - `GET /api/export` (с поддержкой `?workspaceId=`): на лету выкачивает бинарники всех картинок из хранилища, пакует их в `images/` внутри ZIP и подменяет пути в JSON.
+  - `POST /api/import`: распаковывает картинки из архива, сохраняет их локально или загружает в облако и восстанавливает все связи.
+- **Интерфейс**:
+  - В `WorkspaceModal.tsx` добавлена кнопка **«Экспорт в ZIP»** для выгрузки отдельного изолированного воркспейса (например, «1С»).
+  - В `src/services/api.ts` и `src/App.tsx` реализована поддержка `api.exportBackup(workspaceId)`.
+
+---
 
 ### 💼 2026-08-26 — Изолированные рабочие пространства (Workspaces / Под-профили)
 - **База данных Supabase (`scripts/create_workspaces_table.sql`)**:

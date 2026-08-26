@@ -29,8 +29,9 @@ Browser (React 19 SPA) — Dual Theme (Dark Obsidian / Light Paper)
        ├─ /api/gemini/chat       ← Чат с историей (временно не используется)
        ├─ /api/gemini/analyze    ← Анализ изображения (временно не используется)
        └─ /api/gemini/parse-tool ← 🪄 AI Smart Parser (URL / текст / скриншот → JSON)
-        ├─ Supabase (PostgreSQL)   ← Таблицы: users, workspaces, prompts, skills, skill_hints, categories, chats, user_favorites, git_projects, commands, bookmarks
-        ├─ Supabase Storage        ← Бакеты: prompt-images, prompt-files
+        ├─ Storage Engine (Dual Mode):
+        │    ├─ ☁️ Cloud Mode: Supabase (PostgreSQL) + Supabase Storage (prompt-images)
+        │    └─ 💻 Local Mode: SQLite (`data/promptvault.db`) + Local Uploads (`data/uploads/`)
         │
         └─ Google Gemini API (gemini-3.1-flash-lite) — активен для /api/gemini/parse-tool
 ```
@@ -41,15 +42,15 @@ Browser (React 19 SPA) — Dual Theme (Dark Obsidian / Light Paper)
 ┌──────────────────────────────────────┐
 │  Presentation (src/sections/, ui/)   │  React компоненты, формы, карточки, SkillSpaceView
 ├──────────────────────────────────────┤
-│  Hooks & Filters (src/hooks/)        │  usePromptFilters, useSkillFilters, useHotkeys
+│  Hooks & Filters (src/hooks/)        │  usePromptFilters, useSkillFilters, useHotkeys, useTheme
 ├──────────────────────────────────────┤
 │  Services (src/services/)            │  api.ts, gemini.ts
 ├──────────────────────────────────────┤
-│  State (src/App.tsx)                 │  Глобальный state (prompts, skills, categories, user)
+│  State (src/App.tsx)                 │  Глобальный state (prompts, skills, workspaces, user)
 ├──────────────────────────────────────┤
 │  Backend / Serverless Layer          │  Express.js (server.ts dev / api/index.ts Vercel prod)
 ├──────────────────────────────────────┤
-│  Data & Storage Layer                │  Supabase Postgres DB, Buckets (prompt-images, prompt-files)
+│  Data & Storage Layer (Dual-Engine)  │  server/dbAdapter.ts (Supabase Postgres ↔ SQLite promptvault.db)
 └──────────────────────────────────────┘
 ```
 

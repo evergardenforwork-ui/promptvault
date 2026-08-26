@@ -136,9 +136,10 @@ export const api = {
     return data.text;
   },
 
-  async exportBackup(): Promise<Blob> {
+  async exportBackup(workspaceId?: string): Promise<Blob> {
     const token = localStorage.getItem('pv_token');
-    const res = await fetch(`${API_BASE}/export`, {
+    const url = workspaceId ? `${API_BASE}/export?workspaceId=${encodeURIComponent(workspaceId)}` : `${API_BASE}/export`;
+    const res = await fetch(url, {
       headers: {
         ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       },

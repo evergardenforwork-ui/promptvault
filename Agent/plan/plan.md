@@ -354,6 +354,18 @@ npm install bcryptjs @types/bcryptjs
 ⏳ Vercel: подключить репозиторий и настроить переменные окружения
 ```
 
+### Этап 8.1 — Dual-Engine Architecture & Full-Media Backup 🚀 *✅ Завершено*
+
+**Что сделано**:
+```
+✅ Создан локальный движок SQLite (server/localDb.ts на базе better-sqlite3) с авто-инициализацией
+✅ Реализован универсальный адаптер DbAdapter (server/dbAdapter.ts) с бесшовным переключением Cloud ↔ Local
+✅ Разработано медиа-хранилище (server/mediaStorage.ts) с поддержкой data/uploads/ и Supabase Storage
+✅ Создан сервис умного бэкапа (server/backupService.ts): выгрузка всех реальных картинок в ZIP и распаковка при импорте
+✅ Добавлен экспорт конкретного воркспейса («Экспорт в ZIP» в WorkspaceModal.tsx)
+✅ Полное зеркалирование и синхронизация server.ts и api/index.ts
+```
+
 ---
 
 ### Этап 9 — Социальные функции 👥 *Интересно, если друзей станет больше*

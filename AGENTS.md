@@ -41,12 +41,12 @@
 | Анимации & Иконки | Framer Motion (`motion` v12), `lucide-react` |
 | Backend (Dev) | Express.js (`server.ts`) — единый процесс API + Vite dev-сервер (`http://localhost:3000`) |
 | Serverless (Prod) | Vercel Serverless Function (`api/index.ts`) + `vercel.json` |
-| База данных & Storage | Supabase (PostgreSQL) + Supabase Storage (`prompt-images`, `prompt-files`) |
+| База данных & Storage | **Dual-Engine**: ☁️ Cloud Supabase (PostgreSQL + Storage) ИЛИ 💻 Local SQLite (`better-sqlite3` + `data/uploads/`) |
 | ИИ-парсер | Google Gemini API (`gemini-3.1-flash-lite`) в `/api/gemini/parse-tool` |
 | Пароли & Auth | `bcryptjs` (хэши `$2b$10$...`), Bearer токен = `uid` |
 
 ### 💻 Команды терминала:
-- **Запуск Dev**: `npm run dev` (запускает `tsx server.ts` на порту `3000`)
+- **Запуск Dev**: `npm run dev` (запускает `tsx server.ts` на порту `3000` в Cloud или Local режиме)
 - **Сборка Prod**: `npm run build` (`vite build`)
 - **Проверка типов**: `npm run lint` (`tsc --noEmit`)
 - **Очистка dist**: `npm run clean` (`npx rimraf dist`)
@@ -62,7 +62,12 @@ superbasetest/
 ├── GEMINI.md               ← 🔵 Входной файл для Gemini / Antigravity
 ├── CHANGELOG.md            ← 📜 Глобальный журнал изменений и контрольные точки Git
 ├── README.md / README_RU.md← Описание проекта для пользователей
-├── server.ts               ← Dev backend (Express + Vite middleware)
+├── server.ts               ← Dev backend (Express + Vite middleware) с автоопределением движка (Cloud/Local)
+├── server/                 ← ⚙️ СЕРВЕРНЫЕ МОДУЛИ ХРАНИЛИЩА И БЭКАПА
+│   ├── localDb.ts          ← Инициализатор SQLite базы (data/promptvault.db)
+│   ├── dbAdapter.ts        ← Универсальный адаптер БД (Cloud Supabase ↔ Local SQLite)
+│   ├── mediaStorage.ts     ← Унифицированное сохранение и чтение медиа (Storage ↔ data/uploads/)
+│   └── backupService.ts    ← Умный Full-Media экспорт/импорт (выгрузка и распаковка картинок в ZIP)
 ├── api/index.ts            ← Prod backend (Express adapter для Vercel)
 ├── vercel.json             ← Конфигурация деплоя Vercel
 ├── .env.example            ← Шаблон переменных окружения (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GEMINI_API_KEY)

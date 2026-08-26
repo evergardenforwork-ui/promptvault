@@ -19,8 +19,10 @@ coverage/
 .env.*
 !.env.example
 
-# Local JSON data (мигрировано в Supabase)
+# Local SQLite data & uploads
 data/
+local/backups/*.zip
+local/exports/*.zip
 
 # Большие экспорты — не нужны в репо
 firestore-export/

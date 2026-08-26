@@ -128,12 +128,27 @@ promptvault/
 │   │       ├── SkillForm.tsx      ← Форма создания/редактирования пакета
 │   │       ├── SkillSpaceView.tsx ← Полноэкранный IDE-лейаут (h-screen, fixed viewport)
 │   │       └── space/             ← SpaceFileTree, SpaceFilePreview, SpaceContextMenu, SpaceSelectionBar, SkillHintsPanel
-│   │   └── git/                       ← 🐙 Git Hub & AI Tools раздел
-│   │       ├── GitProjectsSection.tsx     ← Сетка + фильтры категорий/цены/источника
-│   │       ├── GitProjectCard.tsx         ← Карточка с hero-image, бейджами, ссылками
-│   │       ├── GitProjectForm.tsx         ← Форма (оркестратор, подключает AI-модалку)
-│   │       ├── AiSmartParserModal.tsx     ← 🪄 AI Smart Parser модалка (изолированная)
-│   │       └── GitProjectView.tsx         ← Полноэкранный просмотр с аккордеонами
+│   │   ├── git/                       ← 🐙 Git Hub & AI Tools раздел
+│   │   │   ├── GitProjectsSection.tsx     ← Сетка + фильтры категорий/цены/источника
+│   │   │   ├── GitProjectCard.tsx         ← Карточка с hero-image, бейджами, ссылками
+│   │   │   ├── GitProjectForm.tsx         ← Форма (оркестратор, подключает AI-модалку)
+│   │   │   ├── AiSmartParserModal.tsx     ← 🪄 AI Smart Parser модалка (изолированная)
+│   │   │   └── GitProjectView.tsx         ← Полноэкранный просмотр с аккордеонами
+│   │   ├── commands/                  ← ⚡ AI Commands & Workflows раздел
+│   │   │   ├── CommandsSection.tsx        ← Сетка + Toolbar + Сортировка
+│   │   │   ├── CommandCard.tsx            ← Карточка + 1-Click Copy + счётчик
+│   │   │   ├── CommandForm.tsx            ← Форма + вставка {{param}} переменных
+│   │   │   └── CommandFillModal.tsx       ← Модалка заполнения параметров
+│   │   └── bookmarks/                 ← 🌐 Web Bookmarks Hub раздел
+│   │       ├── BookmarksSection.tsx       ← Папки-вкладки + Подкатегории + Тулбар
+│   │       ├── BookmarkCard.tsx           ← Карточка сайта + 1-Click Open/Copy
+│   │       ├── BookmarkForm.tsx           ← Форма + авто-Favicon/домен
+│   │       └── FolderCreateModal.tsx      ← Модалка создания папок/подкатегорий
+│   ├── hooks/
+│   │   ├── useTheme.ts                    ← Двухтемный режим (dark/light) + localStorage
+│   │   ├── useHotkeys.ts                  ← Глобальные горячие клавиши (Ctrl+K, Esc, etc.)
+│   │   ├── usePromptFilters.ts            ← Фильтры промптов
+│   │   └── useSkillFilters.ts             ← Фильтры скиллов
 │   ├── services/
 │   │   ├── api.ts          ← fetch-обёртки для всех /api/* эндпоинтов
 │   │   └── gemini.ts       ← Клиент для /api/gemini/* эндпоинтов
@@ -156,10 +171,14 @@ promptvault/
 ## Client-Side Architecture
 
 - **State**: Весь глобальный state в `App.tsx` через `useState`.
-- **Хуки**: Переиспользуемая логика вынесена в `src/hooks/` — `useHotkeys`, `usePromptFilters`, `useSkillFilters`.
+- **Хуки**: Переиспользуемая логика вынесена в `src/hooks/` — `useTheme`, `useHotkeys`, `usePromptFilters`, `useSkillFilters`.
+- **Темизация**: Автоматическая синхронизация через `useTheme` (`localStorage: pv_theme` + класс `.dark` / `.light` на `document.documentElement`).
 - **Роутинг**: Навигация через state (без react-router):
   - Промпты: `viewingPrompt`, `editingPrompt`, `isFormOpen` (boolean-флаги)
   - Скиллы: `spacedSkill: SkillPackage | null` → полноэкранная страница-пространство (`SkillSpaceView`); `isSkillFormOpen` → форма
+  - Git Проекты: `viewingGitProject`, `editingGitProject`, `isGitFormOpen`
+  - Команды: `editingCommand`, `isCommandFormOpen`
+  - Закладки: `editingBookmark`, `isBookmarkFormOpen`
   - При `spacedSkill !== null` рендерится `SkillSpaceView` вместо основного layout
 - **Анимации**: `motion` (Framer Motion v12) — для карточек, модалок, переходов.
 - **Иконки**: `lucide-react`.

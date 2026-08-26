@@ -11,7 +11,7 @@
 | Характеристика | Описание |
 |---|---|
 | **Название** | PromptVault |
-| **Описание** | Персональное веб-приложение для хранения промптов, веб-IDE скиллов, каталога Git Tools, хаба быстрых команд и браузерных закладок. |
+| **Описание** | Персональное веб-приложение для хранения промптов, веб-IDE скиллов, каталога Git Tools, хаба быстрых команд и браузерных закладок с поддержкой 2 тем (🌙 Dark / ☀️ Light). |
 | **Стек технологий** | React 19, TypeScript, Vite 6, Tailwind CSS v4, Express.js (dev), Vercel Serverless (prod), Supabase (PostgreSQL + Storage), Google Gemini API (`gemini-3.1-flash-lite`) |
 
 ### 🛠️ Как запустить локально
@@ -26,11 +26,8 @@
    SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
    GEMINI_API_KEY=your_gemini_api_key
    ```
-3. Выполните SQL миграции в Supabase SQL Editor:
-   - `scripts/create_bookmarks_table.sql` (таблица закладок и сайтов)
-   - `scripts/create_commands_table.sql` (таблица команд)
-   - `scripts/create_git_projects_table.sql` (таблица git-проектов)
-   - `scripts/create_skill_hints_table.sql` (при необходимости)
+3. Выполните единый SQL скрипт в Supabase SQL Editor:
+   - `scripts/all_new_tables_migration.sql` (создаст все 4 новые таблицы и обновит favorites)
 4. Запустите dev-сервер:
    ```bash
    npm run dev
@@ -52,10 +49,10 @@ npm run build
 ## 🤖 Для ИИ-агентов и разработчиков (Onboarding Guide)
 
 ### 📚 С чего начинать читать проект:
-1. **[`GEMINI.md`](GEMINI.md)** — Главный контекст проекта (стек, структура, API, типы, правила декомпозиции).
+1. **[`AGENTS.md`](AGENTS.md)** / **[`GEMINI.md`](GEMINI.md)** / **[`CLAUDE.md`](CLAUDE.md)** — Главный контекст проекта, Протокол первого действия, стек, структура, API, типы, правила декомпозиции.
 2. **[`CHANGELOG.md`](CHANGELOG.md)** — 📜 Глобальный журнал изменений и Git-история (чекпоинты, теги `v1.0-checkpoint`).
 3. **[`src/types.ts`](src/types.ts)** — Единый источник TypeScript типов.
-4. **[`Agent/MD_files/ARCHITECTURE.md`](Agent/MD_files/ARCHITECTURE.md)** & **[`SCHEMA.md`](Agent/MD_files/SCHEMA.md)** — Архитектура модульных разделов (`PromptsSection`, `SkillsSection`, `GitProjectsSection`, `UsersSection`), типы и API.
+4. **[`Agent/MD_files/ARCHITECTURE.md`](Agent/MD_files/ARCHITECTURE.md)** & **[`SCHEMA.md`](Agent/MD_files/SCHEMA.md)** — Архитектура всех 5 модульных хабов, типы и API.
 
 ### 🟡 Справочная системная документация:
 5. [`Agent/MD_files/PRD.md`](Agent/MD_files/PRD.md) — Продуктовые требования и Roadmap

@@ -1,7 +1,7 @@
 # 📜 CHANGELOG.md — Глобальный журнал изменений и Git-история PromptVault
 
 > Единый реестр всех ключевых изменений, версий, контрольных точек (Git checkpoints & tags) и архитектурных улучшений проекта.
-> **Последнее обновление**: 2026-08-23
+> **Последнее обновление**: 2026-08-26
 
 ---
 
@@ -9,7 +9,10 @@
 
 | Тег / Хеш | Дата | Название / Назначение | Описание |
 |---|:---:|---|---|
-| *upcoming* | 2026-08-26 | **🌐 Web Bookmarks & Browser Tabs Hub** | Создан 5-й раздел «Закладки & Веб-сайты»: SQL таблица `bookmarks`, CRUD API (5 эндпоинтов), 2-уровневая структура (Папки-вкладки + Подкатегории внутри папок), создание кастомных папок на лету (`FolderCreateModal`), авто-Favicon/домен, `BookmarksSection`, `BookmarkCard`, `BookmarkForm`. TypeScript `--noEmit` & `vite build` — ✅ 0 ошибок. |
+| `a8afbf2` | 2026-08-26 | **🎨 Dual Theme Engine (ThoughtLab Dark & shadcn Light)** | Внедрена полноценная система переключения тем (Тёмная 🌙 / Светлая ☀️) на базе CSS-токенов Tailwind v4, кастомного хука `useTheme`, автосохранения в `localStorage` и стильного тумблера в Header. Адаптированы Header, Sidebar, LoginForm и поверхности. |
+| `7cd9892` | 2026-08-26 | **🤖 Universal AI Agent Ecosystem & Onboarding** | Созданы универсальные инструкции `AGENTS.md`, `CLAUDE.md`, `.cursorrules` и строгий «Протокол первого действия» (First-Action Protocol) для исключения хаотичного чтения файлов любыми ИИ-агентами. |
+| `b34673a` | 2026-08-26 | **🧹 Cascade Deletion of Favorites & Relations** | Реализована автоматическая очистка связанных записей в `user_favorites`, `chats` и `skill_hints` при удалении любых сущностей (промпты, скиллы, git, команды, закладки, юзеры) на обоих бэкендах (`server.ts` и `api/index.ts`). |
+| `db80872` | 2026-08-26 | **🌐 Web Bookmarks & Browser Tabs Hub** | Создан 5-й раздел «Закладки & Веб-сайты»: SQL таблица `bookmarks`, CRUD API (5 эндпоинтов), 2-уровневая структура (Папки-вкладки + Подкатегории внутри папок), создание кастомных папок на лету (`FolderCreateModal`), авто-Favicon/домен, `BookmarksSection`, `BookmarkCard`, `BookmarkForm`. TypeScript `--noEmit` & `vite build` — ✅ 0 ошибок. |
 | `36056d1` | 2026-08-26 | **⚡ AI Commands & Workflows Hub** | Создан 4-й раздел «Команды & Инструкции»: SQL таблица `commands`, CRUD API (5 роутов), инкремент использования, привязка к скиллам, авто-детект и подстановка переменных `{{param}}` (`CommandFillModal`), `CommandsSection`, `CommandCard`, `CommandForm`. |
 | `fbf6879` | 2026-08-23 | **🛡️ AI Token Protection & Security Guards** | Внедрена многоуровневая защита Gemini: Global Kill Switch (`DISABLE_AI=true`), Rate Limiter (1 req/3s, max 15/min), Timeout Guard (25s), Payload Caps (max 12k симв), `maxOutputTokens: 2048`, UI-блокировка дабл-клика и счетчик символов. |
 | `70ecb18` | 2026-08-23 | **🐙 Git Hub & AI Tools Hub — ЗАВЕРШЕНО** | Реализован полный раздел Git Projects: SQL-миграция, CRUD API (5 эндпоинтов), Gemini 3.1 Flash-Lite Smart Parser, `GitProjectsSection`, `GitProjectCard`, `GitProjectForm` (с AI-модалкой), `GitProjectView` (аккордеоны). TypeScript `--noEmit` и `vite build` — ✅ OK. |
@@ -23,6 +26,42 @@
 ---
 
 ## 🗓️ Хронологический журнал изменений
+
+### 🎨 2026-08-26 — Двухтемная дизайн-система (Dual Theme: ThoughtLab Dark & shadcn Light)
+- **Хук управления темами (`src/hooks/useTheme.ts`)**:
+  - Чтение и сохранение выбранной темы в `localStorage` (`pv_theme`).
+  - Управление классами `.dark` / `.light` и атрибутом `data-theme` на элементе `document.documentElement`.
+  - Поддержка системного `prefers-color-scheme`.
+- **Токены дизайна в `src/index.css`**:
+  - 🌑 **Dark Theme (ThoughtLab Obsidian)**: монохромный чёрный фон `#000000`, контрастный текст `#ffffff` / `#cccccc`, графитовые бордеры `#27272a`.
+  - ☀️ **Light Theme (shadcn Frosted Paper)**: мягкий фон `#f5f5f5`, белоснежные карточки `#ffffff`, глубокий текст `#0a0a0a`, тонкие линии `#e5e5e5`.
+  - Плавные CSS-переходы без оптического мерцания.
+- **Интерактивный тумблер в Header**:
+  - Кнопка с анимированными иконками ☀️ (Солнце) и 🌙 (Луна) в правом верхнем углу шапки.
+- **Адаптация компонентов под 2 темы**:
+  - `src/App.tsx` (шапка, поисковая строка, навигация по 5 хабам).
+  - `src/components/layout/Sidebar.tsx` (боковое меню библиотек, тегов и категорий).
+  - `src/components/auth/LoginForm.tsx` (экран входа).
+
+---
+
+### 🤖 2026-08-26 — Универсальная экосистема агентов (Universal AI Context & Protocol)
+- **Созданы универсальные стандарты входа**:
+  - `AGENTS.md` — главный универсальный вход для всех ИИ-агентов.
+  - `CLAUDE.md` — входной файл для Claude Code CLI.
+  - `.cursorrules` — правила для Cursor IDE.
+  - Синхронизирован `GEMINI.md` для Antigravity/Gemini.
+- **Внедрён «Протокол Первого Действия» (First-Action Protocol)**:
+  - Запрет на бессистемное чтение файлов при командах «посмотри проект».
+  - Пошаговый порядок: Инструкция агента → `src/types.ts` → `Agent/MD_files/ARCHITECTURE.md` → `Agent/plan/plan.md` (только активные) → `.agents/skills/`.
+
+---
+
+### 🧹 2026-08-26 — Каскадная автоочистка базы данных (Cascade Deletion)
+- Устранение технического долга по «висячим» записям в полиморфной таблице `user_favorites`.
+- При `DELETE` карточек промптов, скиллов, git-проектов, команд, закладок или пользователей бэкенд (`server.ts` и `api/index.ts`) автоматически вычищает связанные избранные записи, чаты и подсказки.
+
+---
 
 ### 🌐 2026-08-26 — Раздел «Web Bookmarks & Sites Hub» (Закладки и Сайты)
 - **Новый 5-й раздел `🌐 Закладки` в PromptVault**:

@@ -452,6 +452,16 @@ npm install bcryptjs @types/bcryptjs
 | Авто-парсинг домена и Favicon при вводе URL | ✅ Готово | `BookmarkForm.tsx` |
 | База данных и CRUD API | ✅ Готово | `scripts/create_bookmarks_table.sql`, `/api/bookmarks` |
 
+### Дизайн и Темы 🎨
+
+| Фича | Статус | Примечание |
+|------|--------|-----------|
+| Тёмная тема (ThoughtLab Obsidian) | ✅ Готово | `#000000` фон, контрастный текст, Crimson Signal |
+| Светлая тема (shadcn Frosted Paper) | ✅ Готово | `#f5f5f5` фон, белоснежные карточки, чернильный текст |
+| Кастомный хук `useTheme` | ✅ Готово | `src/hooks/useTheme.ts`, автосохранение в `localStorage` |
+| Тумблер ☀️ / 🌙 в Header | ✅ Готово | Плавная анимация, переключение классов на `<html>` |
+| Адаптация компонентов (Header, Sidebar, Login) | ✅ Готово | `transition-colors duration-200` |
+
 ### Система пользователей
 
 | Фича | Статус | Примечание |

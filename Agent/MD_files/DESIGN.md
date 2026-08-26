@@ -46,16 +46,28 @@
 
 ## Theme Variants (Light/Dark + Custom)
 
-Проект **только тёмная тема**. Светлой темы нет, переключатель не предусмотрен.
+Проект поддерживает **полноценный двухтемный режим** с мгновенным переключением и автосохранением в `localStorage` (`pv_theme`):
+
+1. 🌑 **Dark Theme (ThoughtLab Obsidian)** — см. [`Dark_design.md`](../../Dark_design.md):
+   - Чистый монохромный чёрный холст `#000000` (`--color-canvas`).
+   - Контрастный текст `#ffffff` (дисплей) и `#cccccc` (тело).
+   - Графитовые границы `#27272a` (`--color-hairline`).
+   - Акцентные действия: Crimson Signal `#fc1c46` + фирменные цвета 5 хабов.
+
+2. ☀️ **Light Theme (shadcn Frosted Paper)** — см. [`light_design.md`](../../light_design.md):
+   - Мягкий бумажный холст `#f5f5f5` (`--color-canvas`).
+   - Белоснежные карточки `#ffffff` (`--color-paper`).
+   - Глубокий чернильный текст `#0a0a0a` (`--color-ink`) и мягкий `#737373` (`--color-mid-gray`).
+   - Тонкие границы `#e5e5e5` (`--color-hairline`).
+
+Управление темами: хук [`src/hooks/useTheme.ts`](../../src/hooks/useTheme.ts) + тумблер ☀️ / 🌙 в Header.
 
 ## Typography Scale & Font Stack
 
-- **Основной шрифт**: системный стек (Inter если подключён, иначе system-ui)
-- **Заголовки** (`h1-h3`): `font-bold`, `tracking-tight`
+- **Основной шрифт**: `Inter`, geometric sans
+- **Заголовки** (`h1-h3`): `Syne`, `font-bold`, `tracking-tight`
+- **Код/промпты**: `JetBrains Mono`, `font-mono`, `text-sm`
 - **Тело**: `text-sm` / `text-base`, `leading-relaxed`
-- **Код/промпты**: `font-mono`, `text-sm`, фон отдельной поверхности
-
-> Если добавляешь Google Fonts — используй Inter или Outfit.
 
 ## Spacing, Grid & Layout System
 

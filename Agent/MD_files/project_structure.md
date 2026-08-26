@@ -1,8 +1,8 @@
 # Структура и компоненты проекта PromptVault
 
-PromptVault — это веб-приложение для хранения, организации и тестирования промптов нейросетей, а также пакетов скиллов, субагентов и MCP (Skills & Agent Hub), работающее на базе React 19, Express.js / Vercel Serverless и облачной базы данных Supabase (PostgreSQL + Storage).
+PromptVault — это веб-приложение для хранения, организации и мгновенного использования материалов для разработки и нейросетей, работающее на базе React 19, Express.js / Vercel Serverless и облачной базы данных Supabase (PostgreSQL + Storage).
 
-> **Последнее обновление**: 2026-08-23
+> **Последнее обновление**: 2026-08-26
 
 ---
 
@@ -10,6 +10,13 @@ PromptVault — это веб-приложение для хранения, ор
 
 ```
 promptvault/
+├── AGENTS.md                 # 🤖 Универсальная инструкция для всех ИИ-агентов (Onboarding Protocol)
+├── CLAUDE.md                 # 🟣 Входной файл для Claude Code CLI
+├── GEMINI.md                 # 🔵 Входной файл для Gemini / Antigravity
+├── .cursorrules              # 🎯 Правила для Cursor IDE
+├── CHANGELOG.md              # 📜 Глобальный журнал изменений и Git-история
+├── Dark_design.md            # 🌑 Спецификация тёмной темы (ThoughtLab Obsidian)
+├── light_design.md           # ☀️ Спецификация светлой темы (shadcn Frosted Paper)
 ├── .env.example              # Шаблон переменных окружения (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GEMINI_API_KEY)
 ├── vercel.json               # Конфигурация Vercel Serverless деплоя
 ├── api/
@@ -18,30 +25,27 @@ promptvault/
 ├── server.ts                 # Express.js dev-сервер для API + Vite middleware
 ├── vite.config.ts            # Конфигурация сборщика Vite
 ├── tsconfig.json             # TypeScript конфигурация
+├── .agents/skills/           # 🧠 Локальные навыки для ИИ-агентов (supabase, postgres, etc.)
 ├── scripts/
-│   ├── migrateToSupabase.ts  # Скрипт миграции локальных данных в Supabase
-│   ├── create_skill_hints_table.sql # DDL создания таблицы skill_hints в Supabase
-│   ├── supabase_fix_schema.sql # DDL адаптации типов и RLS
-│   ├── manageUsers.ts        # CLI утилита управления пользователями и сброса паролей
-│   ├── checkSchema.ts        # Проверка схемы базы данных
-│   ├── checkTables.ts        # Проверка таблиц в Supabase
-│   ├── fixSchema.ts          # Исправление колонок базы
-│   ├── fixPromptCategories.ts # Корректировка категорий в промптах
-│   └── migrateUsers.ts       # Миграция пользователей
+│   ├── all_new_tables_migration.sql # 🚀 Единая SQL миграция для всех 4 новых таблиц
+│   ├── create_git_projects_table.sql # DDL создания таблицы git_projects
+│   ├── create_commands_table.sql # DDL создания таблицы commands
+│   ├── create_bookmarks_table.sql # DDL создания таблицы bookmarks
+│   ├── create_skill_hints_table.sql # DDL создания таблицы skill_hints
+│   └── manageUsers.ts        # CLI утилита управления пользователями и сброса паролей
 ├── Agent/                    # Системная документация и планы
-│   ├── Superbase/
-│   │   └── supabase_schema.sql # DDL схемы Supabase
 │   ├── MD_files/             # PRD, DESIGN, ARCHITECTURE, SCHEMA, RULES, DATABASE, USER_MANAGEMENT, project_structure
-│   └── plan/                 # План реализации фич (plan.md, plan_supabase.md, plan_skill_space.md, plan_skill_hints.md, plan_file_system.md)
+│   └── plan/                 # План реализации фич (plan.md, plan_git_hub.md, plan_commands.md, plan_bookmarks.md, etc.)
 └── src/                      # Исходный код Frontend-части
     ├── main.tsx              # Точка входа React
-    ├── index.css             # Стили Tailwind CSS v4 (@theme)
-    ├── App.tsx               # Основное приложение (состояние, навигация, фильтры ownership)
+    ├── index.css             # Стили Tailwind CSS v4 (@theme, dual theme tokens)
+    ├── App.tsx               # Основное приложение (состояние, навигация, фильтры ownership, theme switcher)
     ├── types.ts              # Единый источник TypeScript типов
     ├── services/
     │   ├── api.ts            # API клиент для взаимодействия с бэкендом
     │   └── gemini.ts         # Клиент Gemini AI (обёртки)
     ├── hooks/
+    │   ├── useTheme.ts       # Двухтемный режим (dark/light) + авто-персист
     │   ├── useHotkeys.ts     # Глобальные горячие клавиши
     │   ├── usePromptFilters.ts # Фильтрация и подсчёт промптов (all, my-all, my-own, my-web, others)
     │   └── useSkillFilters.ts  # Фильтрация и подсчёт скиллов (all, my-all, my-own, my-web, others, targetAis)
@@ -57,7 +61,7 @@ promptvault/
         ├── admin/            # UsersSection.tsx (управление пользователями)
         ├── prompts/          # PromptsSection.tsx (сетка, тулбар фильтров, пагинация промптов)
         ├── photo/            # PhotoCard, PhotoForm, PhotoView, ImageSlotsSection, SubSectionsEditor
-        ├── skills/           # SkillsSection, SkillCard, SkillForm, SkillSpaceView, SpaceFileTree, SpaceFilePreview, SpaceContextMenu, SpaceSelectionBar, SkillHintsPanel
+        ├── skills/           # SkillsSection, SkillCard, SkillForm, SkillSpaceView, space/*
         ├── git/              # GitProjectsSection, GitProjectCard, GitProjectForm, AiSmartParserModal, GitProjectView
         ├── commands/         # CommandsSection, CommandCard, CommandForm, CommandFillModal
         └── bookmarks/        # BookmarksSection, BookmarkCard, BookmarkForm, FolderCreateModal

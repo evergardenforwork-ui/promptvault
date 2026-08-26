@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, Plus, Menu } from 'lucide-react';
 import { AnimatePresence } from 'motion/react';
 import { api } from './services/api';
-import { Prompt, Category, User, MediaType, SkillPackage, GitProject, CommandItem } from './types';
+import { Prompt, Category, User, MediaType, SkillPackage, GitProject, CommandItem, BookmarkItem, DEFAULT_BOOKMARK_FOLDERS } from './types';
 import { cn } from './utils/cn';
 import { useHotkeys } from './hooks/useHotkeys';
 import { useSkillFilters } from './hooks/useSkillFilters';
@@ -13,6 +13,7 @@ import SkillsSection from './sections/skills/SkillsSection';
 import UsersSection from './sections/admin/UsersSection';
 import GitProjectsSection from './sections/git/GitProjectsSection';
 import CommandsSection from './sections/commands/CommandsSection';
+import BookmarksSection from './sections/bookmarks/BookmarksSection';
 
 
 // Layout & UI Components
@@ -30,16 +31,18 @@ import SkillSpaceView from './sections/skills/SkillSpaceView';
 import GitProjectForm from './sections/git/GitProjectForm';
 import GitProjectView from './sections/git/GitProjectView';
 import CommandForm from './sections/commands/CommandForm';
+import BookmarkForm from './sections/bookmarks/BookmarkForm';
 
 
 export default function App() {
-  const [activeSection, setActiveSection] = useState<'prompts' | 'skills' | 'git' | 'commands' | 'admin'>('prompts');
+  const [activeSection, setActiveSection] = useState<'prompts' | 'skills' | 'git' | 'commands' | 'bookmarks' | 'admin'>('prompts');
   const [user, setUser] = useState<User | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [skills, setSkills] = useState<SkillPackage[]>([]);
   const [gitProjects, setGitProjects] = useState<GitProject[]>([]);
   const [commands, setCommands] = useState<CommandItem[]>([]);
+  const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -50,6 +53,7 @@ export default function App() {
   const [isSkillFormOpen, setIsSkillFormOpen] = useState(false);
   const [isGitFormOpen, setIsGitFormOpen] = useState(false);
   const [isCommandFormOpen, setIsCommandFormOpen] = useState(false);
+  const [isBookmarkFormOpen, setIsBookmarkFormOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
   const [viewingPrompt, setViewingPrompt] = useState<Prompt | null>(null);
@@ -58,6 +62,7 @@ export default function App() {
   const [editingGitProject, setEditingGitProject] = useState<GitProject | null>(null);
   const [viewingGitProject, setViewingGitProject] = useState<GitProject | null>(null);
   const [editingCommand, setEditingCommand] = useState<CommandItem | null>(null);
+  const [editingBookmark, setEditingBookmark] = useState<BookmarkItem | null>(null);
   const [toasts, setToasts] = useState<{ id: number, message: React.ReactNode, type?: 'success' | 'error' }[]>([]);
   const [sortBy, setSortBy] = useState<'date' | 'name' | 'usage'>('date');
   const [sourceFilter, setSourceFilter] = useState<'all' | 'my-all' | 'my-own' | 'my-web' | 'others'>('all');
@@ -90,18 +95,20 @@ export default function App() {
   const loadData = useCallback(async () => {
     if (!user) return;
     try {
-      const [allPrompts, allCategories, allSkills, allGitProjects, allCommands] = await Promise.all([
+      const [allPrompts, allCategories, allSkills, allGitProjects, allCommands, allBookmarks] = await Promise.all([
         api.getPrompts().catch(() => []),
         api.getCategories().catch(() => []),
         api.getSkills().catch(() => []),
         api.getGitProjects().catch(() => []),
         api.getCommands().catch(() => []),
+        api.getBookmarks().catch(() => []),
       ]);
       setPrompts(allPrompts);
       setCategories(allCategories);
       setSkills(allSkills);
       setGitProjects(allGitProjects);
       setCommands(allCommands);
+      setBookmarks(allBookmarks);
     } catch (err: any) {
       console.error('Data load exception:', err);
     }
@@ -117,6 +124,7 @@ export default function App() {
       setSkills([]);
       setGitProjects([]);
       setCommands([]);
+      setBookmarks([]);
     }
   }, [user, loadData]);
 
@@ -322,6 +330,45 @@ export default function App() {
     }
   }, [addToast]);
 
+  // Bookmarks CRUD & Actions
+  const handleToggleFavoriteBookmark = useCallback(async (id: string) => {
+    try {
+      const result = await api.toggleFavorite(id, 'bookmark');
+      setBookmarks(prev => prev.map(b => ({
+        ...b,
+        isFavorite: result.favorites?.bookmarks ? result.favorites.bookmarks.includes(b.id) : (b.id === id ? !b.isFavorite : b.isFavorite),
+      })));
+    } catch (err: any) {
+      addToast(err.message || 'Ошибка избранного', 'error');
+    }
+  }, [addToast]);
+
+  const handleDeleteBookmark = useCallback(async (id: string) => {
+    try {
+      await api.deleteBookmark(id);
+      setBookmarks(prev => prev.filter(b => b.id !== id));
+      addToast('Закладка удалена');
+    } catch (err: any) {
+      addToast(err.message || 'Ошибка удаления', 'error');
+    }
+  }, [addToast]);
+
+  const handleOpenBookmark = useCallback((bookmark: BookmarkItem) => {
+    window.open(bookmark.url, '_blank', 'noopener,noreferrer');
+    api.clickBookmark(bookmark.id).then(({ clickCount }) => {
+      setBookmarks(prev => prev.map(b => b.id === bookmark.id ? { ...b, clickCount } : b));
+    }).catch(() => {});
+  }, []);
+
+  const handleCopyBookmarkUrl = useCallback(async (bookmark: BookmarkItem) => {
+    try {
+      await navigator.clipboard.writeText(bookmark.url);
+      addToast('Ссылка скопирована! 📋');
+    } catch {
+      addToast('Не удалось скопировать ссылку', 'error');
+    }
+  }, [addToast]);
+
   // Hotkeys
   useHotkeys({
     user,
@@ -333,6 +380,10 @@ export default function App() {
       else if (activeSection === 'commands') {
         setEditingCommand(null);
         setIsCommandFormOpen(true);
+      }
+      else if (activeSection === 'bookmarks') {
+        setEditingBookmark(null);
+        setIsBookmarkFormOpen(true);
       }
     },
     onCloseAll: () => {
@@ -362,6 +413,11 @@ export default function App() {
       if (isCommandFormOpen) {
         setIsCommandFormOpen(false);
         setEditingCommand(null);
+        return;
+      }
+      if (isBookmarkFormOpen) {
+        setIsBookmarkFormOpen(false);
+        setEditingBookmark(null);
         return;
       }
       if (viewingPrompt) {
@@ -478,6 +534,15 @@ export default function App() {
             >
               <span>⚡ Команды</span>
             </button>
+            <button
+              onClick={() => setActiveSection('bookmarks')}
+              className={cn(
+                "px-4 py-1.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center gap-2",
+                activeSection === 'bookmarks' ? "bg-cyan-400 text-black shadow-md shadow-cyan-400/20" : "text-zinc-400 hover:text-white"
+              )}
+            >
+              <span>🌐 Закладки</span>
+            </button>
             {user.role === 'admin' && (
               <button
                 onClick={() => setActiveSection('admin')}
@@ -503,6 +568,7 @@ export default function App() {
               activeSection === 'skills' ? "Поиск скиллов, агентов, MCP... (Ctrl+K)" :
               activeSection === 'git' ? "Поиск проектов, агентов, моделей... (Ctrl+K)" :
               activeSection === 'commands' ? "Поиск команд, инструкций, сниппетов... (Ctrl+K)" :
+              activeSection === 'bookmarks' ? "Поиск сайтов, закладок, тегов... (Ctrl+K)" :
               "Поиск... (Ctrl+K)"
             }
             value={activeSection === 'prompts' ? searchQuery : activeSection === 'skills' ? skillFilters.searchQuery : searchQuery}
@@ -519,6 +585,7 @@ export default function App() {
               "w-full bg-zinc-900 border border-zinc-800 rounded-2xl py-3 pl-12 pr-4 focus:outline-none transition-all text-sm text-white placeholder-zinc-500",
               activeSection === 'git' ? "focus:border-emerald-400" :
               activeSection === 'commands' ? "focus:border-amber-400" :
+              activeSection === 'bookmarks' ? "focus:border-cyan-400" :
               "focus:border-sky-400"
             )}
           />
@@ -536,18 +603,24 @@ export default function App() {
                   setEditingCommand(null);
                   setIsCommandFormOpen(true);
                 }
+                else if (activeSection === 'bookmarks') {
+                  setEditingBookmark(null);
+                  setIsBookmarkFormOpen(true);
+                }
               }}
               className={cn(
                 "p-3 rounded-2xl transition-all shadow-lg cursor-pointer",
                 activeSection === 'prompts' ? "bg-sky-400 text-black shadow-sky-400/20" :
                 activeSection === 'git' ? "bg-emerald-500 text-white shadow-emerald-500/20" :
                 activeSection === 'commands' ? "bg-amber-500 text-black shadow-amber-500/20" :
+                activeSection === 'bookmarks' ? "bg-cyan-400 text-black shadow-cyan-400/20" :
                 "bg-purple-500 text-white shadow-purple-500/20"
               )}
               title={
                 activeSection === 'prompts' ? 'Создать промпт' :
                 activeSection === 'git' ? 'Добавить проект' :
                 activeSection === 'commands' ? 'Создать команду' :
+                activeSection === 'bookmarks' ? 'Добавить сайт' :
                 'Загрузить пакет скиллов'
               }
             >
@@ -641,6 +714,28 @@ export default function App() {
               onOpenCreateModal={() => {
                 setEditingCommand(null);
                 setIsCommandFormOpen(true);
+              }}
+            />
+          )}
+
+          {activeSection === 'bookmarks' && (
+            <BookmarksSection
+              bookmarks={bookmarks}
+              user={user}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+              searchQuery={searchQuery}
+              onEditBookmark={(b) => {
+                setEditingBookmark(b);
+                setIsBookmarkFormOpen(true);
+              }}
+              onDeleteBookmark={handleDeleteBookmark}
+              onToggleFavorite={handleToggleFavoriteBookmark}
+              onOpenWebsite={handleOpenBookmark}
+              onCopyUrl={handleCopyBookmarkUrl}
+              onOpenCreateModal={() => {
+                setEditingBookmark(null);
+                setIsBookmarkFormOpen(true);
               }}
             />
           )}
@@ -775,6 +870,46 @@ export default function App() {
             onClose={() => {
               setIsCommandFormOpen(false);
               setEditingCommand(null);
+            }}
+          />
+        )}
+        {isBookmarkFormOpen && (
+          <BookmarkForm
+            isOpen={isBookmarkFormOpen}
+            initialData={editingBookmark}
+            folders={DEFAULT_BOOKMARK_FOLDERS}
+            existingFolders={Array.from(new Set(bookmarks.map(b => b.folder).filter(Boolean)))}
+            existingCategories={bookmarks.reduce((acc, b) => {
+              const f = b.folder || 'Общее';
+              if (!acc[f]) acc[f] = [];
+              if (b.category && b.category !== 'default' && !acc[f].includes(b.category)) {
+                acc[f].push(b.category);
+              }
+              return acc;
+            }, {} as { [folder: string]: string[] })}
+            user={user}
+            onSave={async (bookmarkData) => {
+              try {
+                if (editingBookmark) {
+                  const updated = await api.updateBookmark(editingBookmark.id, bookmarkData);
+                  setBookmarks(prev => prev.map(b => b.id === editingBookmark.id ? updated : b));
+                  addToast('Закладка обновлена ✅');
+                } else {
+                  const created = await api.createBookmark(bookmarkData as any);
+                  setBookmarks(prev => [created, ...prev]);
+                  addToast('Сайт добавлен в закладки ✅');
+                }
+                setIsBookmarkFormOpen(false);
+                setEditingBookmark(null);
+              } catch (err: any) {
+                addToast(err.message || 'Ошибка сохранения закладки', 'error');
+                throw err;
+              }
+            }}
+            onDelete={handleDeleteBookmark}
+            onClose={() => {
+              setIsBookmarkFormOpen(false);
+              setEditingBookmark(null);
             }}
           />
         )}

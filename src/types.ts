@@ -240,3 +240,41 @@ export interface CommandItem {
   createdAt: string;
 }
 
+// ─── Web Bookmarks & Sites ───────────────────────────────────────────────────
+
+export interface BookmarkFolder {
+  id: string;
+  name: string;
+  emoji: string;
+  color?: string;
+}
+
+export const DEFAULT_BOOKMARK_FOLDERS: BookmarkFolder[] = [
+  { id: 'design',  name: 'Design & UI',      emoji: '🎨' },
+  { id: 'osint',   name: 'OSINT & Поиск',    emoji: '🕵️' },
+  { id: '1c',      name: '1С Предприятие',   emoji: '💼' },
+  { id: 'ai',      name: 'AI & Нейросети',   emoji: '🤖' },
+  { id: 'dev',     name: 'Dev & Тулзы',      emoji: '🛠️' },
+  { id: 'docs',    name: 'Документация',     emoji: '📚' },
+  { id: 'general', name: 'Общее',            emoji: '📁' },
+];
+
+export interface BookmarkItem {
+  id: string;
+  userId: string;
+  title: string;
+  url: string;
+  description?: string;
+  folder: string;          // Название папки/вкладки (например "Design", "1C", "OSINT")
+  category: string;        // Подкатегория/фильтр внутри папки (например "1С База", "UI Kits")
+  image?: string | null;   // Скриншот или превью
+  favicon?: string | null; // Favicon иконка сайта
+  tags: string[];
+  isFavorite?: boolean;
+  isPublic?: boolean;
+  authorName: string;
+  authorEmail: string;
+  clickCount: number;
+  createdAt: string;
+}
+

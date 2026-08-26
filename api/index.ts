@@ -229,17 +229,18 @@ async function authenticate(
   next();
 }
 
-async function getUserFavoriteIds(uid: string): Promise<{ prompts: string[]; skills: string[]; gitProjects: string[]; commands: string[] }> {
+async function getUserFavoriteIds(uid: string): Promise<{ prompts: string[]; skills: string[]; gitProjects: string[]; commands: string[]; bookmarks: string[] }> {
   const { data, error } = await supabase
     .from("user_favorites")
     .select("item_id, item_type")
     .eq("user_id", uid);
-  if (error || !data) return { prompts: [], skills: [], gitProjects: [], commands: [] };
+  if (error || !data) return { prompts: [], skills: [], gitProjects: [], commands: [], bookmarks: [] };
   return {
     prompts: data.filter((r) => r.item_type === "prompt").map((r) => r.item_id),
     skills: data.filter((r) => r.item_type === "skill").map((r) => r.item_id),
     gitProjects: data.filter((r) => r.item_type === "git_project").map((r) => r.item_id),
     commands: data.filter((r) => r.item_type === "command").map((r) => r.item_id),
+    bookmarks: data.filter((r) => r.item_type === "bookmark").map((r) => r.item_id),
   };
 }
 
@@ -936,6 +937,139 @@ app.post("/api/commands/:id/use", authenticate, async (req, res) => {
     const newCount = (data.usage_count || 0) + 1;
     await supabase.from("commands").update({ usage_count: newCount }).eq("id", id);
     res.json({ usageCount: newCount });
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── API: Bookmarks & Web Sites ─────────────────────────────────────────────
+
+function bookmarkToDb(data: any, userId: string) {
+  return {
+    user_id: userId,
+    title: data.title,
+    url: data.url,
+    description: data.description || null,
+    folder: data.folder || 'Общее',
+    category: data.category || 'default',
+    image: data.image || null,
+    favicon: data.favicon || null,
+    tags: data.tags || [],
+    is_public: data.isPublic ?? true,
+    author_name: data.authorName || '',
+    author_email: data.authorEmail || '',
+    click_count: data.clickCount ?? 0,
+  };
+}
+
+function bookmarkFromDb(row: any, isFavorite = false) {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    title: row.title,
+    url: row.url,
+    description: row.description || '',
+    folder: row.folder || 'Общее',
+    category: row.category || 'default',
+    image: row.image || null,
+    favicon: row.favicon || null,
+    tags: row.tags || [],
+    isFavorite,
+    isPublic: row.is_public,
+    authorName: row.author_name || '',
+    authorEmail: row.author_email || '',
+    clickCount: row.click_count || 0,
+    createdAt: row.created_at,
+  };
+}
+
+app.get("/api/bookmarks", authenticate, async (req, res) => {
+  try {
+    const user = (req as any).user;
+    const { data, error } = await supabase.from("bookmarks").select("*").order("created_at", { ascending: false });
+    if (error) throw error;
+    const favs = await getUserFavoriteIds(user.uid);
+    const favSet = new Set(favs.bookmarks || []);
+    res.json((data || []).map((row: any) => bookmarkFromDb(row, favSet.has(row.id))));
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
+app.post("/api/bookmarks", authenticate, async (req, res) => {
+  try {
+    const user = (req as any).user;
+    const body = req.body;
+    if (!body.title || !body.url) return res.status(400).json({ error: "Поля title и url обязательны" });
+
+    let imageUrl = body.image || null;
+    if (imageUrl && imageUrl.startsWith("data:image/")) {
+      imageUrl = await uploadImage(imageUrl, "bookmark");
+    }
+
+    const dbRow = bookmarkToDb(
+      { ...body, image: imageUrl, authorName: user.displayName, authorEmail: user.email },
+      user.uid
+    );
+
+    const { data, error } = await supabase.from("bookmarks").insert(dbRow).select().single();
+    if (error) throw error;
+    res.status(201).json(bookmarkFromDb(data));
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
+app.put("/api/bookmarks/:id", authenticate, async (req, res) => {
+  try {
+    const user = (req as any).user;
+    const { id } = req.params;
+    const { data: existing } = await supabase.from("bookmarks").select("user_id").eq("id", id).single();
+    if (!existing) return res.status(404).json({ error: "Закладка не найдена" });
+    if (existing.user_id !== user.uid && user.role !== "admin") return res.status(403).json({ error: "Нет прав на редактирование" });
+
+    let imageUrl = req.body.image || null;
+    if (imageUrl && imageUrl.startsWith("data:image/")) {
+      imageUrl = await uploadImage(imageUrl, `bookmark_${id}`);
+    }
+
+    const updates: any = {
+      title: req.body.title,
+      url: req.body.url,
+      description: req.body.description ?? null,
+      folder: req.body.folder || 'Общее',
+      category: req.body.category || 'default',
+      favicon: req.body.favicon ?? null,
+      tags: req.body.tags || [],
+      is_public: req.body.isPublic ?? true,
+    };
+    if (imageUrl !== undefined) updates.image = imageUrl;
+
+    const { data, error } = await supabase.from("bookmarks").update(updates).eq("id", id).select().single();
+    if (error) throw error;
+    res.json(bookmarkFromDb(data));
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
+app.delete("/api/bookmarks/:id", authenticate, async (req, res) => {
+  try {
+    const user = (req as any).user;
+    const { id } = req.params;
+    const { data: existing } = await supabase.from("bookmarks").select("user_id").eq("id", id).single();
+    if (!existing) return res.status(404).json({ error: "Закладка не найдена" });
+    if (existing.user_id !== user.uid && user.role !== "admin") return res.status(403).json({ error: "Нет прав на удаление" });
+
+    const { error } = await supabase.from("bookmarks").delete().eq("id", id);
+    if (error) throw error;
+
+    await supabase.from("user_favorites").delete().eq("item_id", id).eq("item_type", "bookmark");
+    res.json({ message: "Закладка удалена" });
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
+app.post("/api/bookmarks/:id/click", authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase.from("bookmarks").select("click_count").eq("id", id).single();
+    if (error || !data) return res.status(404).json({ error: "Закладка не найдена" });
+
+    const newCount = (data.click_count || 0) + 1;
+    await supabase.from("bookmarks").update({ click_count: newCount }).eq("id", id);
+    res.json({ clickCount: newCount });
   } catch (err: any) { res.status(500).json({ error: err.message }); }
 });
 

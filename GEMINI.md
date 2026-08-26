@@ -161,11 +161,17 @@ superbasetest/
     │   │   ├── AiSmartParserModal.tsx    ← 🪄 AI Smart Parser модалка (Gemini 3.1)
     │   │   └── GitProjectView.tsx        ← Просмотр проекта с аккордеонами
     │   │
-    │   └── commands/                    ← ⚡ Раздел Команд & Инструкций
-    │       ├── CommandsSection.tsx       ← Сетка карточек + Toolbar фильтров + сортировка
-    │       ├── CommandCard.tsx           ← Карточка команды (grid/list) + 1-клик копирование
-    │       ├── CommandForm.tsx           ← Форма создания/редактирования + вставка параметров
-    │       └── CommandFillModal.tsx      ← Модалка заполнения плейсхолдеров {{...}}
+    │   ├── commands/                    ← ⚡ Раздел Команд & Инструкций
+    │   │   ├── CommandsSection.tsx       ← Сетка карточек + Toolbar фильтров + сортировка
+    │   │   ├── CommandCard.tsx           ← Карточка команды (grid/list) + 1-клик копирование
+    │   │   ├── CommandForm.tsx           ← Форма создания/редактирования + вставка параметров
+    │   │   └── CommandFillModal.tsx      ← Модалка заполнения плейсхолдеров {{...}}
+    │   │
+    │   └── bookmarks/                   ← 🌐 Раздел Закладок & Веб-сайтов
+    │       ├── BookmarksSection.tsx      ← Оркестратор: папки-вкладки, подкатегории, тулбар, сетка/список
+    │       ├── BookmarkCard.tsx          ← Карточка сайта (grid/list) + 1-клик открытие и копирование
+    │       ├── BookmarkForm.tsx          ← Форма создания/редактирования + авто-Favicon и скриншот
+    │       └── FolderCreateModal.tsx     ← Модалка создания кастомной папки/подкатегории
     │
     ├── services/
     │   ├── api.ts
@@ -240,6 +246,11 @@ AssistantConfig { systemPrompt }
 | PUT | `/api/commands/:id` | Обновить команду (с валидацией) |
 | DELETE | `/api/commands/:id` | Удалить команду |
 | POST | `/api/commands/:id/use` | Инкремент счётчика использования команды |
+| GET | `/api/bookmarks` | Список сохранённых сайтов и закладок |
+| POST | `/api/bookmarks` | Создать закладку (с валидацией) |
+| PUT | `/api/bookmarks/:id` | Обновить закладку (с валидацией) |
+| DELETE | `/api/bookmarks/:id` | Удалить закладку |
+| POST | `/api/bookmarks/:id/click` | Инкремент счётчика переходов на сайт |
 | GET | `/api/categories` | Список категорий |
 | POST | `/api/categories` | Создать категорию |
 | DELETE | `/api/categories/:id` | Удалить категорию |

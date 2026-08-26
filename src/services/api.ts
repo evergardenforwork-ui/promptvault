@@ -187,7 +187,7 @@ export const api = {
     return request('/favorites');
   },
 
-  async toggleFavorite(itemId: string, itemType: 'prompt' | 'skill' | 'git_project' | 'command'): Promise<{ added: boolean; favorites: { prompts: string[]; skills: string[]; gitProjects?: string[]; commands?: string[] } }> {
+  async toggleFavorite(itemId: string, itemType: 'prompt' | 'skill' | 'git_project' | 'command' | 'bookmark'): Promise<{ added: boolean; favorites: { prompts: string[]; skills: string[]; gitProjects?: string[]; commands?: string[]; bookmarks?: string[] } }> {
     return request('/favorites/toggle', {
       method: 'POST',
       body: JSON.stringify({ itemId, itemType }),
@@ -289,6 +289,33 @@ export const api = {
 
   async useCommand(id: string): Promise<{ usageCount: number }> {
     return request(`/commands/${id}/use`, { method: 'POST' });
+  },
+
+  // Web Bookmarks & Sites
+  async getBookmarks(): Promise<import('../types').BookmarkItem[]> {
+    return request('/bookmarks');
+  },
+
+  async createBookmark(bookmark: Omit<import('../types').BookmarkItem, 'id' | 'createdAt' | 'userId' | 'authorName' | 'authorEmail' | 'clickCount'>): Promise<import('../types').BookmarkItem> {
+    return request('/bookmarks', {
+      method: 'POST',
+      body: JSON.stringify(bookmark),
+    });
+  },
+
+  async updateBookmark(id: string, bookmark: Partial<import('../types').BookmarkItem>): Promise<import('../types').BookmarkItem> {
+    return request(`/bookmarks/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(bookmark),
+    });
+  },
+
+  async deleteBookmark(id: string): Promise<void> {
+    return request(`/bookmarks/${id}`, { method: 'DELETE' });
+  },
+
+  async clickBookmark(id: string): Promise<{ clickCount: number }> {
+    return request(`/bookmarks/${id}/click`, { method: 'POST' });
   },
 };
 

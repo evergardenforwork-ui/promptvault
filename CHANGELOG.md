@@ -9,7 +9,8 @@
 
 | Тег / Хеш | Дата | Название / Назначение | Описание |
 |---|:---:|---|---|
-| *upcoming* | 2026-08-26 | **⚡ AI Commands & Workflows Hub** | Создан 4-й раздел «Команды & Инструкции»: SQL таблица `commands`, CRUD API (5 роутов), инкремент использования, привязка к скиллам, авто-детект и подстановка переменных `{{param}}` (`CommandFillModal`), `CommandsSection`, `CommandCard`, `CommandForm`. TypeScript `--noEmit` & `vite build` — ✅ 0 ошибок. |
+| *upcoming* | 2026-08-26 | **🌐 Web Bookmarks & Browser Tabs Hub** | Создан 5-й раздел «Закладки & Веб-сайты»: SQL таблица `bookmarks`, CRUD API (5 эндпоинтов), 2-уровневая структура (Папки-вкладки + Подкатегории внутри папок), создание кастомных папок на лету (`FolderCreateModal`), авто-Favicon/домен, `BookmarksSection`, `BookmarkCard`, `BookmarkForm`. TypeScript `--noEmit` & `vite build` — ✅ 0 ошибок. |
+| `36056d1` | 2026-08-26 | **⚡ AI Commands & Workflows Hub** | Создан 4-й раздел «Команды & Инструкции»: SQL таблица `commands`, CRUD API (5 роутов), инкремент использования, привязка к скиллам, авто-детект и подстановка переменных `{{param}}` (`CommandFillModal`), `CommandsSection`, `CommandCard`, `CommandForm`. |
 | `fbf6879` | 2026-08-23 | **🛡️ AI Token Protection & Security Guards** | Внедрена многоуровневая защита Gemini: Global Kill Switch (`DISABLE_AI=true`), Rate Limiter (1 req/3s, max 15/min), Timeout Guard (25s), Payload Caps (max 12k симв), `maxOutputTokens: 2048`, UI-блокировка дабл-клика и счетчик символов. |
 | `70ecb18` | 2026-08-23 | **🐙 Git Hub & AI Tools Hub — ЗАВЕРШЕНО** | Реализован полный раздел Git Projects: SQL-миграция, CRUD API (5 эндпоинтов), Gemini 3.1 Flash-Lite Smart Parser, `GitProjectsSection`, `GitProjectCard`, `GitProjectForm` (с AI-модалкой), `GitProjectView` (аккордеоны). TypeScript `--noEmit` и `vite build` — ✅ OK. |
 | `e1f83e2` | 2026-08-23 | **Git Tools Hub Prototype v2.1** | Автономный прототип `test/index.html` с аккордеонами гайда по запуску, детальным описанием, личными заметками, кастомными категориями и Gemini ИИ-парсером. |
@@ -22,6 +23,21 @@
 ---
 
 ## 🗓️ Хронологический журнал изменений
+
+### 🌐 2026-08-26 — Раздел «Web Bookmarks & Sites Hub» (Закладки и Сайты)
+- **Новый 5-й раздел `🌐 Закладки` в PromptVault**:
+  - Каталог избранных сайтов, сервисов, дизайн-вдохновений и баз знаний с превью-скриншотами.
+  - **Двухуровневая организация (как в браузере)**:
+    - **Уровень 1 (Папки/Вкладки)**: `🎨 Design & UI`, `🕵️ OSINT & Поиск`, `💼 1С Предприятие`, `🤖 AI & Нейросети`, `🛠️ Dev & Тулзы`, `📚 Документация`, `📁 Общее` + кнопка **`+ Создать папку`** (`FolderCreateModal.tsx`).
+    - **Уровень 2 (Подкатегории внутри папки)**: динамические фильтры внутри выбранной папки (например, внутри «1С»: `1С База`, `Отчёты`, `Конфигурации` + `+ Подкатегория`).
+  - **1-Click Open & Copy**: открытие сайта в новой вкладке с подсчётом переходов (`🔥 clickCount`) и быстрое копирование ссылки.
+  - **Автоматический парсинг домена и Favicon**: при вводе URL автоматически подставляется favicon и аккуратное имя сайта.
+  - **Загрузка скриншотов**: загрузка баннеров/скриншотов сайта с хранением в Supabase Storage.
+  - **База данных & API**:
+    - Миграция `scripts/create_bookmarks_table.sql`.
+    - 5 CRUD-эндпоинтов `/api/bookmarks` в `server.ts` и `api/index.ts`.
+
+---
 
 ### ⚡ 2026-08-26 — Раздел «AI Commands & Workflows Hub» (Команды и Инструкции)
 - **Новый 4-й раздел `⚡ Команды` в PromptVault**:

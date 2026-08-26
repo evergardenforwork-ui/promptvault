@@ -62,13 +62,9 @@ superbasetest/
 ├── .gitignore              ← node_modules, dist, .env, data/, firestore-export/, graphify-out/
 │
 ├── scripts/
-│   ├── all_new_tables_migration.sql  ← 🚀 Единая SQL миграция для всех таблиц
-│   ├── create_workspaces_table.sql   ← 💼 DDL таблицы workspaces и workspace_id
-│   ├── create_git_projects_table.sql ← SQL для создания таблицы git_projects
-│   ├── create_commands_table.sql     ← SQL для создания таблицы commands
-│   ├── create_bookmarks_table.sql    ← SQL для создания таблицы bookmarks
-│   ├── create_skill_hints_table.sql  ← SQL для создания таблицы skill_hints
-│   └── manageUsers.ts                ← CLI утилита управления пользователями и паролями
+│   ├── schema.sql                    ← 🚀 Каноническая полная SQL схема Supabase (все 10 таблиц)
+│   ├── manageUsers.ts                ← CLI утилита управления пользователями и паролями
+│   └── migrateToSupabase.ts          ← Утилита миграции данных
 │
 ├── Agent/                  ← Документация и планирование
 │   ├── MD_files/
@@ -300,8 +296,8 @@ AssistantConfig { systemPrompt }
 - **🌐 Раздел «Web Bookmarks & Sites Hub»**:
   - CRUD API `/api/bookmarks`, древовидная иерархия папок с бесконечной вложенностью (`folder: "A / B / C"`), интерактивные хлебные крошки (`📁 Все закладки > 🤖 AI > 📷 Фото`), компактная сетка подпапок со счётчиками сайтов, создание папок на лету (`FolderCreateModal`), авто-Favicon/домен, `BookmarksSection`, `BookmarkCard`, `BookmarkForm`, `bookmarkTreeUtils.ts`.
 
-### 🗄️ SQL Миграция для Supabase:
-- Единый скрипт: [`scripts/all_new_tables_migration.sql`](scripts/all_new_tables_migration.sql) — создать все 4 новые таблицы (`git_projects`, `commands`, `bookmarks`, `skill_hints`) в один клик.
+### 🗄️ SQL Схема для Supabase:
+- Канонический мастер-скрипт: [`scripts/schema.sql`](scripts/schema.sql) — полная чистая схема базы данных Supabase (все 10 таблиц, внешние ключи, RLS политики, индексы).
 
 ### 🔴 Следующий этап (будущие задачи):
 - Включить Gemini ИИ-ассистент в промптах (убрать заглушку в `PhotoView.tsx`)

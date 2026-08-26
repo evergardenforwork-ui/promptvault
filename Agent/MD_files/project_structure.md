@@ -39,13 +39,9 @@ promptvault/
 ├── tsconfig.json             # TypeScript конфигурация
 ├── .agents/skills/           # 🧠 Локальные навыки для ИИ-агентов (supabase, postgres, etc.)
 ├── scripts/
-│   ├── all_new_tables_migration.sql # 🚀 Единая SQL миграция для всех 4 новых таблиц
-│   ├── create_workspaces_table.sql  # 💼 DDL создания таблицы workspaces и workspace_id
-│   ├── create_git_projects_table.sql # DDL создания таблицы git_projects
-│   ├── create_commands_table.sql # DDL создания таблицы commands
-│   ├── create_bookmarks_table.sql # DDL создания таблицы bookmarks
-│   ├── create_skill_hints_table.sql # DDL создания таблицы skill_hints
-│   └── manageUsers.ts        # CLI утилита управления пользователями и сброса паролей
+│   ├── schema.sql                # 🚀 Каноническая полная SQL схема Supabase (все 10 таблиц)
+│   ├── manageUsers.ts            # CLI утилита управления пользователями и сброса паролей
+│   └── migrateToSupabase.ts      # Утилита миграции данных
 ├── Agent/                    # Системная документация и планы
 │   ├── MD_files/             # PRD, DESIGN, ARCHITECTURE, SCHEMA, RULES, DATABASE, USER_MANAGEMENT, project_structure
 │   └── plan/                 # План реализации фич (plan.md, plan_git_hub.md, plan_commands.md, plan_bookmarks.md, etc.)

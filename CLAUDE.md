@@ -30,7 +30,7 @@ When asked to explore, inspect, or build features in this repo:
 
 1. **Dual Backend**: `server.ts` (dev) and `api/index.ts` (Vercel serverless) MUST remain synchronized on all API endpoint changes.
 2. **File Decomposition**: 1 component = 1 file. Keep components modular in `src/sections/<domain>/`. Keep files < 250 lines. Modals must be separated into `XxxModal.tsx`.
-3. **Database & Storage**: Dual-Engine: ☁️ Supabase (PostgreSQL + Storage) for cloud and 💻 Local SQLite (`better-sqlite3` + `data/uploads/`) for zero-config offline mode and sharing with friends. Migration scripts in `scripts/`.
+3. **Database & Storage**: Dual-Engine: ☁️ Supabase (PostgreSQL + Storage) for cloud and 💻 Local SQLite (`better-sqlite3` + `data/uploads/`) for zero-config offline mode and sharing with friends. Canonical SQL schema in [`scripts/schema.sql`](scripts/schema.sql).
 4. **5 Modular Hubs & Workspaces**:
    - 📷 `src/sections/prompts/` & `src/sections/photo/` (Prompts)
    - 📦 `src/sections/skills/` (Skills Web IDE)

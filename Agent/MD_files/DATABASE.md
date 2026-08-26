@@ -360,7 +360,7 @@ CREATE TABLE IF NOT EXISTS chats (
 CREATE TABLE IF NOT EXISTS user_favorites (
     user_id    TEXT NOT NULL REFERENCES users(uid) ON DELETE CASCADE,
     item_id    TEXT NOT NULL,
-    item_type  TEXT NOT NULL CHECK (item_type IN ('prompt', 'skill')),
+    item_type  TEXT NOT NULL CHECK (item_type IN ('prompt', 'skill', 'git_project', 'command', 'bookmark')),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     PRIMARY KEY (user_id, item_id, item_type)
 );
@@ -375,31 +375,7 @@ CREATE INDEX IF NOT EXISTS idx_skills_is_public      ON skills(is_public);
 CREATE INDEX IF NOT EXISTS idx_skill_hints_skill_id  ON skill_hints(skill_id);
 CREATE INDEX IF NOT EXISTS idx_user_favorites_user   ON user_favorites(user_id);
 
--- 8. Git Projects / AI Tools Hub (выполнить scripts/create_git_projects_table.sql в Supabase!)
-CREATE TABLE IF NOT EXISTS git_projects (
-    id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id              TEXT NOT NULL REFERENCES users(uid) ON DELETE CASCADE,
-    title                TEXT NOT NULL,
-    category             TEXT NOT NULL DEFAULT 'tools',
-    summary              TEXT NOT NULL,
-    features             TEXT,
-    detailed_description TEXT,
-    install_command      TEXT,
-    author_notes         TEXT,
-    github_url           TEXT,
-    demo_url             TEXT,
-    image                TEXT,
-    tags                 TEXT[] DEFAULT '{}',
-    pricing              TEXT NOT NULL DEFAULT 'free',
-    is_public            BOOLEAN DEFAULT true,
-    author_name          TEXT NOT NULL DEFAULT '',
-    author_email         TEXT NOT NULL DEFAULT '',
-    created_at           TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_git_projects_user_id  ON git_projects(user_id);
-CREATE INDEX IF NOT EXISTS idx_git_projects_category ON git_projects(category);
-CREATE INDEX IF NOT EXISTS idx_git_projects_pricing  ON git_projects(pricing);
-CREATE INDEX IF NOT EXISTS idx_git_projects_tags     ON git_projects USING GIN (tags);
-CREATE INDEX IF NOT EXISTS idx_git_projects_created  ON git_projects(created_at DESC);
+-- 8. Полная схема Supabase со всеми 10 таблицами находится в scripts/schema.sql
 ```
+
+> 🚀 **Полный канонический DDL-скрипт**: Для инициализации или обновления всей базы данных Supabase выполните файл [`scripts/schema.sql`](../../scripts/schema.sql) в Supabase SQL Editor.

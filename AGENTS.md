@@ -100,13 +100,9 @@ superbasetest/
 │   └── plan_file_system.md ← [✅ ВЫПОЛНЕНО] План файловой системы ZIP
 │
 ├── scripts/                ← 🗄️ SQL МИГРАЦИИ И УТИЛИТЫ
-│   ├── all_new_tables_migration.sql ← 🚀 ЕДИНЫЙ SQL-СКРИПТ ДЛЯ ВСЕХ ТАБЛИЦ
-│   ├── create_workspaces_table.sql  ← 💼 Создание таблицы workspaces и workspace_id
-│   ├── create_git_projects_table.sql
-│   ├── create_commands_table.sql
-│   ├── create_bookmarks_table.sql
-│   ├── create_skill_hints_table.sql
-│   └── manageUsers.ts      ← CLI сброса паролей и управления пользователями
+│   ├── schema.sql          ← 🚀 КАНОНИЧЕСКАЯ ЕДИНАЯ СХЕМА SUPABASE (ВСЕ 10 ТАБЛИЦ)
+│   ├── manageUsers.ts      ← CLI сброса паролей и управления пользователями
+│   └── migrateToSupabase.ts← Утилита миграции данных
 │
 └── src/                    ← 💻 ИСХОДНЫЙ КОД FRONTEND
     ├── main.tsx

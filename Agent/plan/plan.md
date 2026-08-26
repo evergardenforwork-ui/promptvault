@@ -509,8 +509,8 @@ npm install bcryptjs @types/bcryptjs
 
 > **✅ ТЕКУЩИЙ СТАТУС**: Все 5 разделов (`📷 Промпты`, `📦 Skills`, `🐙 Git Hub`, `⚡ Команды`, `🌐 Закладки`), личное `⭐ Избранное` во всех 5 разделах, изолированные `💼 Рабочие Пространства`, `💾 Full-Media ZIP Backup` (все 5 сущностей + картинки), `🪄 Gemini 3.1 Flash-Lite AI Smart Parser` и полноценная `🎨 Двухтемная система (Dark/Light)` полностью реализованы, модульно декомпозированы, протестированы и собираются без единой ошибки. Каскадная автоочистка базы активна.
 
-**Осталось сделать в Supabase для синхронизации всех новых таблиц:**
-1. 🔴 **Supabase**: выполнить миграции [`scripts/all_new_tables_migration.sql`](../../scripts/all_new_tables_migration.sql) и [`scripts/create_workspaces_table.sql`](../../scripts/create_workspaces_table.sql) в SQL Editor.
+**Каноническая схема базы данных Supabase:**
+1. 🟢 **Supabase Master Schema**: Полная схема базы данных доступна в [`scripts/schema.sql`](../../scripts/schema.sql). Все таблицы на онлайновом Supabase 100% соответствуют этой схеме.
 
 **Планы на следующую сессию:**
 1. 🟡 **Включить Gemini ИИ-ассистент** — убрать заглушку в `PhotoView.tsx`

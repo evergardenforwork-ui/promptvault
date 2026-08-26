@@ -221,11 +221,11 @@ AssistantConfig { systemPrompt }
 | GET | `/api/skills/:id/hints` | Список подсказок скилла |
 | POST | `/api/skills/:id/hints` | Создать подсказку { title, text } |
 | DELETE | `/api/skills/:id/hints/:hintId` | Удалить подсказку |
-| GET | `/api/git-projects` | [🔴 СЛЕДУЮЩИЙ ШАГ] Список Git проектов/тулзов |
-| POST | `/api/git-projects` | [🔴 СЛЕДУЮЩИЙ ШАГ] Создать Git проект |
-| PUT | `/api/git-projects/:id` | [🔴 СЛЕДУЮЩИЙ ШАГ] Обновить Git проект |
-| DELETE | `/api/git-projects/:id` | [🔴 СЛЕДУЮЩИЙ ШАГ] Удалить Git проект |
-| POST | `/api/gemini/parse-tool` | [🔴 СЛЕДУЮЩИЙ ШАГ] Gemini ИИ-парсер скриншотов/ссылок |
+| GET | `/api/git-projects` | Список Git проектов/тулзов |
+| POST | `/api/git-projects` | Создать Git проект (с валидацией) |
+| PUT | `/api/git-projects/:id` | Обновить Git проект (с валидацией) |
+| DELETE | `/api/git-projects/:id` | Удалить Git проект |
+| POST | `/api/gemini/parse-tool` | Gemini 3.1 Flash-Lite ИИ-парсер скриншотов/ссылок/текста |
 | GET | `/api/categories` | Список категорий |
 | POST | `/api/categories` | Создать категорию |
 | DELETE | `/api/categories/:id` | Удалить категорию |

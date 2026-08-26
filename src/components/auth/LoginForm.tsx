@@ -27,48 +27,48 @@ export default function LoginForm({ onLoginSuccess, onToast }: LoginFormProps) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] p-6">
+    <div className="min-h-screen flex items-center justify-center bg-[#f5f5f5] dark:bg-[#000000] text-zinc-900 dark:text-white p-6 transition-colors">
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="max-w-md w-full space-y-8 p-8 bg-zinc-900/50 border border-zinc-800 rounded-3xl backdrop-blur-xl"
+        className="max-w-md w-full space-y-8 p-8 bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-3xl backdrop-blur-xl shadow-xl dark:shadow-none transition-colors"
       >
         <div className="text-center space-y-2">
-          <h1 className="text-6xl font-black tracking-tighter text-white">
-            PROMPT<span className="text-sky-400">VAULT</span>
+          <h1 className="text-6xl font-black tracking-tighter text-zinc-900 dark:text-white">
+            PROMPT<span className="text-sky-500 dark:text-sky-400">VAULT</span>
           </h1>
-          <p className="text-zinc-500 font-medium">Ваша личная библиотека промптов.</p>
+          <p className="text-zinc-500 dark:text-zinc-400 font-medium">Ваша личная библиотека промптов.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1">
-            <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-2">Email</label>
+            <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 ml-2">Email</label>
             <input 
               type="email" 
               required 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-zinc-800/50 border border-zinc-700 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-sky-400 transition-all placeholder-zinc-600"
+              className="w-full bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-2xl py-4 px-6 text-zinc-900 dark:text-white focus:outline-none focus:border-sky-500 dark:focus:border-sky-400 transition-all placeholder-zinc-400 dark:placeholder-zinc-600 shadow-sm"
               placeholder="email@example.com"
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-2">Пароль</label>
+            <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 ml-2">Пароль</label>
             <input 
               type="password" 
               required 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-zinc-800/50 border border-zinc-700 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-sky-400 transition-all placeholder-zinc-600"
+              className="w-full bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-2xl py-4 px-6 text-zinc-900 dark:text-white focus:outline-none focus:border-sky-500 dark:focus:border-sky-400 transition-all placeholder-zinc-400 dark:placeholder-zinc-600 shadow-sm"
               placeholder="••••••••"
             />
           </div>
           <button 
             type="submit"
             disabled={loading}
-            className="w-full py-4 bg-sky-400 text-black font-bold rounded-2xl hover:opacity-90 transition-all disabled:opacity-50 cursor-pointer"
+            className="w-full py-4 bg-sky-400 text-black font-black uppercase tracking-wider rounded-2xl hover:bg-sky-300 transition-all shadow-lg shadow-sky-400/20 disabled:opacity-50 mt-4 cursor-pointer"
           >
-            {loading ? 'Вход...' : 'Войти'}
+            {loading ? 'Вход...' : 'Войти в систему'}
           </button>
         </form>
 

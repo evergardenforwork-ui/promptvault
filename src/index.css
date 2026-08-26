@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Syne:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -8,11 +8,34 @@
   
   --color-accent: #7c6af7;
   --color-accent-hover: #6b5ae6;
+  --color-crimson: #fc1c46;
+}
+
+:root {
+  /* Light Theme (shadcn/ui frosted paper style) */
+  --color-canvas: #f5f5f5;
+  --color-paper: #ffffff;
+  --color-surface-alt: #fafafa;
+  --color-ink: #0a0a0a;
+  --color-ink-soft: #171717;
+  --color-mid-gray: #737373;
+  --color-hairline: #e5e5e5;
+}
+
+html.dark, :root[data-theme='dark'], :root.dark {
+  /* Dark Theme (ThoughtLab obsidian void style) */
+  --color-canvas: #000000;
+  --color-paper: #0c0c0e;
+  --color-surface-alt: #18181b;
+  --color-ink: #ffffff;
+  --color-ink-soft: #cccccc;
+  --color-mid-gray: #71717a;
+  --color-hairline: #27272a;
 }
 
 @layer base {
   body {
-    @apply bg-[#0a0a0a] text-zinc-100 font-sans antialiased;
+    @apply bg-[#f5f5f5] text-[#0a0a0a] dark:bg-[#000000] dark:text-zinc-100 font-sans antialiased transition-colors duration-200;
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -21,7 +44,7 @@
 }
 
 .markdown-body {
-  @apply text-zinc-300 leading-relaxed;
+  @apply text-zinc-700 dark:text-zinc-300 leading-relaxed;
 }
 
 .markdown-body p {
@@ -29,7 +52,7 @@
 }
 
 .markdown-body code {
-  @apply bg-zinc-800 px-1 rounded font-mono text-sm;
+  @apply bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-1.5 py-0.5 rounded font-mono text-sm;
 }
 
 /* Custom scrollbar */
@@ -43,7 +66,7 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-zinc-800 rounded-full hover:bg-zinc-700 transition-colors;
+  @apply bg-zinc-300 dark:bg-zinc-800 rounded-full hover:bg-zinc-400 dark:hover:bg-zinc-700 transition-colors;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */

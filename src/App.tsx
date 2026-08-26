@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, Plus, Menu } from 'lucide-react';
+import { Search, Plus, Menu, Sun, Moon } from 'lucide-react';
 import { AnimatePresence } from 'motion/react';
 import { api } from './services/api';
 import { Prompt, Category, User, MediaType, SkillPackage, GitProject, CommandItem, BookmarkItem, DEFAULT_BOOKMARK_FOLDERS } from './types';
 import { cn } from './utils/cn';
 import { useHotkeys } from './hooks/useHotkeys';
 import { useSkillFilters } from './hooks/useSkillFilters';
+import { useTheme } from './hooks/useTheme';
 
 // Section Components
 import PromptsSection from './sections/prompts/PromptsSection';
@@ -35,6 +36,7 @@ import BookmarkForm from './sections/bookmarks/BookmarkForm';
 
 
 export default function App() {
+  const { theme, toggleTheme, isDark } = useTheme();
   const [activeSection, setActiveSection] = useState<'prompts' | 'skills' | 'git' | 'commands' | 'bookmarks' | 'admin'>('prompts');
   const [user, setUser] = useState<User | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
@@ -482,27 +484,27 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100 flex flex-col">
+    <div className="min-h-screen bg-[#f5f5f5] dark:bg-[#000000] text-[#0a0a0a] dark:text-zinc-100 flex flex-col transition-colors duration-200">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-zinc-900 px-6 py-4 flex items-center justify-between gap-4">
+      <header className="sticky top-0 z-40 bg-white/80 dark:bg-[#000000]/80 backdrop-blur-xl border-b border-zinc-200 dark:border-zinc-900 px-6 py-4 flex items-center justify-between gap-4 transition-colors">
         <div className="flex items-center gap-6">
           <button 
             onClick={() => setIsSidebarOpen(true)}
-            className="p-2 hover:bg-zinc-900 rounded-xl text-zinc-400 cursor-pointer"
+            className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-xl text-zinc-600 dark:text-zinc-400 cursor-pointer transition-colors"
           >
             <Menu size={24} />
           </button>
-          <h1 className="text-2xl font-black tracking-tighter hidden sm:block">
-            PROMPT<span className="text-sky-400">VAULT</span>
+          <h1 className="text-2xl font-black tracking-tighter hidden sm:block text-zinc-900 dark:text-white">
+            PROMPT<span className="text-sky-500 dark:text-sky-400">VAULT</span>
           </h1>
 
           {/* Главное Меню Разделов */}
-          <div className="flex items-center bg-zinc-900/90 border border-zinc-800 p-1 rounded-2xl">
+          <div className="flex items-center bg-zinc-200/70 dark:bg-zinc-900/90 border border-zinc-300/60 dark:border-zinc-800 p-1 rounded-2xl transition-colors">
             <button
               onClick={() => setActiveSection('prompts')}
               className={cn(
                 "px-4 py-1.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center gap-2",
-                activeSection === 'prompts' ? "bg-sky-400 text-black shadow-md shadow-sky-400/20" : "text-zinc-400 hover:text-white"
+                activeSection === 'prompts' ? "bg-sky-400 text-black shadow-md shadow-sky-400/20" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
               )}
             >
               <span>📷 Промпты</span>
@@ -511,7 +513,7 @@ export default function App() {
               onClick={() => setActiveSection('skills')}
               className={cn(
                 "px-4 py-1.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center gap-2",
-                activeSection === 'skills' ? "bg-purple-500 text-white shadow-md shadow-purple-500/20" : "text-zinc-400 hover:text-white"
+                activeSection === 'skills' ? "bg-purple-500 text-white shadow-md shadow-purple-500/20" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
               )}
             >
               <span>📦 Skills & Файлы</span>
@@ -520,7 +522,7 @@ export default function App() {
               onClick={() => setActiveSection('git')}
               className={cn(
                 "px-4 py-1.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center gap-2",
-                activeSection === 'git' ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20" : "text-zinc-400 hover:text-white"
+                activeSection === 'git' ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
               )}
             >
               <span>🐙 Git Hub</span>
@@ -529,7 +531,7 @@ export default function App() {
               onClick={() => setActiveSection('commands')}
               className={cn(
                 "px-4 py-1.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center gap-2",
-                activeSection === 'commands' ? "bg-amber-500 text-black shadow-md shadow-amber-500/20" : "text-zinc-400 hover:text-white"
+                activeSection === 'commands' ? "bg-amber-500 text-black shadow-md shadow-amber-500/20" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
               )}
             >
               <span>⚡ Команды</span>
@@ -538,7 +540,7 @@ export default function App() {
               onClick={() => setActiveSection('bookmarks')}
               className={cn(
                 "px-4 py-1.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center gap-2",
-                activeSection === 'bookmarks' ? "bg-cyan-400 text-black shadow-md shadow-cyan-400/20" : "text-zinc-400 hover:text-white"
+                activeSection === 'bookmarks' ? "bg-cyan-400 text-black shadow-md shadow-cyan-400/20" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
               )}
             >
               <span>🌐 Закладки</span>
@@ -548,7 +550,7 @@ export default function App() {
                 onClick={() => setActiveSection('admin')}
                 className={cn(
                   "px-4 py-1.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center gap-2",
-                  activeSection === 'admin' ? "bg-violet-500 text-white shadow-md shadow-violet-500/20" : "text-zinc-400 hover:text-white"
+                  activeSection === 'admin' ? "bg-violet-500 text-white shadow-md shadow-violet-500/20" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
                 )}
               >
                 <span>👥 Пользователи</span>
@@ -559,7 +561,7 @@ export default function App() {
 
         {/* Search Bar */}
         <div className="flex-1 max-w-2xl relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" size={18} />
           <input 
             ref={searchInputRef}
             type="text" 
@@ -582,7 +584,7 @@ export default function App() {
               }
             }}
             className={cn(
-              "w-full bg-zinc-900 border border-zinc-800 rounded-2xl py-3 pl-12 pr-4 focus:outline-none transition-all text-sm text-white placeholder-zinc-500",
+              "w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl py-3 pl-12 pr-4 focus:outline-none transition-all text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 shadow-sm",
               activeSection === 'git' ? "focus:border-emerald-400" :
               activeSection === 'commands' ? "focus:border-amber-400" :
               activeSection === 'bookmarks' ? "focus:border-cyan-400" :
@@ -627,9 +629,23 @@ export default function App() {
               <Plus size={20} />
             </button>
           )}
+
+          {/* Theme Toggle Button */}
+          <button
+            onClick={toggleTheme}
+            className="p-2.5 rounded-xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 transition-all cursor-pointer flex items-center justify-center"
+            title={isDark ? "Включить светлую тему (shadcn/frosted)" : "Включить тёмную тему (ThoughtLab/obsidian)"}
+          >
+            {isDark ? (
+              <Sun size={20} className="text-amber-400 hover:rotate-45 transition-transform" />
+            ) : (
+              <Moon size={20} className="text-zinc-700 hover:-rotate-12 transition-transform" />
+            )}
+          </button>
+
           <button 
             onClick={handleLogout}
-            className="p-2 hover:bg-zinc-900 rounded-xl text-zinc-500 hover:text-white transition-all cursor-pointer"
+            className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-xl text-zinc-600 dark:text-zinc-500 hover:text-zinc-950 dark:hover:text-white transition-all cursor-pointer"
             title="Выйти"
           >
             Выйти

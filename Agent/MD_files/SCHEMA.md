@@ -1,7 +1,7 @@
 # SCHEMA.md — Database & API Schema
 
 > Полностью соответствует реальным данным проекта. Обновлять при изменении types.ts или server.ts.
-> **Последнее обновление**: 2026-08-23
+> **Последнее обновление**: 2026-08-26
 
 ## Database Tables & Relationships (ER Diagram)
 
@@ -15,9 +15,19 @@ erDiagram
         text role
         timestamptz created_at
     }
+    WORKSPACE {
+        uuid id PK
+        text user_id FK
+        text name
+        text icon
+        text color
+        boolean is_default
+        timestamptz created_at
+    }
     PROMPT {
         uuid id PK
         text user_id FK
+        uuid workspace_id FK
         text title
         text category
         text[] tags
@@ -44,6 +54,7 @@ erDiagram
     SKILL {
         uuid id PK
         text user_id FK
+        uuid workspace_id FK
         text title
         text description
         text category
@@ -91,6 +102,7 @@ erDiagram
     GIT_PROJECT {
         uuid id PK
         text user_id FK
+        uuid workspace_id FK
         text title
         text category
         text summary
@@ -111,11 +123,13 @@ erDiagram
     COMMAND {
         uuid id PK
         text user_id FK
+        uuid workspace_id FK
         text title
         text command_text
         text description
         text category
         uuid skill_id FK
+        text skill_title
         text target_ai
         text[] tags
         text[] variables
@@ -128,6 +142,7 @@ erDiagram
     BOOKMARK {
         uuid id PK
         text user_id FK
+        uuid workspace_id FK
         text title
         text url
         text description
@@ -143,6 +158,7 @@ erDiagram
         timestamptz created_at
     }
 
+    USER ||--o{ WORKSPACE : "владеет"
     USER ||--o{ PROMPT : "создаёт"
     USER ||--o{ SKILL : "создаёт"
     USER ||--o{ CATEGORY : "создаёт"
@@ -152,6 +168,11 @@ erDiagram
     USER ||--o{ GIT_PROJECT : "добавляет"
     USER ||--o{ COMMAND : "создаёт"
     USER ||--o{ BOOKMARK : "сохраняет"
+    WORKSPACE ||--o{ PROMPT : "фильтрует"
+    WORKSPACE ||--o{ SKILL : "фильтрует"
+    WORKSPACE ||--o{ GIT_PROJECT : "фильтрует"
+    WORKSPACE ||--o{ COMMAND : "фильтрует"
+    WORKSPACE ||--o{ BOOKMARK : "фильтрует"
     PROMPT ||--o{ CHAT : "имеет историю"
     SKILL ||--o{ SKILL_HINT : "содержит"
     SKILL ||--o{ COMMAND : "привязана к"
@@ -170,12 +191,25 @@ erDiagram
 | `role` | `"admin"` \| `"user"` | Роль. Admin видит всё |
 | `created_at` | TIMESTAMPTZ | Дата создания |
 
+### `workspaces` (Supabase Table)
+
+| Поле | Тип | Описание |
+|---|---|---|
+| `id` | UUID (PK) | Уникальный ID рабочего пространства |
+| `user_id` | TEXT | uid владельца (FK → users) |
+| `name` | TEXT | Название (например, "1С", "Дизайн", "Личное") |
+| `icon` | TEXT | Эмодзи иконка (💼, 🤖, 🧠, 🎨 и др.) |
+| `color` | TEXT | Цветовой акцент (sky-400, purple-500, emerald-500 и др.) |
+| `is_default` | BOOLEAN | Пространство по умолчанию |
+| `created_at` | TIMESTAMPTZ | Дата создания |
+
 ### `prompts` (Supabase Table)
 
 | Поле | Тип | Описание |
 |---|---|---|
 | `id` | UUID (PK) | Авто-генерируется Supabase |
 | `user_id` | TEXT | uid автора (FK → users) |
+| `workspace_id` | UUID? | ID рабочего пространства (FK → workspaces, ON DELETE SET NULL) |
 | `title` | TEXT | Название промпта |
 | `category` | TEXT | Название категории (текст, не FK) |
 | `tags` | TEXT[] | Хештеги |
@@ -205,6 +239,7 @@ erDiagram
 |---|---|---|
 | `id` | UUID (PK) | Авто-генерируется |
 | `user_id` | TEXT | uid автора |
+| `workspace_id` | UUID? | ID рабочего пространства (FK → workspaces, ON DELETE SET NULL) |
 | `title` | TEXT | Название набора |
 | `description` | TEXT | Описание |
 | `category` | TEXT | Категория (текст) |
@@ -219,7 +254,7 @@ erDiagram
 | `author_email` | TEXT | Email автора |
 | `created_at` | TIMESTAMPTZ | Дата создания |
 
-### `skill_hints` (Supabase Table) — НОВАЯ
+### `skill_hints` (Supabase Table)
 
 | Поле | Тип | Описание |
 |---|---|---|
@@ -229,8 +264,6 @@ erDiagram
 | `title` | TEXT | Заголовок подсказки |
 | `text` | TEXT | Полный текст (промпт для ИИ) |
 | `created_at` | TIMESTAMPTZ | Дата создания |
-
-> ⚠️ Таблица создаётся вручную. SQL: `scripts/create_skill_hints_table.sql`
 
 ### `categories` (Supabase Table)
 
@@ -259,8 +292,8 @@ erDiagram
 | Поле | Тип | Описание |
 |---|---|---|
 | `user_id` | TEXT (PK part) | uid пользователя |
-| `item_id` | TEXT (PK part) | ID промпта или скилла |
-| `item_type` | TEXT (PK part) | `prompt` \| `skill` |
+| `item_id` | TEXT (PK part) | ID промпта, скилла, проекта, команды или закладки |
+| `item_type` | TEXT (PK part) | `prompt` \| `skill` \| `git_project` \| `command` \| `bookmark` |
 | `created_at` | TIMESTAMPTZ | |
 
 ### `git_projects` (Supabase Table) — Git Hub & AI Tools
@@ -269,6 +302,7 @@ erDiagram
 |---|---|---|
 | `id` | UUID (PK) | Авто-генерируется |
 | `user_id` | TEXT (FK → users) | uid автора |
+| `workspace_id` | UUID? | ID рабочего пространства (FK → workspaces, ON DELETE SET NULL) |
 | `title` | TEXT | Название проекта |
 | `category` | TEXT | `agents` \| `tools` \| `models` \| `media` \| `scrapers` \| `other` |
 | `summary` | TEXT | Краткий слоган (1-2 предложения) |
@@ -286,7 +320,48 @@ erDiagram
 | `author_email` | TEXT | Email автора |
 | `created_at` | TIMESTAMPTZ | Дата создания |
 
-> ⚠️ Таблица создаётся вручную. SQL: `scripts/create_git_projects_table.sql`
+### `commands` (Supabase Table) — AI Commands & Workflows
+
+| Поле | Тип | Описание |
+|---|---|---|
+| `id` | UUID (PK) | Авто-генерируется |
+| `user_id` | TEXT (FK → users) | uid автора |
+| `workspace_id` | UUID? | ID рабочего пространства (FK → workspaces, ON DELETE SET NULL) |
+| `title` | TEXT | Название команды |
+| `command_text` | TEXT | Полный текст сниппета или команды |
+| `description` | TEXT? | Описание назначения команды |
+| `category` | TEXT | `ai` \| `code` \| `git` \| `terminal` \| `system` \| `writing` \| `database` \| `devops` \| `other` |
+| `skill_id` | UUID? | Привязанный скилл (FK → skills) |
+| `skill_title` | TEXT? | Денормализованное имя скилла |
+| `target_ai` | TEXT? | Целевая платформа ИИ |
+| `tags` | TEXT[] | Теги |
+| `variables` | TEXT[] | Выделенные параметры `{{param}}` |
+| `is_public` | BOOLEAN | Публичный доступ |
+| `usage_count` | INT | Счётчик копирований/использований |
+| `author_name` | TEXT | Имя автора |
+| `author_email` | TEXT | Email автора |
+| `created_at` | TIMESTAMPTZ | Дата создания |
+
+### `bookmarks` (Supabase Table) — Web Bookmarks Hub
+
+| Поле | Тип | Описание |
+|---|---|---|
+| `id` | UUID (PK) | Авто-генерируется |
+| `user_id` | TEXT (FK → users) | uid автора |
+| `workspace_id` | UUID? | ID рабочего пространства (FK → workspaces, ON DELETE SET NULL) |
+| `title` | TEXT | Название сайта/закладки |
+| `url` | TEXT | Ссылка (URL) |
+| `description` | TEXT? | Краткое описание |
+| `folder` | TEXT | Папка/вкладка (например, "AI Тулзы", "1С") |
+| `category` | TEXT | Подкатегория внутри папки |
+| `favicon` | TEXT? | URL иконки Favicon |
+| `image` | TEXT? | URL баннера/превью |
+| `tags` | TEXT[] | Теги |
+| `click_count` | INT | Счётчик переходов |
+| `is_public` | BOOLEAN | Публичный доступ |
+| `author_name` | TEXT | Имя автора |
+| `author_email` | TEXT | Email автора |
+| `created_at` | TIMESTAMPTZ | Дата создания |
 
 ## Supabase Storage Buckets (PUBLIC)
 
@@ -306,6 +381,14 @@ erDiagram
 | Метод | Путь | Auth | Описание |
 |---|---|---|---|
 | POST | `/api/auth/login` | ❌ | Логин → `{ token, user }` |
+
+### `/api/workspaces`
+| Метод | Путь | Auth | Описание |
+|---|---|---|---|
+| GET | `/api/workspaces` | ✅ | Список рабочих пространств пользователя |
+| POST | `/api/workspaces` | ✅ | Создать рабочее пространство |
+| PUT | `/api/workspaces/:id` | ✅ | Обновить пространство (название, иконка, цвет) |
+| DELETE | `/api/workspaces/:id` | ✅ | Удалить пространство (карточки сохраняются, `workspace_id` → null) |
 
 ### `/api/prompts`
 | Метод | Путь | Auth | Описание |
@@ -420,7 +503,8 @@ erDiagram
 | `commandText` | `command_text` |
 | `skillId` | `skill_id` |
 | `skillTitle` | `skill_title` |
-| `targetAi` | `target_ai` |
+| `workspaceId` | `workspace_id` |
+| `isDefault` | `is_default` |
 | `clickCount` | `click_count` |
 | `usageCount` | `usage_count` |
 | `createdAt` | `created_at` |

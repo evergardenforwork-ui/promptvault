@@ -2,17 +2,18 @@
 
 > Высокоуровневая карта системы. Перед любым структурным изменением кода
 > ИИ должен свериться с этим файлом, чтобы не нарушить существующие паттерны.
-> **Последнее обновление**: 2026-08-23
+> **Последнее обновление**: 2026-08-26
 
 ## System Overview & High-Level Diagram
 
 ```
-Browser (React 19 SPA)
+Browser (React 19 SPA) — Dual Theme (Dark Obsidian / Light Paper)
         │  HTTP (fetch) + Authorization: Bearer <uid>
         ▼
 [ Dev: Express.js (server.ts, порт 3000) / Prod: Vercel Serverless Function (api/index.ts) ]
   ├─ /api/health          ← Диагностический health check
   ├─ /api/auth/*          ← Авторизация (bcrypt)
+  ├─ /api/workspaces/*    ← CRUD Рабочих пространств (GET/POST/PUT/DELETE)
   ├─ /api/prompts/*       ← CRUD промптов + пагинация
   ├─ /api/skills/*        ← CRUD пакетов скиллов + /hints
   ├─ /api/git-projects/*  ← CRUD Git проектов (GET/POST/PUT/DELETE)
@@ -28,7 +29,7 @@ Browser (React 19 SPA)
        ├─ /api/gemini/chat       ← Чат с историей (временно не используется)
        ├─ /api/gemini/analyze    ← Анализ изображения (временно не используется)
        └─ /api/gemini/parse-tool ← 🪄 AI Smart Parser (URL / текст / скриншот → JSON)
-        ├─ Supabase (PostgreSQL)   ← Таблицы: users, prompts, skills, skill_hints, categories, chats, user_favorites, git_projects, commands, bookmarks
+        ├─ Supabase (PostgreSQL)   ← Таблицы: users, workspaces, prompts, skills, skill_hints, categories, chats, user_favorites, git_projects, commands, bookmarks
         ├─ Supabase Storage        ← Бакеты: prompt-images, prompt-files
         │
         └─ Google Gemini API (gemini-3.1-flash-lite) — активен для /api/gemini/parse-tool
@@ -105,8 +106,8 @@ promptvault/
 │   ├── index.css           ← Tailwind v4 директивы + @theme токены
 │   ├── components/
 │   │   ├── auth/           ← LoginForm.tsx (форма входа)
-│   │   ├── layout/         ← Sidebar.tsx (фильтрация и навигация, onOpenAdmin)
-│   │   └── ui/             ← Toast, CategoryForm, ImageCropper, ConfirmDialog, FileTreeViewer
+│   │   ├── layout/         ← Sidebar.tsx (селектор пространств, навигация, статистика)
+│   │   └── ui/             ← WorkspaceModal, Toast, CategoryForm, ImageCropper, ConfirmDialog, FileTreeViewer
 │   ├── hooks/              ← Кастомные React-хуки
 │   │   ├── useHotkeys.ts          ← Ctrl+K, Ctrl+N, Escape
 │   │   ├── usePromptFilters.ts    ← Фильтрация промптов (all, my-all, my-own, my-web, others)

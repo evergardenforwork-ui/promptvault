@@ -1,18 +1,15 @@
 # PromptVault — Project Context for Antigravity
 
 > Этот файл автоматически читается AGY при каждом старте сессии.
-> **Последнее обновление**: 2026-08-23 (актуально на эту дату — синхронизирован с реальными файлами проекта)
+> **Последнее обновление**: 2026-08-26 (актуально на эту дату — синхронизирован с реальными файлами проекта)
 
 ---
 
 ## 🗂️ Что это за проект?
 
-**PromptVault** — персональное fullstack веб-приложение для хранения и управления промптами для нейросетей, а также пакетами скиллов, агентов и MCP-серверов (Skills & AI Hub).
-ИИ-ассистент на базе Google Gemini API в данный момент **отключён** (в разработке).
+**PromptVault** — персональное fullstack веб-приложение для хранения и управления промптами для нейросетей, а также пакетами скиллов, агентов и MCP-серверов (Skills & AI Hub), Git-инструментами, AI-командами и закладками веб-сайтов.
 
 **Репозиторий**: `C:\Users\Alekin\Desktop\Проекты\superbasetest`
-
-> ⚠️ Папка называется `superbasetest` — это рабочая директория проекта PromptVault.
 
 ---
 
@@ -21,11 +18,12 @@
 | Слой | Технология |
 |------|-----------|
 | Frontend | React 19, TypeScript, Vite 6, Tailwind CSS v4 |
+| Темизация | Dual Theme Engine (ThoughtLab Dark / shadcn Light) |
 | Анимации | Framer Motion (`motion` v12) |
 | Backend | Express.js (`server.ts`) — API + Vite dev-сервер |
 | Serverless | `api/index.ts` — Express adapter для Vercel Functions |
 | База данных | Supabase (PostgreSQL) + Supabase Storage (бакеты `prompt-images`, `prompt-files`) |
-| ИИ | Google Gemini API (Временно отключён) |
+| ИИ | Google Gemini API (`gemini-3.1-flash-lite` в `/api/gemini/parse-tool`) |
 | Иконки | `lucide-react` |
 | Markdown | `react-markdown` + `remark-gfm` + `remark-frontmatter` |
 | ZIP | `jszip` (клиент) + `adm-zip` (сервер) |
@@ -38,24 +36,14 @@
 
 ---
 
-## ⚙️ Критическая заметка по серверу
-
-В `server.ts` Vite интегрирован с `appType: "custom"` (НЕ `"spa"`).
-Причина: `appType: "spa"` перехватывает все `/api/*` запросы и отдаёт `index.html`, ломая API.
-Ручной SPA fallback добавлен после `app.use(vite.middlewares)`.
-
-**Vercel**: `api/index.ts` — тот же Express app, но без `listen()` и без Vite middleware. Экспортирует `default app`.
-**Безопасность**: API ключи удалены из клиентской сборки (vite.config.ts). Все API роуты обёрнуты в try/catch, на POST/PUT эндпоинтах есть валидация.
-**Защита ИИ & Токенов**: Встроен Kill Switch (`DISABLE_AI=true`), Rate Limiter (1 req/3s, max 15/min), таймаут 25s, ограничение входного текста до 12k символов и `maxOutputTokens: 2048`.
-
----
-
 ## 📁 РЕАЛЬНАЯ структура проекта (актуально)
 
 ```
 superbasetest/
 ├── GEMINI.md               ← Ты читаешь это сейчас
-├── CHANGELOG.md            ← 📜 Глобальный журнал изменений и Git-история (чекпоинты, теги)
+├── AGENTS.md               ← 🤖 Универсальная инструкция для всех ИИ-агентов
+├── CLAUDE.md               ← 🟣 Входной файл для Claude Code
+├── CHANGELOG.md            ← 📜 Глобальный журнал изменений и Git-история
 ├── server.ts               ← Express API + Vite dev-сервер (единый процесс, dev only)
 ├── api/
 │   └── index.ts            ← Express adapter для Vercel Serverless (production)
@@ -69,32 +57,29 @@ superbasetest/
 ├── .gitignore              ← node_modules, dist, .env, data/, firestore-export/, graphify-out/
 │
 ├── scripts/
-│   ├── migrateToSupabase.ts        ← Скрипт миграции JSON → Supabase (данные уже перенесены)
-│   ├── create_git_projects_table.sql ← SQL для создания таблицы git_projects (выполнить в Supabase!)
-│   ├── create_skill_hints_table.sql ← SQL для создания таблицы skill_hints (выполнить в Supabase!)
-│   ├── supabase_fix_schema.sql     ← SQL для адаптации типов и RLS
-│   ├── manageUsers.ts              ← CLI утилита управления пользователями и паролями
-│   ├── checkSchema.ts              ← Проверка схемы базы данных
-│   ├── checkTables.ts              ← Проверка таблиц в Supabase
-│   ├── fixSchema.ts                ← Исправление колонок базы
-│   ├── fixPromptCategories.ts      ← Корректировка категорий в промптах
-│   └── migrateUsers.ts             ← Миграция пользователей
+│   ├── all_new_tables_migration.sql  ← 🚀 Единая SQL миграция для всех таблиц
+│   ├── create_workspaces_table.sql   ← 💼 DDL таблицы workspaces и workspace_id
+│   ├── create_git_projects_table.sql ← SQL для создания таблицы git_projects
+│   ├── create_commands_table.sql     ← SQL для создания таблицы commands
+│   ├── create_bookmarks_table.sql    ← SQL для создания таблицы bookmarks
+│   ├── create_skill_hints_table.sql  ← SQL для создания таблицы skill_hints
+│   └── manageUsers.ts                ← CLI утилита управления пользователями и паролями
 │
 ├── Agent/                  ← Документация и планирование
-│   ├── Superbase/
-│   │   └── supabase_schema.sql     ← Базовый DDL файл схемы Supabase
 │   ├── MD_files/
-│   │   ├── PRD.md          ← ✅ Актуально (2026-08-23)
-│   │   ├── DESIGN.md       ← ✅ Актуально (2026-08-23)
-│   │   ├── ARCHITECTURE.md ← ✅ Актуально (2026-08-23)
-│   │   ├── SCHEMA.md       ← ✅ Актуально (2026-08-23) — snake_case колонки Supabase
-│   │   ├── RULES.md        ← ✅ Актуально (2026-08-23)
-│   │   ├── DATABASE.md     ← ✅ Актуально (2026-08-23)
-│   │   ├── USER_MANAGEMENT.md ← ✅ Актуально (2026-08-23)
-│   │   └── project_structure.md ← ✅ Актуально (2026-08-23)
+│   │   ├── PRD.md          ← ✅ Актуально (2026-08-26)
+│   │   ├── DESIGN.md       ← ✅ Актуально (2026-08-26)
+│   │   ├── ARCHITECTURE.md ← ✅ Актуально (2026-08-26)
+│   │   ├── SCHEMA.md       ← ✅ Актуально (2026-08-26) — snake_case колонки Supabase
+│   │   ├── RULES.md        ← ✅ Актуально (2026-08-26)
+│   │   ├── DATABASE.md     ← ✅ Актуально (2026-08-26)
+│   │   ├── USER_MANAGEMENT.md ← ✅ Актуально (2026-08-26)
+│   │   └── project_structure.md ← ✅ Актуально (2026-08-26)
 │   └── plan/
-│       ├── plan.md                 ← 🟡 Актуальный план и бэклог (2026-08-23)
-│       ├── plan_git_hub.md         ← [✅ ВЫПОЛНЕНО] Раздел Git Tools & Gemini Parser
+│       ├── plan.md                 ← 🟡 Актуальный план и бэклог (2026-08-26)
+│       ├── plan_git_hub.md         ← [✅ ВЫПОЛНЕНО]
+│       ├── plan_commands.md        ← [✅ ВЫПОЛНЕНО]
+│       ├── plan_bookmarks.md       ← [✅ ВЫПОЛНЕНО]
 │       ├── plan_supabase.md        ← [✅ ВЫПОЛНЕНО]
 │       ├── plan_skill_space.md     ← [✅ ВЫПОЛНЕНО]
 │       ├── plan_skill_hints.md     ← [✅ ВЫПОЛНЕНО]
@@ -102,7 +87,7 @@ superbasetest/
 │
 └── src/
     ├── main.tsx
-    ├── App.tsx             ← центральный state + навигация + табы ownership фильтров
+    ├── App.tsx             ← центральный state + селектор пространств + навигация
     ├── types.ts
     ├── index.css
     │
@@ -112,6 +97,7 @@ superbasetest/
     │   ├── layout/
     │   │   └── Sidebar.tsx
     │   └── ui/
+    │       ├── WorkspaceModal.tsx
     │       ├── Toast.tsx
     │       ├── CategoryForm.tsx
     │       ├── ConfirmDialog.tsx
@@ -119,9 +105,10 @@ superbasetest/
     │       └── FileTreeViewer.tsx
     │
     ├── hooks/
+    │   ├── useTheme.ts                 ← Двухтемный режим (dark/light)
     │   ├── useHotkeys.ts
-    │   ├── usePromptFilters.ts         ← Фильтрация промптов (all, my-all, my-own, my-web, others)
-    │   └── useSkillFilters.ts          ← Фильтрация скиллов (all, my-all, my-own, my-web, others, ИИ платформы)
+    │   ├── usePromptFilters.ts         ← Фильтрация промптов
+    │   └── useSkillFilters.ts          ← Фильтрация скиллов
     │
     ├── sections/
     │   ├── admin/

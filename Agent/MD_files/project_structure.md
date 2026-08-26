@@ -28,6 +28,7 @@ promptvault/
 ├── .agents/skills/           # 🧠 Локальные навыки для ИИ-агентов (supabase, postgres, etc.)
 ├── scripts/
 │   ├── all_new_tables_migration.sql # 🚀 Единая SQL миграция для всех 4 новых таблиц
+│   ├── create_workspaces_table.sql  # 💼 DDL создания таблицы workspaces и workspace_id
 │   ├── create_git_projects_table.sql # DDL создания таблицы git_projects
 │   ├── create_commands_table.sql # DDL создания таблицы commands
 │   ├── create_bookmarks_table.sql # DDL создания таблицы bookmarks
@@ -39,7 +40,7 @@ promptvault/
 └── src/                      # Исходный код Frontend-части
     ├── main.tsx              # Точка входа React
     ├── index.css             # Стили Tailwind CSS v4 (@theme, dual theme tokens)
-    ├── App.tsx               # Основное приложение (состояние, навигация, фильтры ownership, theme switcher)
+    ├── App.tsx               # Основное приложение (состояние, навигация, селектор пространств, фильтры, theme switcher)
     ├── types.ts              # Единый источник TypeScript типов
     ├── services/
     │   ├── api.ts            # API клиент для взаимодействия с бэкендом
@@ -55,8 +56,8 @@ promptvault/
     │   └── buildSelectionZip.ts # Клиентская генерация кастомных ZIP архивов на лету
     ├── components/
     │   ├── auth/             # LoginForm.tsx
-    │   ├── layout/           # Sidebar.tsx
-    │   └── ui/               # Toast, CategoryForm, ImageCropper, ConfirmDialog, FileTreeViewer
+    │   ├── layout/           # Sidebar.tsx (селектор пространств, навигация)
+    │   └── ui/               # WorkspaceModal, Toast, CategoryForm, ImageCropper, ConfirmDialog, FileTreeViewer
     └── sections/
         ├── admin/            # UsersSection.tsx (управление пользователями)
         ├── prompts/          # PromptsSection.tsx (сетка, тулбар фильтров, пагинация промптов)
@@ -80,16 +81,17 @@ promptvault/
 ## 🗄 Структура Базы Данных (Supabase Cloud PostgreSQL)
 
 1. **`users`** — аккаунты, роли (`admin`, `user`), bcrypt-хэши паролей.
-2. **`prompts`** — шаблоны промптов, макеты изображений (6 layout-типов), подсекции, теги, счетчик использований.
-3. **`skills`** — наборы скиллов, субагентов и MCP, дерево файлов (`file_structure`), поддерживаемые типы ИИ (`target_ais`).
-4. **`skill_hints`** — готовые подсказки-промпты для быстрого применения конкретного скилла в ИИ.
-5. **`git_projects`** — каталог полезных репозиториев, агентов и тулзов с фичами, гайдом по установке и AI-парсером.
-6. **`commands`** — хаб быстрых команд, инструкций и сниппетов со смарт-параметрами `{{...}}` и связью со скиллами.
-7. **`bookmarks`** — каталог веб-закладок и сервисов с 2-уровневыми папками, подкатегориями, авто-Favicon и счетчиком кликов.
-8. **`categories`** — пользовательские и системные категории для группировки.
-9. **`chats`** — история диалогов с Gemini.
-10. **`user_favorites`** — полиморфная таблица личного избранного.
-11. **Storage Buckets**: `prompt-images` (изображения), `prompt-files` (ZIP-архивы).
+2. **`workspaces`** — изолированные рабочие пространства и под-профили пользователя (1С, Дизайн, Личное и др.).
+3. **`prompts`** — шаблоны промптов, макеты изображений (6 layout-типов), подсекции, теги, счетчик использований.
+4. **`skills`** — наборы скиллов, субагентов и MCP, дерево файлов (`file_structure`), поддерживаемые типы ИИ (`target_ais`).
+5. **`skill_hints`** — готовые подсказки-промпты для быстрого применения конкретного скилла в ИИ.
+6. **`git_projects`** — каталог полезных репозиториев, агентов и тулзов с фичами, гайдом по установке и AI-парсером.
+7. **`commands`** — хаб быстрых команд, инструкций и сниппетов со смарт-параметрами `{{...}}` и связью со скиллами.
+8. **`bookmarks`** — каталог веб-закладок и сервисов с 2-уровневыми папками, подкатегориями, авто-Favicon и счетчиком кликов.
+9. **`categories`** — пользовательские и системные категории для группировки.
+10. **`chats`** — история диалогов с Gemini.
+11. **`user_favorites`** — полиморфная таблица личного избранного.
+12. **Storage Buckets**: `prompt-images` (изображения), `prompt-files` (ZIP-архивы).
 
 ---
 

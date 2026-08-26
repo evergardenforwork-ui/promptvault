@@ -1,7 +1,7 @@
 # RULES.md — Coding Standards & Architecture Rules
 
 > Обязателен к соблюдению при написании и ревью любого кода в проекте.
-> **Последнее обновление**: 2026-08-23
+> **Последнее обновление**: 2026-08-26
 
 ## Naming Conventions (Files & Code)
 
@@ -19,7 +19,7 @@
 
 - **S (Single Responsibility)**: `server.ts` (dev) и `api/index.ts` (prod) — API-интерфейсы и адаптеры. Бизнес-логика разделена по сервисам и хукам.
 - **O (Open/Closed)**: Новые layout-типы добавляются через расширение `imageLayoutType` string и нового кейса в рендере.
-- **I (Interface Segregation)**: Типы в `src/types.ts` строго разделены на `User`, `Prompt`, `SkillPackage`, `SkillHint`, `GitProject`, `Category`, `ChatMessage`, `SourceFilter`, `GitProjectCategory`, `GitProjectPricing`.
+- **I (Interface Segregation)**: Типы в `src/types.ts` строго разделены на `User`, `Workspace`, `Prompt`, `SkillPackage`, `SkillHint`, `GitProject`, `CommandItem`, `BookmarkItem`, `Category`, `ChatMessage`, `SourceFilter`, `GitProjectCategory`, `GitProjectPricing`.
 - **D (Dependency Inversion)**: Компоненты зависят от `src/services/api.ts` (абстракция), а не от прямого `fetch`.
 
 ## DRY & KISS Guidelines

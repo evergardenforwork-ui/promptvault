@@ -1,4 +1,4 @@
-﻿# 🟣 CLAUDE.md — Instructions for Claude Code & Anthropic Agents
+# 🟣 CLAUDE.md — Instructions for Claude Code & Anthropic Agents
 
 > This file is automatically read by Claude Code CLI upon session startup.
 > **Last updated**: 2026-08-26
@@ -19,7 +19,7 @@
 
 When asked to explore, inspect, or build features in this repo:
 1. Read [`AGENTS.md`](AGENTS.md) — Universal system overview.
-2. Read [`src/types.ts`](src/types.ts) — Single source of truth for all domain types.
+2. Read [`src/types.ts`](src/types.ts) — Single source of truth for all domain types (User, Workspace, Prompt, SkillPackage, GitProject, CommandItem, BookmarkItem).
 3. Check [`Agent/plan/plan.md`](Agent/plan/plan.md) — Only read `[🔴 НУЖНО СДЕЛАТЬ]` tasks. DO NOT waste tokens on completed plans marked `[✅ ВЫПОЛНЕНО]`.
 4. Domain documentation is in [`Agent/MD_files/`](Agent/MD_files/) (`ARCHITECTURE.md`, `SCHEMA.md`, `RULES.md`, `PRD.md`, `DESIGN.md`, `DATABASE.md`).
 5. Local Agent Skills are in [`.agents/skills/`](.agents/skills/) (Check `.agents/skills/supabase/SKILL.md` before DB tasks).
@@ -30,11 +30,13 @@ When asked to explore, inspect, or build features in this repo:
 
 1. **Dual Backend**: `server.ts` (dev) and `api/index.ts` (Vercel serverless) MUST remain synchronized on all API endpoint changes.
 2. **File Decomposition**: 1 component = 1 file. Keep components modular in `src/sections/<domain>/`. Keep files < 250 lines. Modals must be separated into `XxxModal.tsx`.
-3. **Database**: Supabase PostgreSQL + Supabase Storage. All new table migrations are unified in `scripts/all_new_tables_migration.sql`.
-4. **5 Modular Hubs**:
+3. **Database**: Supabase PostgreSQL + Supabase Storage. Unified migrations in `scripts/all_new_tables_migration.sql` & `scripts/create_workspaces_table.sql`.
+4. **5 Modular Hubs & Workspaces**:
    - 📷 `src/sections/prompts/` & `src/sections/photo/` (Prompts)
    - 📦 `src/sections/skills/` (Skills Web IDE)
    - 🐙 `src/sections/git/` (Git Tools & AI Parser)
    - ⚡ `src/sections/commands/` (AI Commands & Workflows)
    - 🌐 `src/sections/bookmarks/` (Web Bookmarks Hub)
-5. **No `any` in client code**: Keep strict TypeScript standards.
+   - 💼 `src/components/ui/WorkspaceModal.tsx` (Isolated Workspaces)
+5. **Dual Theme Engine**: All cards and toolbars must support both `bg-white dark:bg-zinc-900` and `border-zinc-200 dark:border-zinc-800`.
+6. **No `any` in client code**: Keep strict TypeScript standards.

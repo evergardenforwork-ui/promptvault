@@ -14,8 +14,9 @@
 | Таблица / Бакет | Назначение |
 |---|---|
 | `users` | Пользователи и роли (`admin`, `user`), bcrypt-хэши паролей |
-| `prompts` | Промпты для нейросетей с подсекциями и макетами изображений |
-| `skills` | Пакеты скиллов, субагентов и MCP с древовидной структурой файлов |
+| `workspaces` | 💼 Изолированные рабочие пространства и под-профили пользователя |
+| `prompts` | 📷 Промпты для нейросетей с подсекциями, макетами и связью с workspace |
+| `skills` | 📦 Пакеты скиллов, субагентов и MCP с древовидной структурой файлов |
 | `skill_hints` | Подсказки-промпты для быстрого применения скилла в ИИ |
 | `categories` | Пользовательские и системные категории |
 | `chats` | История сообщений чата с Gemini |
@@ -41,9 +42,20 @@ erDiagram
         timestamptz created_at
     }
 
+    WORKSPACES {
+        uuid id PK
+        text user_id FK
+        text name
+        text icon
+        text color
+        boolean is_default
+        timestamptz created_at
+    }
+
     PROMPTS {
         uuid id PK
         text user_id FK
+        uuid workspace_id FK
         text title
         text category
         text[] tags
@@ -71,6 +83,7 @@ erDiagram
     SKILLS {
         uuid id PK
         text user_id FK
+        uuid workspace_id FK
         text title
         text description
         text category
@@ -123,6 +136,7 @@ erDiagram
     GIT_PROJECTS {
         uuid id PK
         text user_id FK
+        uuid workspace_id FK
         text title
         text category
         text summary
@@ -141,15 +155,63 @@ erDiagram
         timestamptz created_at
     }
 
+    COMMANDS {
+        uuid id PK
+        text user_id FK
+        uuid workspace_id FK
+        text title
+        text command_text
+        text description
+        text category
+        uuid skill_id FK
+        text skill_title
+        text target_ai
+        text[] tags
+        text[] variables
+        boolean is_public
+        int usage_count
+        text author_name
+        text author_email
+        timestamptz created_at
+    }
+
+    BOOKMARKS {
+        uuid id PK
+        text user_id FK
+        uuid workspace_id FK
+        text title
+        text url
+        text description
+        text folder
+        text category
+        text favicon
+        text image
+        text[] tags
+        int click_count
+        boolean is_public
+        text author_name
+        text author_email
+        timestamptz created_at
+    }
+
+    USERS ||--o{ WORKSPACES : "владеет"
     USERS ||--o{ PROMPTS : "создаёт"
     USERS ||--o{ SKILLS : "создаёт"
-    USERS ||--o{ CATEGORIES : "создаёт (userId=admin-uid → общие)"
+    USERS ||--o{ GIT_PROJECTS : "добавляет"
+    USERS ||--o{ COMMANDS : "создаёт"
+    USERS ||--o{ BOOKMARKS : "сохраняет"
+    USERS ||--o{ CATEGORIES : "создаёт"
     USERS ||--o{ CHATS : "пишет"
     USERS ||--o{ USER_FAVORITES : "имеет личное избранное"
     USERS ||--o{ SKILL_HINTS : "создаёт"
-    USERS ||--o{ GIT_PROJECTS : "добавляет"
+    WORKSPACES ||--o{ PROMPTS : "группирует"
+    WORKSPACES ||--o{ SKILLS : "группирует"
+    WORKSPACES ||--o{ GIT_PROJECTS : "группирует"
+    WORKSPACES ||--o{ COMMANDS : "группирует"
+    WORKSPACES ||--o{ BOOKMARKS : "группирует"
     PROMPTS ||--o{ CHATS : "обсуждается в"
     SKILLS ||--o{ SKILL_HINTS : "содержит"
+    SKILLS ||--o{ COMMANDS : "связан с"
 ```
 
 ---

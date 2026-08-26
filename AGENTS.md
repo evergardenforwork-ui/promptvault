@@ -12,7 +12,7 @@
 
 ### 📋 Обязательный пошаговый порядок онбординга:
 1. **Прочитай этот файл (`AGENTS.md`)** или его зеркало (`GEMINI.md` / `CLAUDE.md`) — пойми стек, назначение и структуру.
-2. **Проверь типы данных**: [`src/types.ts`](src/types.ts) — единый источник правды типизации (User, Prompt, SkillPackage, GitProject, CommandItem, BookmarkItem).
+2. **Проверь типы данных**: [`src/types.ts`](src/types.ts) — единый источник правды типизации (User, Workspace, Prompt, SkillPackage, GitProject, CommandItem, BookmarkItem).
 3. **Изучи архитектуру**: [`Agent/MD_files/ARCHITECTURE.md`](Agent/MD_files/ARCHITECTURE.md) и схему [`Agent/MD_files/SCHEMA.md`](Agent/MD_files/SCHEMA.md).
 4. **Проверь актуальный бэклог**: [`Agent/plan/plan.md`](Agent/plan/plan.md) — смотри только секции `[🔴 НУЖНО СДЕЛАТЬ]`. **НЕ ЧИТАЙ** завершённые файлы с плашкой `[✅ ВЫПОЛНЕНО]`.
 5. **Проверь локальные навыки (Skills)**: загляни в `.agents/skills/` (особенно `.agents/skills/supabase/SKILL.md` перед работой с базой).
@@ -21,7 +21,7 @@
 
 ## 🗂️ Что это за проект?
 
-**PromptVault** — персональное fullstack веб-приложение для хранения, организации и мгновенного использования материалов для разработки и нейросетей.
+**PromptVault** — персональное fullstack веб-приложение для хранения, организации и мгновенного использования материалов для разработки и нейросетей с изолированными **Рабочими Пространствами (Workspaces)** и поддержкой двух тем (☀️ Светлая / 🌙 Тёмная).
 
 Содержит **5 главных хабов (вкладок)**:
 1. 📷 **Промпты (`prompts`)**: шаблоны промптов с 6 layout-макетами фото (До/После, Сплит и др.), кроппером и подсекциями.
@@ -37,6 +37,7 @@
 | Слой | Технология |
 |---|---|
 | Frontend | React 19, TypeScript, Vite 6, Tailwind CSS v4 (без `tailwind.config.js`) |
+| Темизация | Dual Theme Engine (ThoughtLab Dark / shadcn Light) |
 | Анимации & Иконки | Framer Motion (`motion` v12), `lucide-react` |
 | Backend (Dev) | Express.js (`server.ts`) — единый процесс API + Vite dev-сервер (`http://localhost:3000`) |
 | Serverless (Prod) | Vercel Serverless Function (`api/index.ts`) + `vercel.json` |
@@ -104,11 +105,11 @@ superbasetest/
 │
 └── src/                    ← 💻 ИСХОДНЫЙ КОД FRONTEND
     ├── main.tsx
-    ├── App.tsx             ← Центральный контейнер: глобальный state + навигация
+    ├── App.tsx             ← Центральный контейнер: глобальный state + селектор пространств + навигация
     ├── types.ts            ← Единый источник всех TypeScript интерфейсов
-    ├── index.css           ← Tailwind CSS v4 (@theme токены)
+    ├── index.css           ← Tailwind CSS v4 (@theme токены, @custom-variant dark)
     ├── components/         ← Общие компоненты (auth/LoginForm, layout/Sidebar, ui/*, ui/WorkspaceModal)
-    ├── hooks/              ← Кастомные хуки (useHotkeys, usePromptFilters, useSkillFilters)
+    ├── hooks/              ← Кастомные хуки (useTheme, useHotkeys, usePromptFilters, useSkillFilters)
     ├── services/           ← api.ts (бэкенд клиент), gemini.ts
     ├── utils/              ← cn.ts, zipParser.ts, buildSelectionZip.ts
     └── sections/           ← МОДУЛЬНЫЕ ИЗОЛИРОВАННЫЕ РАЗДЕЛЫ:

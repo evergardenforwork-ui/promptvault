@@ -75,7 +75,45 @@ WHERE email = 'evergardenforwork@gmail.com';
    - Дефолтный аккаунт: `admin@promptvault.local` / `admin123`.
    - В окне входа доступна кнопка **«⚡ Быстрое заполнение: Admin (admin123)»**.
 
-*(После этого пароль станет `admin123`, и ты сможешь войти)*
+---
+
+## 🚀 Создание первого профиля при чистом онлайн-хостинге (Supabase + Vercel)
+
+Когда вы разворачиваете проект на новом чистом аккаунте Supabase, для входа в приложение требуется хотя бы один профиль администратора. Создать его можно тремя способами:
+
+### 1. Автоматически при создании схемы БД (Самый рекомендуемый)
+Файл [`scripts/schema.sql`](../../scripts/schema.sql) в самом конце содержит команду автоматического создания первого главного администратора:
+```sql
+INSERT INTO public.users (uid, email, name, role, password)
+VALUES (
+    'admin-uid',
+    'evergardenforwork@gmail.com', -- замените на ваш email при необходимости
+    'Admin',
+    'admin',
+    '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeg6Lruj3vjPGga31lW' -- пароль: admin123
+) ON CONFLICT (uid) DO NOTHING;
+```
+При выполнении `schema.sql` в **Supabase SQL Editor** администратор создаётся мгновенно, и вы сразу можете войти с паролем `admin123`.
+
+### 2. Через консольную CLI-утилиту `manageUsers.ts`
+Если в файле `.env` указаны `SUPABASE_URL` и `SUPABASE_SERVICE_ROLE_KEY`, выполните команду:
+```bash
+npx tsx scripts/manageUsers.ts create ВАШ_EMAIL@gmail.com ВАШ_ПАРОЛЬ ВашеИмя admin
+```
+Скрипт сам подключится к Supabase, захеширует пароль через `bcrypt` и создаст профиль.
+
+### 3. Прямым SQL-запросом в Supabase SQL Editor
+```sql
+-- Генерация админа с паролем admin123
+INSERT INTO public.users (uid, email, name, role, password)
+VALUES (
+    'admin-' || substr(md5(random()::text), 1, 8),
+    'my-admin@example.com',
+    'Super Admin',
+    'admin',
+    '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeg6Lruj3vjPGga31lW'
+);
+```
 
 ---
 

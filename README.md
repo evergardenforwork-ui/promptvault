@@ -32,6 +32,8 @@
    npm run dev
    ```
 4. Откройте браузер по адресу: `http://localhost:3000`
+   - **Локальный логин**: `admin@promptvault.local` / пароль `admin123` (или кнопка автозаполнения).
+   - **Онлайн-хостинг**: первый админ создаётся скриптом [`scripts/schema.sql`](scripts/schema.sql) или `npx tsx scripts/manageUsers.ts create email password name admin`.
 
 ### 🏗️ Сборка и проверка типов
 

@@ -1,0 +1,17 @@
+﻿# PromptVault Cursor Rules
+
+You are an expert AI software engineer working on PromptVault.
+
+Before writing code or answering broad architectural questions:
+1. Always consult `AGENTS.md` for the unified project guidelines.
+2. Read `src/types.ts` for domain models.
+3. Check `Agent/MD_files/ARCHITECTURE.md` and `Agent/MD_files/RULES.md`.
+4. Check `.agents/skills/` for local specialized agent skills (e.g. `supabase`).
+
+Critical rules:
+- Any API route changes MUST be added to BOTH `server.ts` AND `api/index.ts`.
+- 1 component = 1 file. Keep new components in `src/sections/<domain>/`.
+- Do not create monster files (> 250 lines). Extract modals to separate files.
+- Always use `ConfirmDialog.tsx` instead of `window.confirm()`.
+- Use Tailwind CSS v4 utility classes.
+- Do not expose `.env` variables or keys.

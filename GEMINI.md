@@ -321,19 +321,20 @@ AssistantConfig { systemPrompt }
 
 ## 🤖 Инструкции для AGY и ИИ-Агентов
 
-### 📚 С чего начинать читать проект (Порядок онбординга):
-1. **[`GEMINI.md`](GEMINI.md)** *(этот файл)* — текущий статус, стек, структура файлов и критические правила.
-2. **[`CHANGELOG.md`](CHANGELOG.md)** — контрольные точки (Git tags `v1.0-checkpoint` и др.) и история изменений.
-3. **[`Agent/plan/plan_git_hub.md`](Agent/plan/plan_git_hub.md)** — 🔴 **ПЛАН РЕАЛИЗАЦИИ РАЗДЕЛА GIT TOOLS & GEMINI PARSER**.
-4. **[`Agent/MD_files/ARCHITECTURE.md`](Agent/MD_files/ARCHITECTURE.md)** & **[`SCHEMA.md`](Agent/MD_files/SCHEMA.md)** — архитектура модульных разделов, типы и Supabase DDL.
-5. **[`Agent/plan/plan.md`](Agent/plan/plan.md)** — актуальный бэклог задач. **НЕ читать** завершённые планы `[✅ ВЫПОЛНЕНО]`.
+### 🚨 КРИТИЧЕСКИЙ ПРОТОКОЛ ПЕРВОГО ДЕЙСТВИЯ (Когда пользователь говорит "посмотри проект" / "сделай задачу"):
+1. **Прочитай [`AGENTS.md`](AGENTS.md) или [`GEMINI.md`](GEMINI.md)** — понять назначение, текущий статус и стек.
+2. **Проверь [`src/types.ts`](src/types.ts)** — единый источник правды типизации (User, Prompt, SkillPackage, GitProject, CommandItem, BookmarkItem).
+3. **Изучи архитектуру**: [`Agent/MD_files/ARCHITECTURE.md`](Agent/MD_files/ARCHITECTURE.md) и [`SCHEMA.md`](Agent/MD_files/SCHEMA.md).
+4. **Проверь актуальный бэклог**: [`Agent/plan/plan.md`](Agent/plan/plan.md) — смотреть **только** `[🔴 НУЖНО СДЕЛАТЬ]`. **НЕ ЧИТАТЬ** завершённые планы `[✅ ВЫПОЛНЕНО]`.
+5. **Используй локальные навыки (Skills)**: загляни в `.agents/skills/` (в частности, `.agents/skills/supabase/SKILL.md` перед работой с базой).
+6. **Никогда не читать `node_modules` или случайные файлы наугад**.
 
 ### Обязательно перед любой задачей:
 1. Проверь `src/types.ts` — единый источник типов.
 2. API роуты добавляй ОДНОВРЕМЕННО в `server.ts` И `api/index.ts`.
 3. Используй `ConfirmDialog.tsx` вместо `window.confirm()`.
 4. Стили: Tailwind CSS v4 (без `tailwind.config.js`).
-5. Модульность: Новые вкладки/страницы создавай как изолированные секции в `src/sections/` (например, `src/sections/git/GitProjectsSection.tsx`), не раздувая `src/App.tsx`.
+5. Модульность: Новые вкладки/страницы создавай как изолированные секции в `src/sections/`, не раздувая `src/App.tsx`.
 6. Используй **навыки (skills)** при работе с Supabase! Читай `.agents/skills/supabase/SKILL.md`.
 7. Не раскрывай `.env` в коде или логах.
 

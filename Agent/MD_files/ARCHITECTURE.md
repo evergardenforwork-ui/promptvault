@@ -16,6 +16,8 @@ Browser (React 19 SPA)
   ├─ /api/prompts/*       ← CRUD промптов + пагинация
   ├─ /api/skills/*        ← CRUD пакетов скиллов + /hints
   ├─ /api/git-projects/*  ← CRUD Git проектов (GET/POST/PUT/DELETE)
+  ├─ /api/commands/*      ← CRUD команд + инкремент /:id/use
+  ├─ /api/bookmarks/*     ← CRUD закладок + инкремент /:id/click
   ├─ /api/categories      ← Управление категориями
   ├─ /api/favorites       ← Личное избранное
   ├─ /api/users/*         ← Управление пользователями (admin only)
@@ -26,7 +28,7 @@ Browser (React 19 SPA)
        ├─ /api/gemini/chat       ← Чат с историей (временно не используется)
        ├─ /api/gemini/analyze    ← Анализ изображения (временно не используется)
        └─ /api/gemini/parse-tool ← 🪄 AI Smart Parser (URL / текст / скриншот → JSON)
-        ├─ Supabase (PostgreSQL)   ← Таблицы: users, prompts, skills, skill_hints, categories, chats, user_favorites, git_projects
+        ├─ Supabase (PostgreSQL)   ← Таблицы: users, prompts, skills, skill_hints, categories, chats, user_favorites, git_projects, commands, bookmarks
         ├─ Supabase Storage        ← Бакеты: prompt-images, prompt-files
         │
         └─ Google Gemini API (gemini-3.1-flash-lite) — активен для /api/gemini/parse-tool

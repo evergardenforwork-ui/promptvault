@@ -21,6 +21,8 @@
 | `chats` | История сообщений чата с Gemini |
 | `user_favorites` | Личное избранное пользователей (полиморфная связка `item_id` + `item_type`) |
 | `git_projects` | 🐙 Git Hub & AI Tools: каталог репозиториев, агентов, моделей с AI-парсером |
+| `commands` | ⚡ AI Commands & Workflows: каталог быстрых команд, инструкций и сниппетов |
+| `bookmarks` | 🌐 Web Bookmarks: каталог сайтов с папками, подкатегориями и авто-Favicon |
 | `prompt-images` (Bucket) | Хранение изображений карточек (до/после, оригиналы, слоты) |
 | `prompt-files` (Bucket) | Хранение ZIP архивов пакетов скиллов |
 

@@ -285,8 +285,10 @@ AssistantConfig { systemPrompt }
 ### Навигация в App.tsx
 - **Промпты**: `viewingPrompt: Prompt | null`, `editingPrompt`, `isFormOpen: boolean`
 - **Скиллы**: `spacedSkill: SkillPackage | null`, `viewingSkill`, `editingSkill`
-- **Git Проекты**: `viewingGitProject`, `editingGitProject` (будет в `src/sections/git/`)
-- **Разделы**: `activeSection: 'prompts' | 'skills' | 'git' | 'admin'`
+- **Git Проекты**: `viewingGitProject`, `editingGitProject`, `isGitFormOpen`
+- **Команды**: `editingCommand`, `isCommandFormOpen`
+- **Закладки**: `editingBookmark`, `isBookmarkFormOpen`
+- **Разделы**: `activeSection: 'prompts' | 'skills' | 'git' | 'commands' | 'bookmarks' | 'admin'`
 - Навигация реализована исключительно через state (без react-router).
 
 ---
@@ -294,30 +296,26 @@ AssistantConfig { systemPrompt }
 ## 🚀 ТЕКУЩИЙ СТАТУС & ПЛАНЫ
 
 ### ✅ Всё реализовано и работает:
-- Модульная архитектура секций (`PromptsSection.tsx`, `SkillsSection.tsx`, `UsersSection.tsx`)
-- Supabase PostgreSQL (таблицы: users, prompts, skills, skill_hints, categories, chats, user_favorites)
+- Модульная архитектура секций (`PromptsSection.tsx`, `SkillsSection.tsx`, `UsersSection.tsx`, `GitProjectsSection.tsx`, `CommandsSection.tsx`, `BookmarksSection.tsx`)
+- Supabase PostgreSQL (таблицы: users, prompts, skills, skill_hints, categories, chats, user_favorites, git_projects, commands, bookmarks)
 - Supabase Storage (бакеты: prompt-images, prompt-files)
 - `vercel.json` и `api/index.ts` готовы к деплою на Vercel
 - Полнофункциональный прототип `test/index.html` v2.1 протестирован и одобрен пользователем
 - **🐙 Раздел «Git Hub & AI Tools»** — ПОЛНОСТЬЮ РЕАЛИЗОВАН:
-  - SQL-миграция `scripts/create_git_projects_table.sql` (выполнить в Supabase!)
-  - CRUD API `/api/git-projects` (GET/POST/PUT/DELETE) в `server.ts` и `api/index.ts`
-  - Gemini 3.1 Flash-Lite Smart Parser `/api/gemini/parse-tool` (URL / текст / скриншот → JSON)
-  - `GitProjectsSection.tsx` — сетка с фильтрами категорий, цены, источника
-  - `GitProjectCard.tsx` — карточки с hero-image, бейджами, ссылками
-  - `GitProjectForm.tsx` — форма + встроенный AI Smart Parser модал (🪄 Wand2)
-  - `GitProjectView.tsx` — полноэкранный просмотр с аккордеонами (Фичи, Установка, Описание, Заметки)
+  - CRUD API `/api/git-projects`, Gemini 3.1 Smart Parser, `GitProjectsSection`, `GitProjectCard`, `GitProjectForm`, `GitProjectView`.
+- **⚡ Раздел «AI Commands & Workflows»** — ПОЛНОСТЬЮ РЕАЛИЗОВАН:
+  - CRUD API `/api/commands`, 1-клик копирование, смарт-параметры `{{param}}` (`CommandFillModal`), привязка к скиллам, `CommandsSection`, `CommandCard`, `CommandForm`.
+- **🌐 Раздел «Web Bookmarks & Sites Hub»** — ПОЛНОСТЬЮ РЕАЛИЗОВАН:
+  - CRUD API `/api/bookmarks`, 2-уровневые вкладки папок и подкатегорий, создание папок на лету (`FolderCreateModal`), авто-Favicon/домен, `BookmarksSection`, `BookmarkCard`, `BookmarkForm`.
 
-### ✅ Раздел «Git Hub & AI Tools» — ВЫПОЛНЕНО (2026-08-23):
-1. ✅ **База данных**: `scripts/create_git_projects_table.sql` — **выполнить в Supabase SQL Editor!**
-2. ✅ **API**: CRUD `/api/git-projects` + `/api/gemini/parse-tool` — в `server.ts` и `api/index.ts`.
-3. ✅ **Frontend**: `GitProjectsSection`, `GitProjectCard`, `GitProjectForm` (+ AI-модал), `GitProjectView`.
-4. ✅ **Навигация**: вкладка `🐙 Git Hub` добавлена в Header `App.tsx`.
+### 🗄️ SQL Миграция для Supabase:
+- Единый скрипт: [`scripts/all_new_tables_migration.sql`](scripts/all_new_tables_migration.sql) — создать все 4 новые таблицы (`git_projects`, `commands`, `bookmarks`, `skill_hints`) в один клик.
 
 ### 🔴 Следующий этап (будущие задачи):
-- Выполнить SQL-миграцию `scripts/create_git_projects_table.sql` в Supabase
-- Расширить фильтры Git Hub (поиск по тегам как облако)
-- Добавить поддержку `git_projects` в backup export/import
+- Включить Gemini ИИ-ассистент в промптах (убрать заглушку)
+- Добавить `git_projects`, `commands`, `bookmarks` в backup export/import ZIP
+- Профиль пользователя со статистикой
+- Каскадное удаление favorites при удалении сущности (tech debt)
 
 ---
 

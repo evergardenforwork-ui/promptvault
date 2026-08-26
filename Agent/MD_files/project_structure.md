@@ -58,7 +58,9 @@ promptvault/
         ├── prompts/          # PromptsSection.tsx (сетка, тулбар фильтров, пагинация промптов)
         ├── photo/            # PhotoCard, PhotoForm, PhotoView, ImageSlotsSection, SubSectionsEditor
         ├── skills/           # SkillsSection, SkillCard, SkillForm, SkillSpaceView, SpaceFileTree, SpaceFilePreview, SpaceContextMenu, SpaceSelectionBar, SkillHintsPanel
-        └── git/              # GitProjectsSection, GitProjectCard, GitProjectForm, AiSmartParserModal, GitProjectView
+        ├── git/              # GitProjectsSection, GitProjectCard, GitProjectForm, AiSmartParserModal, GitProjectView
+        ├── commands/         # CommandsSection, CommandCard, CommandForm, CommandFillModal
+        └── bookmarks/        # BookmarksSection, BookmarkCard, BookmarkForm, FolderCreateModal
 ```
 
 ---
@@ -78,10 +80,12 @@ promptvault/
 3. **`skills`** — наборы скиллов, субагентов и MCP, дерево файлов (`file_structure`), поддерживаемые типы ИИ (`target_ais`).
 4. **`skill_hints`** — готовые подсказки-промпты для быстрого применения конкретного скилла в ИИ.
 5. **`git_projects`** — каталог полезных репозиториев, агентов и тулзов с фичами, гайдом по установке и AI-парсером.
-6. **`categories`** — пользовательские и системные категории для группировки.
-7. **`chats`** — история диалогов с Gemini.
-8. **`user_favorites`** — полиморфная таблица личного избранного.
-9. **Storage Buckets**: `prompt-images` (изображения), `prompt-files` (ZIP-архивы).
+6. **`commands`** — хаб быстрых команд, инструкций и сниппетов со смарт-параметрами `{{...}}` и связью со скиллами.
+7. **`bookmarks`** — каталог веб-закладок и сервисов с 2-уровневыми папками, подкатегориями, авто-Favicon и счетчиком кликов.
+8. **`categories`** — пользовательские и системные категории для группировки.
+9. **`chats`** — история диалогов с Gemini.
+10. **`user_favorites`** — полиморфная таблица личного избранного.
+11. **Storage Buckets**: `prompt-images` (изображения), `prompt-files` (ZIP-архивы).
 
 ---
 

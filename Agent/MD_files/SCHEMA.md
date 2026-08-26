@@ -108,6 +108,40 @@ erDiagram
         text author_email
         timestamptz created_at
     }
+    COMMAND {
+        uuid id PK
+        text user_id FK
+        text title
+        text command_text
+        text description
+        text category
+        uuid skill_id FK
+        text target_ai
+        text[] tags
+        text[] variables
+        boolean is_public
+        text author_name
+        text author_email
+        int usage_count
+        timestamptz created_at
+    }
+    BOOKMARK {
+        uuid id PK
+        text user_id FK
+        text title
+        text url
+        text description
+        text folder
+        text category
+        text image
+        text favicon
+        text[] tags
+        boolean is_public
+        text author_name
+        text author_email
+        int click_count
+        timestamptz created_at
+    }
 
     USER ||--o{ PROMPT : "создаёт"
     USER ||--o{ SKILL : "создаёт"
@@ -116,8 +150,11 @@ erDiagram
     USER ||--o{ USER_FAVORITES : "имеет"
     USER ||--o{ SKILL_HINT : "создаёт"
     USER ||--o{ GIT_PROJECT : "добавляет"
+    USER ||--o{ COMMAND : "создаёт"
+    USER ||--o{ BOOKMARK : "сохраняет"
     PROMPT ||--o{ CHAT : "имеет историю"
     SKILL ||--o{ SKILL_HINT : "содержит"
+    SKILL ||--o{ COMMAND : "привязана к"
 ```
 
 ## Table Schemas & Column Definitions
@@ -338,6 +375,24 @@ erDiagram
 | PUT | `/api/git-projects/:id` | ✅ | Обновить проект (только автор или admin) |
 | DELETE | `/api/git-projects/:id` | ✅ | Удалить проект |
 
+### `/api/commands`
+| Метод | Путь | Auth | Описание |
+|---|---|---|---|
+| GET | `/api/commands` | ✅ | Список команд (свои + публичные) |
+| POST | `/api/commands` | ✅ | Создать команду (авто-детект `{{variables}}`) |
+| PUT | `/api/commands/:id` | ✅ | Обновить команду (автор или admin) |
+| DELETE | `/api/commands/:id` | ✅ | Удалить команду |
+| POST | `/api/commands/:id/use` | ✅ | Инкремент счётчика `usage_count` |
+
+### `/api/bookmarks`
+| Метод | Путь | Auth | Описание |
+|---|---|---|---|
+| GET | `/api/bookmarks` | ✅ | Список закладок и сайтов |
+| POST | `/api/bookmarks` | ✅ | Создать закладку (авто-Favicon/домен) |
+| PUT | `/api/bookmarks/:id` | ✅ | Обновить закладку |
+| DELETE | `/api/bookmarks/:id` | ✅ | Удалить закладку |
+| POST | `/api/bookmarks/:id/click` | ✅ | Инкремент счётчика `click_count` |
+
 ## camelCase ↔ snake_case Mapping
 
 | Клиент (camelCase) | БД (snake_case) |
@@ -362,6 +417,11 @@ erDiagram
 | `authorEmail` | `author_email` |
 | `skillTypes` | `skill_types` |
 | `targetAis` | `target_ais` |
+| `commandText` | `command_text` |
+| `skillId` | `skill_id` |
+| `skillTitle` | `skill_title` |
+| `targetAi` | `target_ai` |
+| `clickCount` | `click_count` |
 | `usageCount` | `usage_count` |
 | `createdAt` | `created_at` |
 | `isFavorite` | *(вычисляется из user_favorites)* |

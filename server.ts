@@ -1283,7 +1283,10 @@ async function startServer() {
   app.post("/api/gemini/parse-tool", authenticate, async (req, res) => {
     try {
       if (!isGeminiEnabled()) {
-        return res.status(503).json({ message: "ИИ-парсер временно отключен администратором." });
+        const reason = !process.env.GEMINI_API_KEY
+          ? "ИИ-парсер отключен: не задан GEMINI_API_KEY в файле .env (или в Environment Variables на Vercel)."
+          : "ИИ-парсер временно отключен администратором (DISABLE_AI=true).";
+        return res.status(503).json({ message: reason });
       }
 
       const user = (req as any).user;

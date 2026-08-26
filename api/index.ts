@@ -1291,7 +1291,12 @@ app.delete("/api/workspaces/:id", authenticate, async (req, res) => {
 // 🪄 Gemini Smart Parser
 app.post("/api/gemini/parse-tool", authenticate, async (req, res) => {
   try {
-    if (!isGeminiEnabled()) return res.status(503).json({ message: "ИИ-парсер временно отключен администратором." });
+    if (!isGeminiEnabled()) {
+      const reason = !process.env.GEMINI_API_KEY
+        ? "ИИ-парсер отключен: не задан GEMINI_API_KEY в Environment Variables на Vercel (или в .env)."
+        : "ИИ-парсер временно отключен администратором (DISABLE_AI=true).";
+      return res.status(503).json({ message: reason });
+    }
     const user = (req as any).user;
     const rateCheck = checkAiRateLimit(user.uid);
     if (!rateCheck.allowed) return res.status(429).json({ message: rateCheck.message });

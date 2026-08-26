@@ -149,7 +149,7 @@ export default function PromptsSection({
           </div>
 
           {/* Media Type Tabs */}
-          <div className="flex bg-zinc-900/50 p-1 rounded-2xl border border-zinc-800 shrink-0">
+          <div className="flex bg-zinc-100 dark:bg-zinc-900/50 p-1 rounded-2xl border border-zinc-200 dark:border-zinc-800 shrink-0">
             {[
               { id: 'all', label: 'Все', count: mediaCounts.all },
               { id: 'photo', label: '📷', count: mediaCounts.photo },
@@ -164,8 +164,8 @@ export default function PromptsSection({
                 className={cn(
                   "px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1",
                   mediaFilter === tab.id
-                    ? "bg-indigo-500 text-white font-black shadow-md shadow-indigo-500/20"
-                    : "text-zinc-400 hover:text-zinc-200"
+                    ? "bg-indigo-600 text-white font-black shadow-md shadow-indigo-500/20"
+                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-200"
                 )}
               >
                 <span>{tab.label}</span>
@@ -173,7 +173,7 @@ export default function PromptsSection({
                   "text-[10px] px-1.5 py-0.5 rounded-md font-bold transition-colors",
                   mediaFilter === tab.id
                     ? "bg-white/20 text-white"
-                    : "bg-zinc-850 text-zinc-500"
+                    : "bg-zinc-200 dark:bg-zinc-850 text-zinc-600 dark:text-zinc-500"
                 )}>
                   {tab.count}
                 </span>
@@ -191,7 +191,7 @@ export default function PromptsSection({
                 "px-4 py-2 text-xs font-bold rounded-xl border shrink-0 transition-all cursor-pointer",
                 (selectedCategory === null && !allTags.includes(searchQuery))
                   ? "bg-sky-400 text-black border-sky-400 font-extrabold"
-                  : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-zinc-200"
+                  : "bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-zinc-950 dark:hover:text-zinc-200"
               )}
             >
               Все
@@ -204,14 +204,14 @@ export default function PromptsSection({
                   "px-4 py-2 text-xs font-bold rounded-xl border shrink-0 transition-all cursor-pointer",
                   selectedCategory === cat.name
                     ? "bg-sky-400 text-black border-sky-400 font-extrabold shadow-md shadow-sky-400/10"
-                    : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-zinc-200"
+                    : "bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-zinc-950 dark:hover:text-zinc-200"
                 )}
               >
                 <span>{cat.emoji}</span> <span className="ml-1">{cat.name}</span>
               </button>
             ))}
 
-            {allTags.length > 0 && <div className="h-5 w-px bg-zinc-800 mx-1 shrink-0" />}
+            {allTags.length > 0 && <div className="h-5 w-px bg-zinc-200 dark:bg-zinc-800 mx-1 shrink-0" />}
 
             {allTags.map((tag) => (
               <button
@@ -221,7 +221,7 @@ export default function PromptsSection({
                   "px-3.5 py-2 text-xs font-bold rounded-xl border shrink-0 transition-all cursor-pointer",
                   searchQuery === tag
                     ? "bg-indigo-400 text-black border-indigo-400 font-extrabold shadow-md shadow-indigo-400/10"
-                    : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-zinc-200"
+                    : "bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-zinc-950 dark:hover:text-zinc-200"
                 )}
               >
                 #{tag}
@@ -230,7 +230,7 @@ export default function PromptsSection({
 
             <button
               onClick={onOpenCategoryModal}
-              className="px-3 py-2 text-xs font-bold rounded-xl border border-dashed border-zinc-800 hover:border-sky-400 hover:text-sky-400 text-zinc-500 shrink-0 transition-all cursor-pointer flex items-center gap-1.5 bg-zinc-900/40"
+              className="px-3 py-2 text-xs font-bold rounded-xl border border-dashed border-zinc-300 dark:border-zinc-800 hover:border-sky-500 hover:text-sky-500 text-zinc-500 shrink-0 transition-all cursor-pointer flex items-center gap-1.5 bg-zinc-50 dark:bg-zinc-900/40"
               title="Создать новую категорию"
             >
               <Plus size={13} /> Категория
@@ -245,14 +245,14 @@ export default function PromptsSection({
                 el.scrollTo({ left: isEnd ? 0 : el.scrollLeft + 150, behavior: 'smooth' });
               }
             }}
-            className="p-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-zinc-400 hover:text-white shrink-0 cursor-pointer"
+            className="p-2 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white shrink-0 cursor-pointer shadow-sm dark:shadow-none"
             title="Прокрутить дальше"
           >
             <ChevronRight size={16} />
           </button>
         </div>
 
-        <div className="text-sm text-zinc-550 font-medium shrink-0 flex items-center gap-3">
+        <div className="text-sm text-zinc-500 font-medium shrink-0 flex items-center gap-3">
           {(searchQuery || selectedCategory || showFavoritesOnly || sourceFilter !== 'all' || mediaFilter !== 'all') && (
             <button
               onClick={() => {
@@ -262,12 +262,12 @@ export default function PromptsSection({
                 setSourceFilter('all');
                 setMediaFilter('all');
               }}
-              className="flex items-center gap-1 text-sky-400 hover:text-sky-300 font-bold transition-colors cursor-pointer"
+              className="flex items-center gap-1 text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-bold transition-colors cursor-pointer"
             >
               Сбросить фильтр <X size={12} />
             </button>
           )}
-          <span>Найдено: <span className="text-white font-bold">{filteredPrompts.length}</span></span>
+          <span>Найдено: <span className="text-zinc-900 dark:text-white font-bold">{filteredPrompts.length}</span></span>
         </div>
       </div>
 
@@ -297,15 +297,15 @@ export default function PromptsSection({
         <div className="flex flex-col items-center gap-3 pt-4 pb-8">
           <button
             onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
-            className="group flex items-center gap-2.5 px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-2xl text-sm font-bold text-zinc-400 hover:text-white transition-all cursor-pointer"
+            className="group flex items-center gap-2.5 px-8 py-4 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 rounded-2xl text-sm font-bold text-zinc-700 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white transition-all cursor-pointer shadow-sm dark:shadow-none"
           >
             <ChevronDown size={16} className="group-hover:translate-y-0.5 transition-transform" />
             Загрузить ещё
-            <span className="px-2 py-0.5 bg-zinc-800 group-hover:bg-zinc-700 rounded-lg text-[11px] font-black text-zinc-500 group-hover:text-zinc-300 transition-colors">
+            <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 group-hover:bg-zinc-200 dark:group-hover:bg-zinc-700 rounded-lg text-[11px] font-black text-zinc-600 dark:text-zinc-500 group-hover:text-zinc-900 dark:group-hover:text-zinc-300 transition-colors">
               +{Math.min(PAGE_SIZE, filteredPrompts.length - visibleCount)}
             </span>
           </button>
-          <p className="text-[11px] text-zinc-700 font-medium">
+          <p className="text-[11px] text-zinc-500 dark:text-zinc-600 font-medium">
             Показано {visibleCount} из {filteredPrompts.length}
           </p>
         </div>

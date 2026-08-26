@@ -209,27 +209,27 @@ export default function ImageCropper({
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          className="relative w-full max-w-2xl bg-zinc-950 border border-zinc-900 rounded-[2.5rem] p-6 sm:p-8 flex flex-col gap-6 shadow-2xl overflow-hidden z-10"
+          className="relative w-full max-w-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-900 rounded-[2.5rem] p-6 sm:p-8 flex flex-col gap-6 shadow-2xl overflow-hidden z-10 text-zinc-900 dark:text-zinc-100"
         >
           <div className="flex items-center justify-between shrink-0">
             <div className="space-y-1">
-              <h3 className="text-xl font-black tracking-tighter text-white uppercase">Редактирование фото</h3>
-              <p className="text-xs text-zinc-500">Настройте обрезку и положение фокуса</p>
+              <h3 className="text-xl font-black tracking-tighter text-zinc-900 dark:text-white uppercase">Редактирование фото</h3>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">Настройте обрезку и положение фокуса</p>
             </div>
             <button
               onClick={onCancel}
-              className="p-2 hover:bg-zinc-900 rounded-xl text-zinc-500 hover:text-white cursor-pointer transition-all"
+              className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white cursor-pointer transition-all"
             >
               <X size={20} />
             </button>
           </div>
 
           {/* Interactive Crop Box */}
-          <div className="flex justify-center items-center bg-zinc-900/50 rounded-2xl p-4 border border-zinc-900">
+          <div className="flex justify-center items-center bg-zinc-100 dark:bg-zinc-900/50 rounded-2xl p-4 border border-zinc-200 dark:border-zinc-900">
             <div
               ref={containerRef}
               style={{ width: `${boxWidth}px`, height: `${boxHeight}px` }}
-              className="relative overflow-hidden rounded-xl border border-zinc-800 bg-[#09090b] shadow-inner select-none touch-none"
+              className="relative overflow-hidden rounded-xl border border-zinc-300 dark:border-zinc-800 bg-zinc-200 dark:bg-[#09090b] shadow-inner select-none touch-none"
             >
               <img
                 ref={imgRef}
@@ -259,7 +259,7 @@ export default function ImageCropper({
               <div className="absolute top-1/2 left-0 right-0 h-px bg-sky-400/25 pointer-events-none" />
               <div className="absolute left-1/2 top-0 bottom-0 w-px bg-sky-400/25 pointer-events-none" />
               
-              <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] text-zinc-400 flex items-center gap-1.5 pointer-events-none">
+              <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] text-zinc-300 flex items-center gap-1.5 pointer-events-none">
                 <Move size={10} />
                 <span>Перетащите для смещения центра</span>
               </div>
@@ -276,7 +276,7 @@ export default function ImageCropper({
               <button
                 onClick={() => setZoom((z) => Math.max(1, z - 0.1))}
                 disabled={zoom <= 1}
-                className="p-2 hover:bg-zinc-900 border border-zinc-800 disabled:opacity-30 rounded-xl text-zinc-400 hover:text-white transition-all cursor-pointer"
+                className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 disabled:opacity-30 rounded-xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white transition-all cursor-pointer"
               >
                 <ZoomOut size={16} />
               </button>
@@ -287,12 +287,12 @@ export default function ImageCropper({
                 step="0.01"
                 value={zoom}
                 onChange={(e) => setZoom(parseFloat(e.target.value))}
-                className="flex-1 accent-sky-400 bg-zinc-900 h-1.5 rounded-lg cursor-pointer"
+                className="flex-1 accent-sky-400 bg-zinc-200 dark:bg-zinc-900 h-1.5 rounded-lg cursor-pointer"
               />
               <button
                 onClick={() => setZoom((z) => Math.min(3, z + 0.1))}
                 disabled={zoom >= 3}
-                className="p-2 hover:bg-zinc-900 border border-zinc-800 disabled:opacity-30 rounded-xl text-zinc-400 hover:text-white transition-all cursor-pointer"
+                className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 disabled:opacity-30 rounded-xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white transition-all cursor-pointer"
               >
                 <ZoomIn size={16} />
               </button>
@@ -303,7 +303,7 @@ export default function ImageCropper({
           <div className="flex items-center justify-end gap-3 mt-2 shrink-0">
             <button
               onClick={onCancel}
-              className="px-6 py-3 border border-zinc-800 hover:bg-zinc-900 font-bold rounded-2xl text-zinc-400 hover:text-white transition-all cursor-pointer"
+              className="px-6 py-3 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-900 font-bold rounded-2xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white transition-all cursor-pointer"
             >
               Отмена
             </button>

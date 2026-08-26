@@ -291,11 +291,11 @@ export default function CommandsSection({
               "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer border",
               categoryFilter === 'all'
                 ? "bg-amber-500 text-black border-amber-400 shadow-sm"
-                : "bg-zinc-900/70 text-zinc-400 hover:text-white border-zinc-800 hover:border-zinc-700"
+                : "bg-white dark:bg-zinc-900/70 text-zinc-700 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
             )}
           >
             <span>⚡ Все команды</span>
-            <span className={cn("text-[10px] px-1.5 py-0.2 rounded-full", categoryFilter === 'all' ? "bg-black/20 text-black" : "bg-zinc-800 text-zinc-400")}>
+            <span className={cn("text-[10px] px-1.5 py-0.2 rounded-full", categoryFilter === 'all' ? "bg-black/20 text-black" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400")}>
               {categoryCounts.all || 0}
             </span>
           </button>
@@ -310,13 +310,13 @@ export default function CommandsSection({
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer border",
                   categoryFilter === cat.value
                     ? "bg-amber-500 text-black border-amber-400 shadow-sm"
-                    : "bg-zinc-900/70 text-zinc-400 hover:text-white border-zinc-800 hover:border-zinc-700"
+                    : "bg-white dark:bg-zinc-900/70 text-zinc-700 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
                 )}
               >
                 <span>{cat.emoji}</span>
                 <span>{cat.label}</span>
                 {count > 0 && (
-                  <span className={cn("text-[10px] px-1.5 py-0.2 rounded-full", categoryFilter === cat.value ? "bg-black/20 text-black" : "bg-zinc-800 text-zinc-400")}>
+                  <span className={cn("text-[10px] px-1.5 py-0.2 rounded-full", categoryFilter === cat.value ? "bg-black/20 text-black" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400")}>
                     {count}
                   </span>
                 )}
@@ -352,14 +352,14 @@ export default function CommandsSection({
         </div>
       ) : (
         /* Empty State */
-        <div className="flex flex-col items-center justify-center p-12 text-center bg-zinc-900/20 border border-zinc-800/60 rounded-2xl border-dashed">
-          <div className="p-4 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-4">
+        <div className="flex flex-col items-center justify-center p-12 text-center bg-zinc-50 dark:bg-zinc-900/20 border border-zinc-200 dark:border-zinc-800/60 rounded-2xl border-dashed">
+          <div className="p-4 rounded-2xl bg-amber-500/10 text-amber-500 dark:text-amber-400 border border-amber-500/20 mb-4">
             <Terminal size={32} />
           </div>
-          <h3 className="text-base font-bold text-white mb-1">
+          <h3 className="text-base font-bold text-zinc-900 dark:text-white mb-1">
             {searchQuery || hasActiveFilters ? 'Команды не найдены' : 'Список команд пуст'}
           </h3>
-          <p className="text-xs text-zinc-400 max-w-md mb-5 leading-relaxed">
+          <p className="text-xs text-zinc-600 dark:text-zinc-400 max-w-md mb-5 leading-relaxed">
             {searchQuery || hasActiveFilters
               ? 'Попробуйте изменить поисковый запрос или сбросить фильтры.'
               : 'Сохраняйте повторяющиеся инструкции, системные промпты и сниппеты для мгновенной вставки в ИИ.'}
@@ -368,7 +368,7 @@ export default function CommandsSection({
           {searchQuery || hasActiveFilters ? (
             <button
               onClick={resetFilters}
-              className="px-4 py-2 text-xs font-bold text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl transition-all cursor-pointer"
+              className="px-4 py-2 text-xs font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl transition-all cursor-pointer"
             >
               Сбросить фильтры
             </button>

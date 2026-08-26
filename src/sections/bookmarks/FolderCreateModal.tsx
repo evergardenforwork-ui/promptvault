@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { X, FolderPlus, Tag } from 'lucide-react';
 
@@ -48,25 +48,25 @@ export default function FolderCreateModal({
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
-        className="relative w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-2xl z-10 space-y-5"
+        className="relative w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 shadow-2xl z-10 space-y-5 text-zinc-900 dark:text-zinc-100"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+            <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-600 dark:text-cyan-400">
               {mode === 'folder' ? <FolderPlus size={20} /> : <Tag size={20} />}
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">
+              <h3 className="text-lg font-bold text-zinc-900 dark:text-white">
                 {mode === 'folder' ? 'Создать папку / раздел' : 'Создать подкатегорию'}
               </h3>
               {mode === 'category' && activeFolder && (
-                <p className="text-xs text-zinc-400">Внутри папки: <span className="text-cyan-400 font-semibold">{activeFolder}</span></p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">Внутри папки: <span className="text-cyan-600 dark:text-cyan-400 font-semibold">{activeFolder}</span></p>
               )}
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-zinc-400 hover:text-white rounded-xl hover:bg-zinc-800 transition-all cursor-pointer"
+            className="p-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -75,10 +75,10 @@ export default function FolderCreateModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           {mode === 'folder' && (
             <div>
-              <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-400 uppercase tracking-wider mb-2">
                 Иконка (Emoji)
               </label>
-              <div className="flex items-center gap-2 flex-wrap bg-zinc-950 p-2.5 rounded-2xl border border-zinc-800">
+              <div className="flex items-center gap-2 flex-wrap bg-zinc-50 dark:bg-zinc-950 p-2.5 rounded-2xl border border-zinc-200 dark:border-zinc-800">
                 {EMOJI_PRESETS.map(em => (
                   <button
                     key={em}
@@ -87,7 +87,7 @@ export default function FolderCreateModal({
                     className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg transition-all cursor-pointer ${
                       emoji === em
                         ? 'bg-cyan-500/20 border border-cyan-500/40 shadow-sm shadow-cyan-500/20 scale-110'
-                        : 'hover:bg-zinc-800 text-zinc-300'
+                        : 'hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
                     }`}
                   >
                     {em}
@@ -98,8 +98,8 @@ export default function FolderCreateModal({
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
-              {mode === 'folder' ? 'Название папки' : 'Название подкатегории'} <span className="text-red-400">*</span>
+            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-400 uppercase tracking-wider mb-2">
+              {mode === 'folder' ? 'Название папки' : 'Название подкатегории'} <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -108,7 +108,7 @@ export default function FolderCreateModal({
               placeholder={mode === 'folder' ? 'например, 1С Предприятие или OSINT...' : 'например, 1С База или UI Kits...'}
               value={name}
               onChange={e => setName(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400 transition-all"
+              className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-cyan-500 transition-all"
             />
           </div>
 
@@ -116,7 +116,7 @@ export default function FolderCreateModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-3 px-4 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm font-semibold transition-all cursor-pointer"
+              className="flex-1 py-3 px-4 rounded-2xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-sm font-semibold transition-all cursor-pointer"
             >
               Отмена
             </button>

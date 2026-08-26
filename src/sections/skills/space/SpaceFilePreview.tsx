@@ -98,11 +98,11 @@ export default function SpaceFilePreview({ file, canEdit, onSaveFile }: SpaceFil
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Заголовок превью */}
-      <div className="px-5 py-3 border-b border-zinc-800/80 flex items-center justify-between gap-3 shrink-0 bg-zinc-950/50 relative z-20">
+      <div className="px-5 py-3 border-b border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between gap-3 shrink-0 bg-white/80 dark:bg-zinc-950/50 backdrop-blur-md relative z-20">
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           {getFileIcon(file.name)}
           <div className="min-w-0">
-            <div className="text-sm font-bold text-white truncate">{file.name}</div>
+            <div className="text-sm font-bold text-zinc-900 dark:text-white truncate">{file.name}</div>
             <Breadcrumb path={file.path} />
           </div>
         </div>
@@ -125,7 +125,7 @@ export default function SpaceFilePreview({ file, canEdit, onSaveFile }: SpaceFil
               </button>
               <button
                 onClick={handleCancelEdit}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-xl border border-zinc-700/50 transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white rounded-xl border border-zinc-200 dark:border-zinc-700/50 transition-all cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
                 Отмена
@@ -137,16 +137,16 @@ export default function SpaceFilePreview({ file, canEdit, onSaveFile }: SpaceFil
                 <>
                   <button
                     onClick={handleCopy}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-xl border border-zinc-700/50 transition-all cursor-pointer"
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white rounded-xl border border-zinc-200 dark:border-zinc-700/50 transition-all cursor-pointer"
                   >
                     {copied
-                      ? <><Check className="w-3.5 h-3.5 text-emerald-400" /><span className="text-emerald-400">Скопировано</span></>
+                      ? <><Check className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" /><span className="text-emerald-600 dark:text-emerald-400">Скопировано</span></>
                       : <><Copy className="w-3.5 h-3.5" /><span>Копировать</span></>
                     }
                   </button>
                   <button
                     onClick={() => downloadSingleFile(file)}
-                    className="p-1.5 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 rounded-xl transition-all cursor-pointer"
+                    className="p-1.5 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-all cursor-pointer"
                     title="Скачать файл"
                   >
                     <Download className="w-3.5 h-3.5" />
@@ -157,7 +157,7 @@ export default function SpaceFilePreview({ file, canEdit, onSaveFile }: SpaceFil
               {canEdit && hasContent && onSaveFile && (
                 <button
                   onClick={handleStartEdit}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-violet-300 rounded-xl border border-zinc-700/50 hover:border-violet-500/40 transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400 hover:text-violet-600 dark:hover:text-violet-300 rounded-xl border border-zinc-200 dark:border-zinc-700/50 hover:border-violet-500/40 transition-all cursor-pointer"
                   title="Редактировать файл"
                 >
                   <Edit className="w-3.5 h-3.5" />
@@ -175,8 +175,8 @@ export default function SpaceFilePreview({ file, canEdit, onSaveFile }: SpaceFil
           /* EDIT MODE */
           <div className="flex flex-col h-full p-4 gap-2">
             <div className="flex items-center gap-2 text-[11px] text-zinc-500">
-              <Edit className="w-3 h-3 text-violet-400" />
-              <span>Режим редактирования · <kbd className="bg-zinc-800 px-1.5 py-0.5 rounded text-[10px] font-mono">Ctrl+S</kbd> — сохранить</span>
+              <Edit className="w-3 h-3 text-violet-500" />
+              <span>Режим редактирования · <kbd className="bg-zinc-200 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-[10px] font-mono text-zinc-700 dark:text-zinc-300">Ctrl+S</kbd> — сохранить</span>
             </div>
             <textarea
               value={editContent}
@@ -188,7 +188,7 @@ export default function SpaceFilePreview({ file, canEdit, onSaveFile }: SpaceFil
                 }
                 if (e.key === 'Escape') handleCancelEdit();
               }}
-              className="flex-1 w-full px-4 py-4 bg-zinc-900/80 border border-violet-500/30 rounded-xl text-sm font-mono text-zinc-200 leading-relaxed resize-none outline-none focus:border-violet-400 transition-colors"
+              className="flex-1 w-full px-4 py-4 bg-white dark:bg-zinc-900/80 border border-violet-500/40 rounded-xl text-sm font-mono text-zinc-900 dark:text-zinc-200 leading-relaxed resize-none outline-none focus:border-violet-500 transition-colors shadow-inner"
               spellCheck={false}
               autoFocus
             />
@@ -197,21 +197,21 @@ export default function SpaceFilePreview({ file, canEdit, onSaveFile }: SpaceFil
           /* VIEW MODE */
           isMarkdown ? (
             <div className="w-full flex justify-center pb-12">
-              <div className="prose prose-invert prose-base max-w-3xl w-full p-6 text-zinc-300 font-sans antialiased
+              <div className="prose dark:prose-invert prose-base max-w-3xl w-full p-6 text-zinc-800 dark:text-zinc-300 font-sans antialiased
                 prose-p:leading-relaxed prose-p:mb-5
-                prose-headings:text-white prose-headings:font-bold prose-headings:tracking-tight
-                prose-h1:text-3xl prose-h1:border-b prose-h1:border-zinc-800 prose-h1:pb-4 prose-h1:mb-6 prose-h1:mt-8
-                prose-h2:text-2xl prose-h2:text-violet-100 prose-h2:mb-4 prose-h2:mt-10
-                prose-h3:text-lg prose-h3:text-violet-200 prose-h3:mb-3 prose-h3:mt-8
-                prose-code:bg-zinc-800/80 prose-code:text-violet-300 prose-code:font-mono prose-code:rounded prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-code:border prose-code:border-zinc-700/50
-                prose-pre:bg-[#1a1b26] prose-pre:border prose-pre:border-zinc-800 prose-pre:rounded-xl prose-pre:p-5 prose-pre:font-mono
-                prose-a:text-violet-400 prose-a:no-underline hover:prose-a:underline
-                prose-strong:text-white prose-strong:font-semibold
-                prose-blockquote:border-l-4 prose-blockquote:border-violet-500/60 prose-blockquote:bg-violet-500/5 prose-blockquote:rounded-r-xl prose-blockquote:py-3 prose-blockquote:px-5 prose-blockquote:my-6 prose-blockquote:not-italic
+                prose-headings:text-zinc-900 dark:prose-headings:text-white prose-headings:font-bold prose-headings:tracking-tight
+                prose-h1:text-3xl prose-h1:border-b prose-h1:border-zinc-200 dark:prose-h1:border-zinc-800 prose-h1:pb-4 prose-h1:mb-6 prose-h1:mt-8
+                prose-h2:text-2xl prose-h2:text-violet-900 dark:prose-h2:text-violet-100 prose-h2:mb-4 prose-h2:mt-10
+                prose-h3:text-lg prose-h3:text-violet-800 dark:prose-h3:text-violet-200 prose-h3:mb-3 prose-h3:mt-8
+                prose-code:bg-zinc-100 dark:prose-code:bg-zinc-800/80 prose-code:text-violet-700 dark:prose-code:text-violet-300 prose-code:font-mono prose-code:rounded prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-code:border prose-code:border-zinc-200 dark:prose-code:border-zinc-700/50
+                prose-pre:bg-zinc-100 dark:prose-pre:bg-[#1a1b26] prose-pre:border prose-pre:border-zinc-200 dark:prose-pre:border-zinc-800 prose-pre:text-zinc-900 dark:prose-pre:text-zinc-200 prose-pre:rounded-xl prose-pre:p-5 prose-pre:font-mono
+                prose-a:text-violet-600 dark:prose-a:text-violet-400 prose-a:no-underline hover:prose-a:underline
+                prose-strong:text-zinc-900 dark:prose-strong:text-white prose-strong:font-semibold
+                prose-blockquote:border-l-4 prose-blockquote:border-violet-500/60 prose-blockquote:bg-violet-50 dark:prose-blockquote:bg-violet-500/5 prose-blockquote:rounded-r-xl prose-blockquote:py-3 prose-blockquote:px-5 prose-blockquote:my-6 prose-blockquote:not-italic
                 prose-table:w-full prose-table:border-collapse prose-table:my-8 prose-table:text-sm
-                prose-th:border prose-th:border-zinc-700 prose-th:bg-zinc-900 prose-th:p-3 prose-th:text-left prose-th:font-semibold
-                prose-td:border prose-td:border-zinc-800/80 prose-td:p-3
-                prose-hr:border-zinc-800/80 prose-hr:my-10
+                prose-th:border prose-th:border-zinc-300 dark:prose-th:border-zinc-700 prose-th:bg-zinc-100 dark:prose-th:bg-zinc-900 prose-th:p-3 prose-th:text-left prose-th:font-semibold
+                prose-td:border prose-td:border-zinc-200 dark:prose-td:border-zinc-800/80 prose-td:p-3
+                prose-hr:border-zinc-200 dark:prose-hr:border-zinc-800/80 prose-hr:my-10
                 prose-ul:list-disc prose-ul:pl-6 prose-ul:my-5
                 prose-ol:list-decimal prose-ol:pl-6 prose-ol:my-5
                 prose-li:my-2 prose-li:pl-2
@@ -220,12 +220,12 @@ export default function SpaceFilePreview({ file, canEdit, onSaveFile }: SpaceFil
               </div>
             </div>
           ) : (
-            <pre className="text-xs font-mono text-zinc-300 bg-zinc-950/50 p-6 overflow-x-auto whitespace-pre-wrap leading-relaxed">
+            <pre className="text-xs font-mono text-zinc-800 dark:text-zinc-300 bg-white dark:bg-zinc-950/50 p-6 overflow-x-auto whitespace-pre-wrap leading-relaxed">
               {file.content}
             </pre>
           )
         ) : (
-          <div className="flex items-center justify-center h-full text-zinc-600 text-xs italic p-8 text-center">
+          <div className="flex items-center justify-center h-full text-zinc-500 text-xs italic p-8 text-center">
             Содержимое файла недоступно для предварительного просмотра
           </div>
         )}

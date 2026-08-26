@@ -207,7 +207,7 @@ export default function GitProjectsSection({
               "px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5",
               categoryFilter === 'all'
                 ? "bg-emerald-500 text-white"
-                : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white"
+                : "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white hover:border-zinc-300 dark:hover:border-zinc-700 shadow-sm dark:shadow-none"
             )}
           >
             📂 Все ({categoryCounts.all})
@@ -220,7 +220,7 @@ export default function GitProjectsSection({
                 "px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5",
                 categoryFilter === opt.value
                   ? "bg-emerald-500 text-white"
-                  : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white"
+                  : "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white hover:border-zinc-300 dark:hover:border-zinc-700 shadow-sm dark:shadow-none"
               )}
             >
               {opt.emoji} {opt.label} ({categoryCounts[opt.value] || 0})

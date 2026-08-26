@@ -44,8 +44,8 @@ export default function ImageSlotsSection({
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
-        <span className="text-sky-400 text-sm">⊞</span>
-        <label className="text-sm font-bold text-zinc-300 uppercase tracking-wider">Макет изображений</label>
+        <span className="text-sky-500 dark:text-sky-400 text-sm">⊞</span>
+        <label className="text-sm font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-wider">Макет изображений</label>
       </div>
 
       {/* Layout selector */}
@@ -56,52 +56,52 @@ export default function ImageSlotsSection({
             type="button"
             onClick={() => setImageLayoutType(opt.id)}
             className={cn(
-              "p-3 bg-zinc-900 border rounded-2xl text-left transition-all hover:border-zinc-700 flex flex-col gap-2 cursor-pointer",
-              imageLayoutType === opt.id ? "border-sky-400 bg-sky-400/5 ring-1 ring-sky-400" : "border-zinc-800"
+              "p-3 bg-zinc-50 dark:bg-zinc-900 border rounded-2xl text-left transition-all hover:border-zinc-300 dark:hover:border-zinc-700 flex flex-col gap-2 cursor-pointer shadow-sm dark:shadow-none",
+              imageLayoutType === opt.id ? "border-sky-500 dark:border-sky-400 bg-sky-50 dark:bg-sky-400/5 ring-1 ring-sky-500 dark:ring-sky-400" : "border-zinc-200 dark:border-zinc-800"
             )}
             title={opt.desc}
           >
             <div className="flex items-center justify-between w-full">
-              <span className="text-[10px] font-black text-white uppercase tracking-wider truncate">{opt.name}</span>
+              <span className="text-[10px] font-black text-zinc-900 dark:text-white uppercase tracking-wider truncate">{opt.name}</span>
             </div>
             {/* Mini visual diagram */}
-            <div className="h-10 w-full bg-zinc-950 rounded-lg p-1 flex gap-0.5 border border-zinc-800/80">
-              {opt.id === 'single' && <div className="w-full h-full bg-zinc-800 rounded border border-zinc-700/30" />}
+            <div className="h-10 w-full bg-zinc-100 dark:bg-zinc-950 rounded-lg p-1 flex gap-0.5 border border-zinc-200 dark:border-zinc-800/80">
+              {opt.id === 'single' && <div className="w-full h-full bg-zinc-300 dark:bg-zinc-800 rounded border border-zinc-400/30 dark:border-zinc-700/30" />}
               {opt.id === 'slider' && (
-                <div className="w-full h-full relative rounded overflow-hidden border border-zinc-700/30 flex">
-                  <div className="w-1/2 h-full bg-zinc-800 border-r border-zinc-900" />
-                  <div className="w-1/2 h-full bg-zinc-700" />
-                  <div className="absolute top-0 bottom-0 left-1/2 w-px bg-white/70 -translate-x-1/2" />
+                <div className="w-full h-full relative rounded overflow-hidden border border-zinc-400/30 dark:border-zinc-700/30 flex">
+                  <div className="w-1/2 h-full bg-zinc-300 dark:bg-zinc-800 border-r border-zinc-400 dark:border-zinc-900" />
+                  <div className="w-1/2 h-full bg-zinc-400 dark:bg-zinc-700" />
+                  <div className="absolute top-0 bottom-0 left-1/2 w-px bg-white/90 -translate-x-1/2" />
                 </div>
               )}
               {opt.id === 'split-vertical' && (
                 <div className="w-full h-full flex flex-col gap-0.5">
-                  <div className="flex-1 bg-zinc-800 rounded border border-zinc-700/30" />
-                  <div className="flex-1 bg-zinc-700 rounded border border-zinc-700/30" />
+                  <div className="flex-1 bg-zinc-300 dark:bg-zinc-800 rounded border border-zinc-400/30 dark:border-zinc-700/30" />
+                  <div className="flex-1 bg-zinc-400 dark:bg-zinc-700 rounded border border-zinc-400/30 dark:border-zinc-700/30" />
                 </div>
               )}
               {opt.id === 'split-horizontal' && (
                 <div className="w-full h-full flex gap-0.5">
-                  <div className="flex-1 bg-zinc-800 rounded border border-zinc-700/30" />
-                  <div className="flex-1 bg-zinc-700 rounded border border-zinc-700/30" />
+                  <div className="flex-1 bg-zinc-300 dark:bg-zinc-800 rounded border border-zinc-400/30 dark:border-zinc-700/30" />
+                  <div className="flex-1 bg-zinc-400 dark:bg-zinc-700 rounded border border-zinc-400/30 dark:border-zinc-700/30" />
                 </div>
               )}
               {opt.id === 'split-1-2' && (
                 <div className="w-full h-full flex gap-0.5">
-                  <div className="w-1/2 bg-zinc-800 rounded border border-zinc-700/30" />
+                  <div className="w-1/2 bg-zinc-300 dark:bg-zinc-800 rounded border border-zinc-400/30 dark:border-zinc-700/30" />
                   <div className="w-1/2 flex flex-col gap-0.5">
-                    <div className="flex-1 bg-zinc-700 rounded border border-zinc-700/30" />
-                    <div className="flex-1 bg-zinc-600 rounded border border-zinc-700/30" />
+                    <div className="flex-1 bg-zinc-400 dark:bg-zinc-700 rounded border border-zinc-400/30 dark:border-zinc-700/30" />
+                    <div className="flex-1 bg-zinc-500 dark:bg-zinc-600 rounded border border-zinc-400/30 dark:border-zinc-700/30" />
                   </div>
                 </div>
               )}
               {opt.id === 'merge-2-1' && (
                 <div className="w-full h-full flex flex-col gap-0.5">
                   <div className="flex-1 flex gap-0.5">
-                    <div className="flex-1 bg-zinc-800 rounded border border-zinc-700/30" />
-                    <div className="flex-1 bg-zinc-700 rounded border border-zinc-700/30" />
+                    <div className="flex-1 bg-zinc-300 dark:bg-zinc-800 rounded border border-zinc-400/30 dark:border-zinc-700/30" />
+                    <div className="flex-1 bg-zinc-400 dark:bg-zinc-700 rounded border border-zinc-400/30 dark:border-zinc-700/30" />
                   </div>
-                  <div className="flex-1 bg-zinc-600 rounded border border-zinc-700/30" />
+                  <div className="flex-1 bg-zinc-500 dark:bg-zinc-600 rounded border border-zinc-400/30 dark:border-zinc-700/30" />
                 </div>
               )}
             </div>
@@ -110,7 +110,7 @@ export default function ImageSlotsSection({
       </div>
 
       {/* Interactive Layout Preview */}
-      <div className="p-6 bg-zinc-950/40 border border-zinc-900 rounded-[2rem] space-y-4">
+      <div className="p-6 bg-zinc-50 dark:bg-zinc-950/40 border border-zinc-200 dark:border-zinc-900 rounded-[2rem] space-y-4">
         <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Макет (нажмите для загрузки / изменения)</span>
         <div className="w-full">{renderLayoutPreview(null)}</div>
       </div>
@@ -122,14 +122,14 @@ export default function ImageSlotsSection({
       {cropperNode}
 
       {/* Extra images */}
-      <div className="space-y-4 border-t border-zinc-900 pt-6">
+      <div className="space-y-4 border-t border-zinc-200 dark:border-zinc-900 pt-6">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <label className="text-sm font-bold text-zinc-300 uppercase tracking-wider">Ещё примеры к промпту</label>
+            <label className="text-sm font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-wider">Ещё примеры к промпту</label>
             <p className="text-xs text-zinc-500">Дополнительные референсные изображения (без сетки макета)</p>
           </div>
           <button type="button" onClick={() => extraImagesInputRef.current?.click()}
-            className="text-[10px] font-bold text-sky-400 hover:text-sky-300 uppercase tracking-widest cursor-pointer">
+            className="text-[10px] font-bold text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 uppercase tracking-widest cursor-pointer">
             + Добавить файлы
           </button>
         </div>

@@ -165,19 +165,19 @@ export default function CommandForm({
             initial={{ opacity: 0, scale: 0.96, y: 15 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 15 }}
-            className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
+            className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] text-zinc-900 dark:text-zinc-100"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800/80 bg-zinc-900/40">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800/80 bg-zinc-50 dark:bg-zinc-900/40">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 dark:text-amber-400 border border-amber-500/20">
                   <Sparkles size={18} />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-white leading-tight">
+                  <h2 className="text-lg font-bold text-zinc-900 dark:text-white leading-tight">
                     {initialData ? 'Редактировать команду' : 'Новая команда / Сниппет'}
                   </h2>
-                  <p className="text-xs text-zinc-400">
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
                     {initialData ? 'Измените параметры и текст команды' : 'Сохраните полезную инструкцию или промпт для быстрой вставки'}
                   </p>
                 </div>
@@ -185,7 +185,7 @@ export default function CommandForm({
 
               <button
                 onClick={handleCloseAttempt}
-                className="p-2 text-zinc-400 hover:text-white rounded-xl hover:bg-zinc-800 transition-colors cursor-pointer"
+                className="p-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -195,15 +195,15 @@ export default function CommandForm({
             <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-5 flex-1 custom-scrollbar">
               {/* Title */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">
-                  Название команды <span className="text-rose-400">*</span>
+                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
+                  Название команды <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Например: Обнови всю документацию проекта по изменениям..."
-                  className="w-full bg-zinc-900/80 border border-zinc-800 focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/30 rounded-xl px-4 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none transition-all"
+                  className="w-full bg-zinc-50 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/30 rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 outline-none transition-all"
                   required
                   autoFocus
                 />
@@ -213,16 +213,16 @@ export default function CommandForm({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Category */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">
+                  <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
                     Категория
                   </label>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value as CommandCategory)}
-                    className="w-full bg-zinc-900/80 border border-zinc-800 focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/30 rounded-xl px-3.5 py-2.5 text-sm text-zinc-200 outline-none transition-all cursor-pointer"
+                    className="w-full bg-zinc-50 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/30 rounded-xl px-3.5 py-2.5 text-sm text-zinc-900 dark:text-zinc-200 outline-none transition-all cursor-pointer"
                   >
                     {COMMAND_CATEGORY_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value} className="bg-zinc-900">
+                      <option key={opt.value} value={opt.value} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
                         {opt.emoji} {opt.label}
                       </option>
                     ))}
@@ -231,16 +231,16 @@ export default function CommandForm({
 
                 {/* Target AI */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">
+                  <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
                     Платформа ИИ
                   </label>
                   <select
                     value={targetAi}
                     onChange={(e) => setTargetAi(e.target.value as TargetAi)}
-                    className="w-full bg-zinc-900/80 border border-zinc-800 focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/30 rounded-xl px-3.5 py-2.5 text-sm text-zinc-200 outline-none transition-all cursor-pointer"
+                    className="w-full bg-zinc-50 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/30 rounded-xl px-3.5 py-2.5 text-sm text-zinc-900 dark:text-zinc-200 outline-none transition-all cursor-pointer"
                   >
                     {COMMAND_AI_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value} className="bg-zinc-900">
+                      <option key={opt.value} value={opt.value} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
                         {opt.emoji} {opt.label}
                       </option>
                     ))}
@@ -250,18 +250,18 @@ export default function CommandForm({
 
               {/* Linked Skill */}
               <div className="space-y-1.5">
-                <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-300 uppercase tracking-wider">
-                  <Layers size={13} className="text-indigo-400" />
+                <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
+                  <Layers size={13} className="text-indigo-500 dark:text-indigo-400" />
                   <span>Привязка к скиллу (опционально)</span>
                 </label>
                 <select
                   value={skillId}
                   onChange={(e) => setSkillId(e.target.value)}
-                  className="w-full bg-zinc-900/80 border border-zinc-800 focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/30 rounded-xl px-3.5 py-2.5 text-sm text-zinc-200 outline-none transition-all cursor-pointer"
+                  className="w-full bg-zinc-50 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/30 rounded-xl px-3.5 py-2.5 text-sm text-zinc-900 dark:text-zinc-200 outline-none transition-all cursor-pointer"
                 >
-                  <option value="" className="bg-zinc-900 text-zinc-500">— Без привязки к скиллу —</option>
+                  <option value="" className="bg-white dark:bg-zinc-900 text-zinc-500">— Без привязки к скиллу —</option>
                   {skills.map((s) => (
-                    <option key={s.id} value={s.id} className="bg-zinc-900">
+                    <option key={s.id} value={s.id} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
                       📦 {s.title} {s.category ? `(${s.category})` : ''}
                     </option>
                   ))}
@@ -271,8 +271,8 @@ export default function CommandForm({
               {/* Command Text */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">
-                    Текст команды / Сниппета <span className="text-rose-400">*</span>
+                  <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
+                    Текст команды / Сниппета <span className="text-rose-500">*</span>
                   </label>
                   <span className="text-[11px] text-zinc-500 font-mono">
                     {commandText.length} симв.
@@ -287,7 +287,7 @@ export default function CommandForm({
                       key={v}
                       type="button"
                       onClick={() => handleInsertVariable(v)}
-                      className="px-2 py-0.5 rounded-md bg-zinc-800 hover:bg-zinc-700 text-amber-400 hover:text-amber-300 border border-zinc-700 text-xs font-mono transition-colors cursor-pointer"
+                      className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 border border-zinc-200 dark:border-zinc-700 text-xs font-mono transition-colors cursor-pointer"
                     >
                       + {`{{${v}}}`}
                     </button>
@@ -300,14 +300,14 @@ export default function CommandForm({
                   onChange={(e) => setCommandText(e.target.value)}
                   placeholder="Вставьте точный текст команды. Используйте {{переменная}} для параметров, которые нужно будет подставлять при копировании..."
                   rows={6}
-                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/30 rounded-xl p-3.5 text-xs font-mono text-zinc-200 placeholder:text-zinc-600 outline-none transition-all resize-y custom-scrollbar leading-relaxed"
+                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/30 rounded-xl p-3.5 text-xs font-mono text-zinc-900 dark:text-zinc-200 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 outline-none transition-all resize-y custom-scrollbar leading-relaxed"
                   required
                 />
               </div>
 
               {/* Description */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">
+                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
                   Описание / Когда использовать
                 </label>
                 <textarea
@@ -315,26 +315,26 @@ export default function CommandForm({
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Краткое пояснение, когда и как применять эту команду..."
                   rows={2}
-                  className="w-full bg-zinc-900/80 border border-zinc-800 focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/30 rounded-xl p-3 text-xs text-zinc-200 placeholder:text-zinc-600 outline-none transition-all resize-none"
+                  className="w-full bg-zinc-50 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/30 rounded-xl p-3 text-xs text-zinc-900 dark:text-zinc-200 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 outline-none transition-all resize-none"
                 />
               </div>
 
               {/* Tags */}
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">
+                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
                   Теги
                 </label>
-                <div className="flex flex-wrap items-center gap-1.5 p-2.5 bg-zinc-900/80 border border-zinc-800 rounded-xl">
+                <div className="flex flex-wrap items-center gap-1.5 p-2.5 bg-zinc-50 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 rounded-xl">
                   {tags.map((t) => (
                     <span
                       key={t}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-800 text-xs text-zinc-300 border border-zinc-700"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-200 dark:bg-zinc-800 text-xs text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700"
                     >
                       <span>#{t}</span>
                       <button
                         type="button"
                         onClick={() => handleRemoveTag(t)}
-                        className="text-zinc-500 hover:text-rose-400 cursor-pointer"
+                        className="text-zinc-400 hover:text-rose-500 cursor-pointer"
                       >
                         <X size={12} />
                       </button>
@@ -346,7 +346,7 @@ export default function CommandForm({
                     onChange={(e) => setTagInput(e.target.value)}
                     onKeyDown={handleAddTag}
                     placeholder={tags.length === 0 ? "Введите тег и нажмите Enter..." : "Добавить..."}
-                    className="flex-1 min-w-[120px] bg-transparent text-xs text-zinc-200 placeholder:text-zinc-600 outline-none px-1"
+                    className="flex-1 min-w-[120px] bg-transparent text-xs text-zinc-900 dark:text-zinc-200 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 outline-none px-1"
                   />
                 </div>
               </div>
@@ -358,22 +358,22 @@ export default function CommandForm({
                   id="commandIsPublic"
                   checked={isPublic}
                   onChange={(e) => setIsPublic(e.target.checked)}
-                  className="w-4 h-4 rounded bg-zinc-900 border-zinc-700 text-amber-500 focus:ring-amber-500/30 cursor-pointer"
+                  className="w-4 h-4 rounded bg-zinc-100 dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-amber-500 focus:ring-amber-500/30 cursor-pointer"
                 />
-                <label htmlFor="commandIsPublic" className="text-xs text-zinc-300 select-none cursor-pointer">
+                <label htmlFor="commandIsPublic" className="text-xs text-zinc-700 dark:text-zinc-300 select-none cursor-pointer">
                   Публичная команда (видна другим пользователям)
                 </label>
               </div>
             </form>
 
             {/* Footer */}
-            <div className="flex items-center justify-between gap-3 px-6 py-4 border-t border-zinc-800/80 bg-zinc-900/30">
+            <div className="flex items-center justify-between gap-3 px-6 py-4 border-t border-zinc-200 dark:border-zinc-800/80 bg-zinc-50 dark:bg-zinc-900/30">
               <div>
                 {initialData && onDelete && (user.uid === initialData.userId || user.role === 'admin') && (
                   <button
                     type="button"
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl transition-colors cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-rose-500 hover:text-rose-600 dark:text-rose-400 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-colors cursor-pointer"
                   >
                     <Trash2 size={14} />
                     <span>Удалить команду</span>
@@ -385,7 +385,7 @@ export default function CommandForm({
                 <button
                   type="button"
                   onClick={handleCloseAttempt}
-                  className="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white rounded-xl hover:bg-zinc-800 transition-colors cursor-pointer"
+                  className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                 >
                   Отмена
                 </button>

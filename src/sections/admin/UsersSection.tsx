@@ -123,17 +123,17 @@ export default function UsersSection({ addToast }: UsersSectionProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-violet-500/20 border border-violet-500/30 rounded-2xl">
-            <Users size={22} className="text-violet-400" />
+            <Users size={22} className="text-violet-600 dark:text-violet-400" />
           </div>
           <div>
-            <h2 className="text-xl font-black text-white tracking-tight">Управление пользователями</h2>
-            <p className="text-xs text-zinc-500 mt-0.5">Создавайте аккаунты для друзей и управляйте доступом</p>
+            <h2 className="text-xl font-black text-zinc-900 dark:text-white tracking-tight">Управление пользователями</h2>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Создавайте аккаунты для друзей и управляйте доступом</p>
           </div>
         </div>
         <button
           id="create-user-btn"
           onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-violet-500 hover:bg-violet-400 text-white font-bold text-sm rounded-2xl transition-all shadow-lg shadow-violet-500/25 cursor-pointer"
+          className="flex items-center gap-2 px-4 py-2.5 bg-violet-600 hover:bg-violet-500 text-white font-bold text-sm rounded-2xl transition-all shadow-lg shadow-violet-500/25 cursor-pointer"
         >
           <Plus size={16} />
           Добавить пользователя
@@ -143,7 +143,7 @@ export default function UsersSection({ addToast }: UsersSectionProps) {
       {/* Users List */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-violet-400" />
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-violet-500" />
         </div>
       ) : (
         <div className="grid gap-3">
@@ -154,29 +154,29 @@ export default function UsersSection({ addToast }: UsersSectionProps) {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.97 }}
-                className="flex items-center justify-between p-4 bg-zinc-900/60 border border-zinc-800/80 rounded-2xl hover:border-zinc-700 transition-all"
+                className="flex items-center justify-between p-4 bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl hover:border-zinc-300 dark:hover:border-zinc-700 shadow-sm dark:shadow-none transition-all text-zinc-900 dark:text-zinc-100"
               >
                 <div className="flex items-center gap-4">
                   {/* Avatar */}
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black ${
                     u.role === 'admin'
-                      ? 'bg-violet-500/20 border border-violet-500/40 text-violet-400'
-                      : 'bg-zinc-800 border border-zinc-700 text-zinc-400'
+                      ? 'bg-violet-50 dark:bg-violet-500/20 border border-violet-200 dark:border-violet-500/40 text-violet-700 dark:text-violet-400'
+                      : 'bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400'
                   }`}>
                     {u.name.charAt(0).toUpperCase()}
                   </div>
 
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-white">{u.name}</span>
+                      <span className="text-sm font-bold text-zinc-900 dark:text-white">{u.name}</span>
                       {u.role === 'admin' && (
-                        <span className="flex items-center gap-1 px-2 py-0.5 bg-violet-500/20 border border-violet-500/30 rounded-lg text-violet-400 text-[10px] font-black uppercase tracking-widest">
+                        <span className="flex items-center gap-1 px-2 py-0.5 bg-violet-50 dark:bg-violet-500/20 border border-violet-200 dark:border-violet-500/30 rounded-lg text-violet-700 dark:text-violet-400 text-[10px] font-black uppercase tracking-widest">
                           <Shield size={9} />
                           Admin
                         </span>
                       )}
                     </div>
-                    <span className="text-xs text-zinc-500 mt-0.5 block">{u.email}</span>
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 block">{u.email}</span>
                   </div>
                 </div>
 
@@ -184,7 +184,7 @@ export default function UsersSection({ addToast }: UsersSectionProps) {
                   <button
                     id={`change-pwd-${u.uid}`}
                     onClick={() => { setPasswordForm({ uid: u.uid, name: u.name, password: '' }); setNewPassword(''); }}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-600 text-zinc-400 hover:text-white text-xs font-bold rounded-xl transition-all cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 text-zinc-700 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white text-xs font-bold rounded-xl transition-all cursor-pointer"
                     title="Сменить пароль"
                   >
                     <Key size={13} />
@@ -195,7 +195,7 @@ export default function UsersSection({ addToast }: UsersSectionProps) {
                     <button
                       id={`delete-user-${u.uid}`}
                       onClick={() => setDeleteConfirm({ isOpen: true, uid: u.uid, name: u.name })}
-                      className="p-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 hover:border-red-500/40 text-red-400 hover:text-red-300 rounded-xl transition-all cursor-pointer"
+                      className="p-2 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 border border-red-200 dark:border-red-500/20 hover:border-red-300 dark:hover:border-red-500/40 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 rounded-xl transition-all cursor-pointer"
                       title="Удалить пользователя"
                     >
                       <Trash2 size={14} />
@@ -207,7 +207,7 @@ export default function UsersSection({ addToast }: UsersSectionProps) {
           </AnimatePresence>
 
           {users.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-16 text-zinc-600">
+            <div className="flex flex-col items-center justify-center py-16 text-zinc-400 dark:text-zinc-600">
               <User size={40} className="mb-3 opacity-30" />
               <p className="text-sm font-bold">Нет пользователей</p>
             </div>
@@ -233,12 +233,12 @@ export default function UsersSection({ addToast }: UsersSectionProps) {
               transition={{ type: 'spring', damping: 22, stiffness: 260 }}
               className="fixed inset-0 flex items-center justify-center z-50 p-4"
             >
-              <div className="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-3xl p-6 shadow-2xl">
+              <div className="w-full max-w-md bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 shadow-2xl text-zinc-900 dark:text-zinc-100">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-black text-white">Новый пользователь</h3>
+                  <h3 className="text-lg font-black text-zinc-900 dark:text-white">Новый пользователь</h3>
                   <button
                     onClick={() => setShowCreateModal(false)}
-                    className="p-2 hover:bg-zinc-900 rounded-xl text-zinc-500 hover:text-white transition-all cursor-pointer"
+                    className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer"
                   >
                     <X size={18} />
                   </button>
@@ -254,7 +254,7 @@ export default function UsersSection({ addToast }: UsersSectionProps) {
                       value={createForm.name}
                       onChange={e => setCreateForm(f => ({ ...f, name: e.target.value }))}
                       placeholder="Алексей"
-                      className="w-full bg-zinc-900/60 border border-zinc-800 focus:border-violet-500 rounded-2xl py-3 px-4 text-sm text-white placeholder-zinc-600 outline-none transition-all"
+                      className="w-full bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 focus:border-violet-500 rounded-2xl py-3 px-4 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 outline-none transition-all"
                     />
                   </div>
 
@@ -267,7 +267,7 @@ export default function UsersSection({ addToast }: UsersSectionProps) {
                       value={createForm.email}
                       onChange={e => setCreateForm(f => ({ ...f, email: e.target.value }))}
                       placeholder="friend@example.com"
-                      className="w-full bg-zinc-900/60 border border-zinc-800 focus:border-violet-500 rounded-2xl py-3 px-4 text-sm text-white placeholder-zinc-600 outline-none transition-all"
+                      className="w-full bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 focus:border-violet-500 rounded-2xl py-3 px-4 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 outline-none transition-all"
                     />
                   </div>
 
@@ -282,12 +282,12 @@ export default function UsersSection({ addToast }: UsersSectionProps) {
                         value={createForm.password}
                         onChange={e => setCreateForm(f => ({ ...f, password: e.target.value }))}
                         placeholder="Минимум 4 символа"
-                        className="w-full bg-zinc-900/60 border border-zinc-800 focus:border-violet-500 rounded-2xl py-3 pl-4 pr-12 text-sm text-white placeholder-zinc-600 outline-none transition-all"
+                        className="w-full bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 focus:border-violet-500 rounded-2xl py-3 pl-4 pr-12 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 outline-none transition-all"
                       />
                       <button
                         type="button"
                         onClick={() => setShowCreatePwd(v => !v)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 cursor-pointer"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 cursor-pointer"
                       >
                         {showCreatePwd ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
@@ -302,8 +302,8 @@ export default function UsersSection({ addToast }: UsersSectionProps) {
                         onClick={() => setCreateForm(f => ({ ...f, role: 'user' }))}
                         className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl border text-xs font-bold transition-all cursor-pointer ${
                           createForm.role === 'user'
-                            ? 'bg-zinc-800 border-zinc-600 text-white'
-                            : 'border-zinc-800 text-zinc-500 hover:text-zinc-300'
+                            ? 'bg-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-600 text-zinc-950 dark:text-white shadow-sm'
+                            : 'bg-white dark:bg-transparent border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
                         }`}
                       >
                         <User size={14} />
@@ -314,8 +314,8 @@ export default function UsersSection({ addToast }: UsersSectionProps) {
                         onClick={() => setCreateForm(f => ({ ...f, role: 'admin' }))}
                         className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl border text-xs font-bold transition-all cursor-pointer ${
                           createForm.role === 'admin'
-                            ? 'bg-violet-500/20 border-violet-500/50 text-violet-400'
-                            : 'border-zinc-800 text-zinc-500 hover:text-zinc-300'
+                            ? 'bg-violet-50 dark:bg-violet-500/20 border-violet-300 dark:border-violet-500/50 text-violet-700 dark:text-violet-400 shadow-sm'
+                            : 'bg-white dark:bg-transparent border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
                         }`}
                       >
                         <Shield size={14} />
@@ -328,7 +328,7 @@ export default function UsersSection({ addToast }: UsersSectionProps) {
                     id="submit-create-user"
                     type="submit"
                     disabled={creating}
-                    className="w-full py-3 bg-violet-500 hover:bg-violet-400 disabled:opacity-50 text-white font-black rounded-2xl transition-all cursor-pointer shadow-lg shadow-violet-500/25 mt-2"
+                    className="w-full py-3 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-black rounded-2xl transition-all cursor-pointer shadow-lg shadow-violet-500/25 mt-2"
                   >
                     {creating ? 'Создание...' : 'Создать пользователя'}
                   </button>
@@ -357,15 +357,15 @@ export default function UsersSection({ addToast }: UsersSectionProps) {
               transition={{ type: 'spring', damping: 22, stiffness: 260 }}
               className="fixed inset-0 flex items-center justify-center z-50 p-4"
             >
-              <div className="w-full max-w-sm bg-zinc-950 border border-zinc-800 rounded-3xl p-6 shadow-2xl">
+              <div className="w-full max-w-sm bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 shadow-2xl text-zinc-900 dark:text-zinc-100">
                 <div className="flex items-center justify-between mb-5">
                   <div>
-                    <h3 className="text-lg font-black text-white">Смена пароля</h3>
-                    <p className="text-xs text-zinc-500 mt-0.5">для {passwordForm.name}</p>
+                    <h3 className="text-lg font-black text-zinc-900 dark:text-white">Смена пароля</h3>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">для {passwordForm.name}</p>
                   </div>
                   <button
                     onClick={() => setPasswordForm(null)}
-                    className="p-2 hover:bg-zinc-900 rounded-xl text-zinc-500 hover:text-white transition-all cursor-pointer"
+                    className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer"
                   >
                     <X size={18} />
                   </button>
@@ -384,12 +384,12 @@ export default function UsersSection({ addToast }: UsersSectionProps) {
                         onChange={e => setNewPassword(e.target.value)}
                         placeholder="Минимум 4 символа"
                         autoFocus
-                        className="w-full bg-zinc-900/60 border border-zinc-800 focus:border-amber-500 rounded-2xl py-3 pl-4 pr-12 text-sm text-white placeholder-zinc-600 outline-none transition-all"
+                        className="w-full bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 focus:border-amber-500 rounded-2xl py-3 pl-4 pr-12 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 outline-none transition-all"
                       />
                       <button
                         type="button"
                         onClick={() => setShowNewPwd(v => !v)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 cursor-pointer"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 cursor-pointer"
                       >
                         {showNewPwd ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>

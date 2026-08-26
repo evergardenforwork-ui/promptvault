@@ -43,12 +43,12 @@ interface AccordionProps {
 function Accordion({ label, defaultOpen = false, children }: AccordionProps) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border border-zinc-800/60 rounded-2xl overflow-hidden">
+    <div className="border border-zinc-200 dark:border-zinc-800/60 rounded-2xl overflow-hidden">
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between px-5 py-4 bg-zinc-900/50 hover:bg-zinc-900 transition-colors cursor-pointer"
+        className="w-full flex items-center justify-between px-5 py-4 bg-zinc-50 dark:bg-zinc-900/50 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors cursor-pointer"
       >
-        <span className="text-sm font-bold text-zinc-200">{label}</span>
+        <span className="text-sm font-bold text-zinc-800 dark:text-zinc-200">{label}</span>
         {open ? <ChevronUp size={16} className="text-zinc-500" /> : <ChevronDown size={16} className="text-zinc-500" />}
       </button>
       {open && (
@@ -100,7 +100,7 @@ export default function GitProjectView({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 30, scale: 0.97 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
-          className="w-full max-w-2xl bg-zinc-950 border border-zinc-800 rounded-3xl shadow-2xl overflow-hidden mb-10"
+          className="w-full max-w-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden mb-10 text-zinc-900 dark:text-zinc-100"
         >
           {/* Hero Image */}
           {project.image ? (
@@ -110,7 +110,7 @@ export default function GitProjectView({
                 alt={project.title}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-white/90 dark:from-zinc-950 via-zinc-950/20 to-transparent" />
               {pricingOpt && (
                 <div className="absolute top-4 left-4">
                   <span className={cn('px-3 py-1 text-[11px] font-black uppercase tracking-widest rounded-xl border backdrop-blur-sm', pricingOpt.color)}>
@@ -149,7 +149,7 @@ export default function GitProjectView({
             /* No image — compact header */
             <div className="flex items-center justify-between px-6 pt-5 pb-0">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-950/60 flex items-center justify-center text-2xl border border-emerald-800/30">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 flex items-center justify-center text-2xl border border-emerald-200 dark:border-emerald-800/30">
                   {categoryOpt?.emoji}
                 </div>
                 {pricingOpt && (
@@ -161,15 +161,15 @@ export default function GitProjectView({
               <div className="flex items-center gap-2">
                 {canEdit && (
                   <>
-                    <button onClick={onEdit} className="p-2 hover:bg-zinc-800 rounded-xl text-zinc-400 hover:text-white transition-all cursor-pointer" title="Редактировать">
+                    <button onClick={onEdit} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer" title="Редактировать">
                       <Edit2 size={16} />
                     </button>
-                    <button onClick={() => setConfirmOpen(true)} className="p-2 hover:bg-rose-900/40 rounded-xl text-zinc-400 hover:text-rose-400 transition-all cursor-pointer" title="Удалить">
+                    <button onClick={() => setConfirmOpen(true)} className="p-2 hover:bg-rose-50 dark:hover:bg-rose-900/40 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 transition-all cursor-pointer" title="Удалить">
                       <Trash2 size={16} />
                     </button>
                   </>
                 )}
-                <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-xl text-zinc-400 hover:text-white transition-all cursor-pointer">
+                <button onClick={onClose} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer">
                   <X size={18} />
                 </button>
               </div>
@@ -181,14 +181,14 @@ export default function GitProjectView({
             {/* Title + Category */}
             <div className="space-y-3">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="px-2.5 py-1 bg-emerald-950/80 text-emerald-300 border border-emerald-800/40 text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center gap-1.5">
+                <span className="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40 text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center gap-1.5">
                   <span>{categoryOpt?.emoji}</span>
                   <span>{categoryOpt?.label ?? project.category}</span>
                 </span>
               </div>
-              <h1 className="text-2xl font-black text-white leading-tight">{project.title}</h1>
+              <h1 className="text-2xl font-black text-zinc-900 dark:text-white leading-tight">{project.title}</h1>
               {project.summary && (
-                <p className="text-zinc-400 text-base leading-relaxed">{project.summary}</p>
+                <p className="text-zinc-600 dark:text-zinc-400 text-base leading-relaxed">{project.summary}</p>
               )}
             </div>
 
@@ -200,11 +200,11 @@ export default function GitProjectView({
                     href={project.githubUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 hover:text-white text-sm font-semibold border border-zinc-700/50 transition-all"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white text-sm font-semibold border border-zinc-200 dark:border-zinc-700/50 transition-all shadow-sm dark:shadow-none"
                   >
                     <Github size={15} />
                     GitHub Репозиторий
-                    <ExternalLink size={12} className="text-zinc-500" />
+                    <ExternalLink size={12} className="text-zinc-400" />
                   </a>
                 )}
                 {project.demoUrl && (
@@ -212,7 +212,7 @@ export default function GitProjectView({
                     href={project.demoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-900/50 hover:bg-emerald-900 text-emerald-300 hover:text-emerald-200 text-sm font-semibold border border-emerald-800/40 transition-all"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/50 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-emerald-800 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-200 text-sm font-semibold border border-emerald-200 dark:border-emerald-800/40 transition-all shadow-sm dark:shadow-none"
                   >
                     <Globe size={15} />
                     Demo / Сайт
@@ -226,7 +226,7 @@ export default function GitProjectView({
             {project.tags && project.tags.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {project.tags.map((tag, i) => (
-                  <span key={i} className="px-2.5 py-1 bg-zinc-800/80 text-zinc-400 text-xs font-semibold rounded-full border border-zinc-700/40">
+                  <span key={i} className="px-2.5 py-1 bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 text-xs font-semibold rounded-full border border-zinc-200 dark:border-zinc-700/40">
                     #{tag}
                   </span>
                 ))}
@@ -238,8 +238,8 @@ export default function GitProjectView({
               {/* Features */}
               {project.features && (
                 <Accordion label="⚡ Ключевые фичи" defaultOpen={true}>
-                  <div className="px-5 py-4">
-                    <pre className="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed font-sans">
+                  <div className="px-5 py-4 bg-zinc-50/50 dark:bg-transparent">
+                    <pre className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed font-sans">
                       {project.features}
                     </pre>
                   </div>
@@ -251,7 +251,7 @@ export default function GitProjectView({
                 <Accordion label="🚀 Установка и запуск" defaultOpen={false}>
                   <div className="px-5 py-4">
                     <div className="relative">
-                      <pre className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm text-emerald-300 font-mono whitespace-pre-wrap overflow-x-auto leading-relaxed">
+                      <pre className="bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 text-sm text-emerald-700 dark:text-emerald-300 font-mono whitespace-pre-wrap overflow-x-auto leading-relaxed">
                         {project.installCommand}
                       </pre>
                       <div className="absolute top-3 right-3">
@@ -265,8 +265,8 @@ export default function GitProjectView({
               {/* Detailed Description */}
               {project.detailedDescription && (
                 <Accordion label="📖 Детальное описание" defaultOpen={false}>
-                  <div className="px-5 py-4">
-                    <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">
+                  <div className="px-5 py-4 bg-zinc-50/50 dark:bg-transparent">
+                    <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap">
                       {project.detailedDescription}
                     </p>
                   </div>
@@ -276,8 +276,8 @@ export default function GitProjectView({
               {/* Author Notes */}
               {project.authorNotes && (
                 <Accordion label="💬 Личные заметки" defaultOpen={false}>
-                  <div className="px-5 py-4">
-                    <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap italic">
+                  <div className="px-5 py-4 bg-zinc-50/50 dark:bg-transparent">
+                    <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap italic">
                       {project.authorNotes}
                     </p>
                   </div>
@@ -286,7 +286,7 @@ export default function GitProjectView({
             </div>
 
             {/* Meta info */}
-            <div className="flex items-center gap-5 pt-2 border-t border-zinc-800/60 text-xs text-zinc-500">
+            <div className="flex items-center gap-5 pt-2 border-t border-zinc-200 dark:border-zinc-800/60 text-xs text-zinc-500">
               <span className="flex items-center gap-1.5">
                 <UserIcon size={12} />
                 {project.authorName || '-'}

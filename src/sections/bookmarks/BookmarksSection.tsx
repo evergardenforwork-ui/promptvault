@@ -201,10 +201,10 @@ export default function BookmarksSection({
   return (
     <div className="space-y-6">
       {/* ─── LEVEL 1: FOLDERS / TABS BAR ─────────────────────────────────────── */}
-      <div className="bg-zinc-900/90 border border-zinc-800 rounded-3xl p-3 shadow-xl space-y-3">
+      <div className="bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-3 shadow-sm dark:shadow-xl space-y-3">
         <div className="flex items-center justify-between px-2">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-black uppercase tracking-wider text-cyan-400">
+            <span className="text-xs font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400">
               📂 Папки закладок
             </span>
             <span className="text-xs text-zinc-500 font-mono">({bookmarks.length} сайтов)</span>
@@ -216,7 +216,7 @@ export default function BookmarksSection({
               setFolderModalMode('folder');
               setIsFolderModalOpen(true);
             }}
-            className="text-xs font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 transition-all cursor-pointer"
+            className="text-xs font-bold text-cyan-700 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-300 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-50 dark:bg-cyan-500/10 hover:bg-cyan-100 dark:hover:bg-cyan-500/20 border border-cyan-200 dark:border-cyan-500/20 transition-all cursor-pointer"
           >
             <FolderPlus size={14} />
             <span>+ Создать вкладку / папку</span>
@@ -234,13 +234,13 @@ export default function BookmarksSection({
               "px-4 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
               selectedFolder === null
                 ? "bg-cyan-500 text-black shadow-lg shadow-cyan-500/20 scale-105"
-                : "bg-white dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none"
+                : "bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none"
             )}
           >
             <span>📁 Все закладки</span>
             <span className={cn(
               "text-[10px] px-1.5 py-0.5 rounded-full font-mono font-black",
-              selectedFolder === null ? "bg-black/20 text-black" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
+              selectedFolder === null ? "bg-black/20 text-black" : "bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-400"
             )}>
               {bookmarks.length}
             </span>
@@ -261,14 +261,14 @@ export default function BookmarksSection({
                   "px-4 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
                   isSelected
                     ? "bg-cyan-500 text-black shadow-lg shadow-cyan-500/20 scale-105"
-                    : "bg-white dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none"
+                    : "bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none"
                 )}
               >
                 <span>{f.emoji || '📁'} {f.name}</span>
                 {count > 0 && (
                   <span className={cn(
                     "text-[10px] px-1.5 py-0.5 rounded-full font-mono font-black",
-                    isSelected ? "bg-black/20 text-black" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
+                    isSelected ? "bg-black/20 text-black" : "bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-400"
                   )}>
                     {count}
                   </span>
@@ -284,7 +284,7 @@ export default function BookmarksSection({
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2 overflow-x-auto p-2 bg-zinc-100/80 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl"
+          className="flex items-center gap-2 overflow-x-auto p-2 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl"
         >
           <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 shrink-0 px-2">
             Подкатегории:
@@ -302,7 +302,7 @@ export default function BookmarksSection({
                   className={cn(
                     "px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap",
                     isCatSelected
-                      ? "bg-purple-500 text-white shadow-md shadow-purple-500/20"
+                      ? "bg-purple-600 text-white shadow-md shadow-purple-500/20"
                       : "bg-white dark:bg-zinc-950 text-zinc-700 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none"
                   )}
                 >
@@ -379,27 +379,27 @@ export default function BookmarksSection({
         {/* Right: Sort, View Toggle, Add Button */}
         <div className="flex items-center gap-3">
           {/* Sort Dropdown */}
-          <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-2xl text-xs">
+          <div className="flex items-center gap-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-3 py-1.5 rounded-2xl text-xs">
             <ArrowUpDown size={14} className="text-zinc-500" />
             <select
               value={sortBy}
               onChange={e => setSortBy(e.target.value as any)}
-              className="bg-transparent text-zinc-300 focus:outline-none cursor-pointer text-xs"
+              className="bg-transparent text-zinc-700 dark:text-zinc-300 focus:outline-none cursor-pointer text-xs"
             >
-              <option value="date" className="bg-zinc-900">Сначала новые</option>
-              <option value="clicks" className="bg-zinc-900">По кликам (🔥)</option>
-              <option value="name" className="bg-zinc-900">По алфавиту (A-Z)</option>
+              <option value="date" className="bg-white dark:bg-zinc-900">Сначала новые</option>
+              <option value="clicks" className="bg-white dark:bg-zinc-900">По кликам (🔥)</option>
+              <option value="name" className="bg-white dark:bg-zinc-900">По алфавиту (A-Z)</option>
             </select>
           </div>
 
           {/* View Mode Toggle */}
-          <div className="flex items-center bg-zinc-900 border border-zinc-800 p-1 rounded-2xl">
+          <div className="flex items-center bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-1 rounded-2xl">
             <button
               onClick={() => setViewMode('grid')}
               title="Сетка"
               className={cn(
                 "p-2 rounded-xl transition-all cursor-pointer",
-                viewMode === 'grid' ? "bg-zinc-800 text-cyan-400" : "text-zinc-500 hover:text-zinc-300"
+                viewMode === 'grid' ? "bg-cyan-50 dark:bg-zinc-800 text-cyan-600 dark:text-cyan-400" : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
               )}
             >
               <LayoutGrid size={16} />
@@ -409,7 +409,7 @@ export default function BookmarksSection({
               title="Список"
               className={cn(
                 "p-2 rounded-xl transition-all cursor-pointer",
-                viewMode === 'list' ? "bg-zinc-800 text-cyan-400" : "text-zinc-500 hover:text-zinc-300"
+                viewMode === 'list' ? "bg-cyan-50 dark:bg-zinc-800 text-cyan-600 dark:text-cyan-400" : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
               )}
             >
               <List size={16} />
@@ -454,13 +454,13 @@ export default function BookmarksSection({
           </AnimatePresence>
         </div>
       ) : (
-        <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-3xl p-12 text-center space-y-4 max-w-lg mx-auto my-12">
-          <div className="w-16 h-16 rounded-3xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mx-auto text-cyan-400">
+        <div className="bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/80 rounded-3xl p-12 text-center space-y-4 max-w-lg mx-auto my-12">
+          <div className="w-16 h-16 rounded-3xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mx-auto text-cyan-600 dark:text-cyan-400">
             <Globe size={32} />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-white">Закладки не найдены</h3>
-            <p className="text-sm text-zinc-400 mt-1">
+            <h3 className="text-lg font-bold text-zinc-900 dark:text-white">Закладки не найдены</h3>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
               {searchQuery
                 ? 'Ни один сайт не соответствует поисковому запросу.'
                 : selectedFolder

@@ -80,8 +80,8 @@ export default function SpaceContextMenu({
       className={cn(
         'w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-all cursor-pointer text-left',
         danger
-          ? 'text-red-400 hover:bg-red-500/10 hover:text-red-300'
-          : 'text-zinc-300 hover:bg-zinc-700/60 hover:text-white'
+          ? 'text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-300'
+          : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700/60 hover:text-zinc-950 dark:hover:text-white'
       )}
     >
       {icon}
@@ -99,16 +99,16 @@ export default function SpaceContextMenu({
           exit={{ opacity: 0, scale: 0.92, y: -4 }}
           transition={{ duration: 0.12, ease: 'easeOut' }}
           style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 200 }}
-          className="w-56 bg-zinc-900/95 backdrop-blur-xl border border-zinc-700/60 rounded-2xl shadow-2xl shadow-black/60 p-1.5 overflow-hidden"
+          className="w-56 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200 dark:border-zinc-700/60 rounded-2xl shadow-2xl shadow-black/20 dark:shadow-black/60 p-1.5 overflow-hidden text-zinc-900 dark:text-white"
         >
           {/* Имя узла */}
-          <div className="px-3 py-1.5 mb-1 border-b border-zinc-800">
+          <div className="px-3 py-1.5 mb-1 border-b border-zinc-200 dark:border-zinc-800">
             <div className="flex items-center gap-2 min-w-0">
               {isFolder
-                ? <Folder className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                : <FileText className="w-3.5 h-3.5 text-violet-400 shrink-0" />
+                ? <Folder className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 shrink-0" />
+                : <FileText className="w-3.5 h-3.5 text-violet-500 dark:text-violet-400 shrink-0" />
               }
-              <span className="text-[11px] text-zinc-400 font-mono truncate">{target.node.name}</span>
+              <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono truncate">{target.node.name}</span>
             </div>
           </div>
 

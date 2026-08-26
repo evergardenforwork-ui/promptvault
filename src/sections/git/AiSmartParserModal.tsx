@@ -114,24 +114,24 @@ export default function AiSmartParserModal({ isOpen, onClose, onApply }: AiSmart
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.93, y: 20 }}
             transition={{ duration: 0.22 }}
-            className="w-full max-w-lg bg-zinc-950 border border-violet-800/40 rounded-3xl shadow-2xl shadow-violet-900/20 overflow-hidden"
+            className="w-full max-w-lg bg-white dark:bg-zinc-950 border border-violet-200 dark:border-violet-800/40 rounded-3xl shadow-2xl shadow-violet-500/10 dark:shadow-violet-900/20 overflow-hidden text-zinc-900 dark:text-zinc-100"
           >
             {/* Header */}
-            <div className="bg-gradient-to-r from-violet-950/80 to-indigo-950/80 border-b border-violet-800/30 px-6 py-5">
+            <div className="bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-950/80 dark:to-indigo-950/80 border-b border-violet-500/30 dark:border-violet-800/30 px-6 py-5 text-white">
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-lg font-black text-white flex items-center gap-2">
-                    <Wand2 size={18} className="text-violet-400" />
+                    <Wand2 size={18} className="text-violet-200 dark:text-violet-400" />
                     🪄 AI Автозаполнение
                   </h3>
-                  <p className="text-xs text-violet-300/70 mt-1">
+                  <p className="text-xs text-violet-100/80 dark:text-violet-300/70 mt-1">
                     Gemini 3.1 Flash-Lite автоматически извлечёт фичи, теги и команды
                   </p>
                 </div>
                 <button
                   onClick={handleClose}
                   disabled={aiLoading}
-                  className="p-2 hover:bg-white/10 rounded-xl text-zinc-400 hover:text-white disabled:opacity-30 transition-all cursor-pointer"
+                  className="p-2 hover:bg-white/10 rounded-xl text-violet-200 hover:text-white disabled:opacity-30 transition-all cursor-pointer"
                 >
                   <X size={18} />
                 </button>
@@ -140,7 +140,7 @@ export default function AiSmartParserModal({ isOpen, onClose, onApply }: AiSmart
 
             <div className="p-6 space-y-5">
               {/* Mode tabs */}
-              <div className="flex bg-zinc-900 p-1 rounded-2xl border border-zinc-800">
+              <div className="flex bg-zinc-100 dark:bg-zinc-900 p-1 rounded-2xl border border-zinc-200 dark:border-zinc-800">
                 {[
                   { id: 'url'   as AiInputMode, label: '🔗 Ссылка' },
                   { id: 'text'  as AiInputMode, label: '📝 Текст' },
@@ -152,7 +152,9 @@ export default function AiSmartParserModal({ isOpen, onClose, onApply }: AiSmart
                     onClick={() => { setAiMode(tab.id); setAiError(''); }}
                     className={cn(
                       'flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer disabled:opacity-40',
-                      aiMode === tab.id ? 'bg-violet-600 text-white shadow-sm' : 'text-zinc-400 hover:text-white'
+                      aiMode === tab.id
+                        ? 'bg-violet-600 text-white shadow-sm'
+                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white'
                     )}
                   >
                     {tab.label}
@@ -163,14 +165,14 @@ export default function AiSmartParserModal({ isOpen, onClose, onApply }: AiSmart
               {/* URL mode */}
               {aiMode === 'url' && (
                 <div>
-                  <label className="block text-xs font-bold text-zinc-400 mb-1.5">URL репозитория или поста</label>
+                  <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-400 mb-1.5">URL репозитория или поста</label>
                   <input
                     value={aiUrl}
                     disabled={aiLoading}
                     maxLength={MAX_URL_LENGTH}
                     onChange={(e) => setAiUrl(e.target.value)}
                     placeholder="https://github.com/owner/repo"
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white text-sm placeholder-zinc-600 focus:outline-none focus:border-violet-500 disabled:opacity-50 transition-colors"
+                    className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-zinc-900 dark:text-white text-sm placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-violet-500 disabled:opacity-50 transition-colors"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !aiLoading) {
                         e.preventDefault();
@@ -185,8 +187,8 @@ export default function AiSmartParserModal({ isOpen, onClose, onApply }: AiSmart
               {aiMode === 'text' && (
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs font-bold text-zinc-400">Описание проекта / текст поста</label>
-                    <span className={cn('text-[11px]', aiText.length > MAX_TEXT_LENGTH * 0.9 ? 'text-amber-400' : 'text-zinc-500')}>
+                    <label className="text-xs font-bold text-zinc-700 dark:text-zinc-400">Описание проекта / текст поста</label>
+                    <span className={cn('text-[11px]', aiText.length > MAX_TEXT_LENGTH * 0.9 ? 'text-amber-500' : 'text-zinc-400 dark:text-zinc-500')}>
                       {aiText.length} / {MAX_TEXT_LENGTH}
                     </span>
                   </div>
@@ -197,7 +199,7 @@ export default function AiSmartParserModal({ isOpen, onClose, onApply }: AiSmart
                     onChange={(e) => setAiText(e.target.value)}
                     placeholder="Вставьте описание проекта, пост из Telegram, README и т.д."
                     rows={6}
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white text-sm placeholder-zinc-600 focus:outline-none focus:border-violet-500 disabled:opacity-50 transition-colors resize-none"
+                    className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-zinc-900 dark:text-white text-sm placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-violet-500 disabled:opacity-50 transition-colors resize-none"
                   />
                 </div>
               )}
@@ -205,11 +207,11 @@ export default function AiSmartParserModal({ isOpen, onClose, onApply }: AiSmart
               {/* Image mode */}
               {aiMode === 'image' && (
                 <div>
-                  <label className="block text-xs font-bold text-zinc-400 mb-1.5">Скриншот поста (Telegram, Twitter/X, GitHub)</label>
+                  <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-400 mb-1.5">Скриншот поста (Telegram, Twitter/X, GitHub)</label>
                   <div
                     className={cn(
-                      'w-full border-2 border-dashed rounded-xl p-6 flex flex-col items-center gap-3 cursor-pointer transition-all hover:border-violet-600',
-                      aiImageBase64 ? 'border-violet-600/60' : 'border-zinc-700',
+                      'w-full border-2 border-dashed rounded-xl p-6 flex flex-col items-center gap-3 cursor-pointer transition-all hover:border-violet-500 bg-zinc-50 dark:bg-zinc-900/40',
+                      aiImageBase64 ? 'border-violet-500/60' : 'border-zinc-300 dark:border-zinc-700',
                       aiLoading && 'pointer-events-none opacity-50'
                     )}
                     onClick={() => fileRef.current?.click()}
@@ -219,14 +221,14 @@ export default function AiSmartParserModal({ isOpen, onClose, onApply }: AiSmart
                     {aiImageBase64 ? (
                       <>
                         <img src={aiImageBase64} alt="screenshot" className="max-h-40 rounded-lg object-contain" />
-                        <span className="text-xs text-violet-400 font-semibold">✅ Скриншот загружен — нажмите чтобы заменить</span>
+                        <span className="text-xs text-violet-600 dark:text-violet-400 font-semibold">✅ Скриншот загружен — нажмите чтобы заменить</span>
                       </>
                     ) : (
                       <>
-                        <Upload size={28} className="text-zinc-600" />
+                        <Upload size={28} className="text-zinc-400 dark:text-zinc-600" />
                         <div className="text-center">
-                          <p className="text-sm font-semibold text-zinc-400">Перетащите скриншот</p>
-                          <p className="text-xs text-zinc-600 mt-1">PNG, JPG, WebP до 5MB</p>
+                          <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-400">Перетащите скриншот</p>
+                          <p className="text-xs text-zinc-400 dark:text-zinc-600 mt-1">PNG, JPG, WebP до 5MB</p>
                         </div>
                       </>
                     )}
@@ -244,7 +246,7 @@ export default function AiSmartParserModal({ isOpen, onClose, onApply }: AiSmart
 
               {/* Error */}
               {aiError && (
-                <div className="flex items-start gap-2 p-3 bg-rose-950/50 border border-rose-800/40 rounded-xl text-rose-300 text-xs">
+                <div className="flex items-start gap-2 p-3 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800/40 rounded-xl text-rose-600 dark:text-rose-300 text-xs">
                   <AlertCircle size={14} className="shrink-0 mt-0.5" />
                   <span>{aiError}</span>
                 </div>
@@ -271,7 +273,7 @@ export default function AiSmartParserModal({ isOpen, onClose, onApply }: AiSmart
 
               {/* Guard footnote */}
               <div className="flex items-center justify-center gap-1.5 text-[11px] text-zinc-500">
-                <ShieldCheck size={12} className="text-emerald-400" />
+                <ShieldCheck size={12} className="text-emerald-500 dark:text-emerald-400" />
                 <span>Защита от спама: 1 запрос / 3 сек. Лимит вывода 2048 токенов.</span>
               </div>
             </div>

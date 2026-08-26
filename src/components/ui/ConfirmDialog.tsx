@@ -42,7 +42,7 @@ export default function ConfirmDialog({
             transition={{ type: 'spring', duration: 0.3 }}
             className="fixed inset-0 z-[201] flex items-center justify-center p-4 pointer-events-none"
           >
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl pointer-events-auto">
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl pointer-events-auto text-zinc-900 dark:text-white">
               {/* Icon */}
               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${
                 variant === 'danger' ? 'bg-red-500/10' : 'bg-amber-500/10'
@@ -53,16 +53,16 @@ export default function ConfirmDialog({
               </div>
 
               {/* Title */}
-              <h3 className="text-lg font-bold text-white mb-2">{title}</h3>
+              <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">{title}</h3>
 
               {/* Message */}
-              <p className="text-sm text-zinc-400 mb-6 leading-relaxed">{message}</p>
+              <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6 leading-relaxed">{message}</p>
 
               {/* Buttons */}
               <div className="flex gap-3">
                 <button
                   onClick={onCancel}
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm font-medium transition-all cursor-pointer"
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 text-sm font-medium transition-all cursor-pointer"
                 >
                   {cancelText}
                 </button>

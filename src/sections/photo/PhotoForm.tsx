@@ -485,11 +485,11 @@ export default function PhotoForm({
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-        className="relative w-full max-w-4xl max-h-[90vh] bg-zinc-950 border border-zinc-900 rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col"
+        className="relative w-full max-w-4xl max-h-[90vh] bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-900 rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col text-zinc-900 dark:text-zinc-100"
       >
-        <div className="p-8 border-b border-zinc-900 flex items-center justify-between shrink-0">
-          <h2 className="text-3xl font-black tracking-tighter">{prompt ? 'РЕДАКТИРОВАТЬ ПРОМПТ' : 'НОВЫЙ ПРОМПТ'}</h2>
-          <button type="button" onClick={handleRequestClose} className="p-2 hover:bg-zinc-900 rounded-2xl text-zinc-500 cursor-pointer"><X size={24} /></button>
+        <div className="p-8 border-b border-zinc-200 dark:border-zinc-900 flex items-center justify-between shrink-0">
+          <h2 className="text-3xl font-black tracking-tighter text-zinc-900 dark:text-white">{prompt ? 'РЕДАКТИРОВАТЬ ПРОМПТ' : 'НОВЫЙ ПРОМПТ'}</h2>
+          <button type="button" onClick={handleRequestClose} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-2xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white cursor-pointer transition-colors"><X size={24} /></button>
         </div>
 
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-8 space-y-10">
@@ -497,46 +497,46 @@ export default function PhotoForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-400">Название</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-400">Название</label>
                 <input required type="text" value={title} onChange={(e) => setTitle(e.target.value)}
                   placeholder="Epic Cinematic Landscape..."
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl py-4 px-6 focus:outline-none focus:border-sky-400 transition-all font-bold text-white" />
+                  className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl py-4 px-6 focus:outline-none focus:border-sky-400 transition-all font-bold text-zinc-900 dark:text-white" />
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-zinc-400">Категория</label>
-                  <button type="button" onClick={onAddCategory} className="text-[10px] font-bold text-sky-400 hover:text-sky-300 uppercase tracking-widest cursor-pointer">
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-400">Категория</label>
+                  <button type="button" onClick={onAddCategory} className="text-[10px] font-bold text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 uppercase tracking-widest cursor-pointer">
                     + Создать новую
                   </button>
                 </div>
                 <div className="relative">
                   <select value={categories.length === 0 ? '' : category} onChange={(e) => setCategory(e.target.value)}
                     disabled={categories.length === 0}
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl py-4 pl-6 pr-12 focus:outline-none focus:border-sky-400 transition-all font-bold appearance-none text-zinc-100 disabled:opacity-60 cursor-pointer">
+                    className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl py-4 pl-6 pr-12 focus:outline-none focus:border-sky-400 transition-all font-bold appearance-none text-zinc-900 dark:text-zinc-100 disabled:opacity-60 cursor-pointer">
                     {categories.length === 0
-                      ? <option value="" style={optionSurface}>Загрузка категорий…</option>
-                      : categories.map((c) => <option key={c.id} value={c.name} style={optionSurface}>{c.emoji} {c.name}</option>)
+                      ? <option value="">Загрузка категорий…</option>
+                      : categories.map((c) => <option key={c.id} value={c.name} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">{c.emoji} {c.name}</option>)
                     }
                   </select>
-                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 pointer-events-none" aria-hidden />
+                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 pointer-events-none" aria-hidden />
                 </div>
               </div>
             </div>
 
             {/* Tags */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-400">Теги (через пробел / Enter)</label>
-              <div className="min-h-[116px] bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex flex-wrap gap-2 content-start">
+              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-400">Теги (через пробел / Enter)</label>
+              <div className="min-h-[116px] bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 flex flex-wrap gap-2 content-start">
                 {tags.map(t => (
-                  <span key={t} className="px-3 py-1.5 bg-sky-400/10 text-sky-400 border border-sky-400/20 text-xs font-bold rounded-full flex items-center gap-2">
+                  <span key={t} className="px-3 py-1.5 bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 text-xs font-bold rounded-full flex items-center gap-2">
                     #{t}
-                    <button type="button" onClick={() => removeTag(t)} className="hover:text-white cursor-pointer"><X size={12} /></button>
+                    <button type="button" onClick={() => removeTag(t)} className="hover:text-zinc-900 dark:hover:text-white cursor-pointer"><X size={12} /></button>
                   </span>
                 ))}
                 <input type="text" value={tagInput} onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={handleTagKeyDown} onBlur={commitTagsFromInput}
                   placeholder="Например: аниме фэнтези"
-                  className="bg-transparent border-none focus:outline-none text-sm font-medium flex-1 min-w-[100px] text-white" />
+                  className="bg-transparent border-none focus:outline-none text-sm font-medium flex-1 min-w-[100px] text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600" />
               </div>
             </div>
           </div>
@@ -578,42 +578,42 @@ export default function PhotoForm({
           />
 
           {/* Visibility toggle */}
-          <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-3xl flex items-center justify-between">
+          <div className="p-6 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl flex items-center justify-between">
             <div className="space-y-1">
-              <h3 className="text-sm font-bold text-white uppercase tracking-widest">Публичный доступ</h3>
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-widest">Публичный доступ</h3>
               <p className="text-xs text-zinc-500">Разрешить другим пользователям видеть и использовать этот промпт.</p>
             </div>
             <button type="button" onClick={() => setIsPublic(!isPublic)}
-              className={`w-14 h-8 rounded-full transition-all relative cursor-pointer ${isPublic ? "bg-sky-400" : "bg-zinc-800"}`}>
+              className={`w-14 h-8 rounded-full transition-all relative cursor-pointer ${isPublic ? "bg-sky-400" : "bg-zinc-300 dark:bg-zinc-800"}`}>
               <motion.div animate={{ x: isPublic ? 24 : 4 }} className="absolute top-1 w-6 h-6 bg-white rounded-full shadow-lg" />
             </button>
           </div>
 
           {/* Prompt Origin */}
-          <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="p-6 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
-              <h3 className="text-sm font-bold text-white uppercase tracking-widest">Происхождение промпта</h3>
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-widest">Происхождение промпта</h3>
               <p className="text-xs text-zinc-500">Укажите, ваш это авторский промпт или скопированный из внешнего источника.</p>
             </div>
-            <div className="flex bg-zinc-950 p-1 rounded-2xl border border-zinc-800 self-start sm:self-center shrink-0">
+            <div className="flex bg-zinc-100 dark:bg-zinc-950 p-1 rounded-2xl border border-zinc-200 dark:border-zinc-800 self-start sm:self-center shrink-0">
               <button type="button" onClick={() => setPromptOrigin('own')}
-                className={cn("px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer", promptOrigin === 'own' ? "bg-sky-400 text-black font-bold" : "text-zinc-400 hover:text-zinc-200")}>
+                className={cn("px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer", promptOrigin === 'own' ? "bg-sky-400 text-black font-bold" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-200")}>
                 Моя разработка
               </button>
               <button type="button" onClick={() => setPromptOrigin('web')}
-                className={cn("px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer", promptOrigin === 'web' ? "bg-sky-400 text-black font-bold" : "text-zinc-400 hover:text-zinc-200")}>
+                className={cn("px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer", promptOrigin === 'web' ? "bg-sky-400 text-black font-bold" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-200")}>
                 Найдено в сети
               </button>
             </div>
           </div>
 
           {/* Media Type */}
-          <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="p-6 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
-              <h3 className="text-sm font-bold text-white uppercase tracking-widest">Тип медиа</h3>
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-widest">Тип медиа</h3>
               <p className="text-xs text-zinc-500">Для какого типа генерации предназначен этот промпт.</p>
             </div>
-            <div className="flex bg-zinc-950 p-1 rounded-2xl border border-zinc-800 self-start sm:self-center shrink-0">
+            <div className="flex bg-zinc-100 dark:bg-zinc-950 p-1 rounded-2xl border border-zinc-200 dark:border-zinc-800 self-start sm:self-center shrink-0">
               {([
                 { id: 'photo', label: '📷 Фото' },
                 { id: 'video', label: '🎬 Видео' },
@@ -621,7 +621,7 @@ export default function PhotoForm({
                 { id: 'music', label: '🎵 Музыка' },
               ] as { id: MediaType; label: string }[]).map(({ id, label }) => (
                 <button key={id} type="button" onClick={() => setMediaType(id)}
-                  className={cn("px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer", mediaType === id ? "bg-indigo-500 text-white" : "text-zinc-400 hover:text-zinc-200")}>
+                  className={cn("px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer", mediaType === id ? "bg-indigo-500 text-white" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-200")}>
                   {label}
                 </button>
               ))}
@@ -631,21 +631,21 @@ export default function PhotoForm({
           {/* Main Prompt */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-zinc-400">Основной Промпт</label>
-              <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">{mainPrompt.length} символов</span>
+              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-400">Основной Промпт</label>
+              <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest">{mainPrompt.length} символов</span>
             </div>
             <textarea required value={mainPrompt} onChange={(e) => setMainPrompt(e.target.value)}
               placeholder="Введите тело промпта здесь..."
-              className="w-full h-48 bg-zinc-900 border border-zinc-800 rounded-3xl py-6 px-8 focus:outline-none focus:border-sky-400 transition-all font-mono text-sm leading-relaxed resize-none text-white" />
+              className="w-full h-48 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl py-6 px-8 focus:outline-none focus:border-sky-400 transition-all font-mono text-sm leading-relaxed resize-none text-zinc-900 dark:text-white" />
           </div>
 
           {/* Usage Notes */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-400">Комментарии к промпту</label>
-            <p className="text-xs text-zinc-600">Как пользоваться шаблоном, особенности генерации.</p>
+            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-400">Комментарии к промпту</label>
+            <p className="text-xs text-zinc-500">Как пользоваться шаблоном, особенности генерации.</p>
             <textarea value={usageNotes} onChange={(e) => setUsageNotes(e.target.value)}
               placeholder="Например: используйте Midjourney v6 с параметром --stylize 250…"
-              className="w-full min-h-[100px] bg-zinc-900 border border-zinc-800 rounded-3xl py-4 px-6 focus:outline-none focus:border-sky-400 transition-all text-sm leading-relaxed resize-y text-white" />
+              className="w-full min-h-[100px] bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl py-4 px-6 focus:outline-none focus:border-sky-400 transition-all text-sm leading-relaxed resize-y text-zinc-900 dark:text-white" />
           </div>
 
           {/* Sub-sections */}
@@ -658,10 +658,10 @@ export default function PhotoForm({
           />
         </form>
 
-        <div className="p-8 border-t border-zinc-900 bg-zinc-950 shrink-0 flex items-center justify-end gap-4">
-          <button type="button" onClick={handleRequestClose} className="px-8 py-4 text-zinc-500 font-bold hover:text-white transition-all cursor-pointer">Отмена</button>
+        <div className="p-8 border-t border-zinc-200 dark:border-zinc-900 bg-zinc-50 dark:bg-zinc-950 shrink-0 flex items-center justify-end gap-4">
+          <button type="button" onClick={handleRequestClose} className="px-8 py-4 text-zinc-500 hover:text-zinc-900 dark:hover:text-white font-bold transition-all cursor-pointer">Отмена</button>
           <button onClick={handleSubmit} disabled={isSaving}
-            className="px-10 py-4 bg-sky-400 text-black font-bold rounded-2xl transition-all shadow-xl shadow-sky-400/20 disabled:opacity-50 cursor-pointer">
+            className="px-10 py-4 bg-sky-400 text-black font-bold rounded-2xl transition-all shadow-xl shadow-sky-400/20 disabled:opacity-50 cursor-pointer hover:bg-sky-300">
             {isSaving ? 'Сохранение...' : 'Сохранить'}
           </button>
         </div>

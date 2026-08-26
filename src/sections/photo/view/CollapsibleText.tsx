@@ -30,21 +30,21 @@ export default function CollapsibleText({ text, onCopy, hideFloatingCopy }: Coll
 
       <div
         className={cn(
-          "bg-zinc-900 border border-zinc-800 rounded-[2rem] p-8 sm:p-10 font-mono text-sm leading-relaxed text-zinc-300 whitespace-pre-wrap transition-all duration-500 overflow-hidden relative",
+          "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[2rem] p-8 sm:p-10 font-mono text-sm leading-relaxed text-zinc-800 dark:text-zinc-300 whitespace-pre-wrap transition-all duration-500 overflow-hidden relative shadow-sm dark:shadow-none",
           !isExpanded && isLong ? "max-h-[300px]" : "max-h-[5000px]"
         )}
       >
         {text}
 
         {!isExpanded && isLong && (
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-zinc-900 to-transparent pointer-events-none" />
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white dark:from-zinc-900 to-transparent pointer-events-none" />
         )}
       </div>
 
       {isLong && (
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="absolute -bottom-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-zinc-800 border border-zinc-700 rounded-full text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-700 transition-all flex items-center gap-2 shadow-xl z-20 cursor-pointer"
+          className="absolute -bottom-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-full text-[10px] font-black uppercase tracking-widest text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all flex items-center gap-2 shadow-xl z-20 cursor-pointer"
         >
           {isExpanded ? (
             <>Свернуть <ChevronUp size={12} /></>

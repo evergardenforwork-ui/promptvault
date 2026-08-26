@@ -36,10 +36,10 @@ export default function SubSectionsEditor({
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             key={i}
-            className="p-6 bg-zinc-900 border border-zinc-800 rounded-3xl space-y-4 relative group"
+            className="p-6 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl space-y-4 relative group shadow-sm dark:shadow-none"
           >
             <button type="button" onClick={() => removeSubSection(i)}
-              className="absolute top-4 right-4 p-2 text-zinc-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
+              className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
               <Trash2 size={16} />
             </button>
 
@@ -48,14 +48,14 @@ export default function SubSectionsEditor({
               value={s.title}
               onChange={(e) => updateSubSection(i, 'title', e.target.value)}
               placeholder="Название дополнения (например: + Студийный свет)"
-              className="w-full bg-transparent border-b border-zinc-800 pb-2 focus:outline-none focus:border-sky-400 transition-all font-bold text-sm text-white"
+              className="w-full bg-transparent border-b border-zinc-200 dark:border-zinc-800 pb-2 focus:outline-none focus:border-sky-500 dark:focus:border-sky-400 transition-all font-bold text-sm text-zinc-900 dark:text-white"
             />
 
             <textarea
               value={s.text}
               onChange={(e) => updateSubSection(i, 'text', e.target.value)}
               placeholder="Текст дополнения..."
-              className="w-full h-24 bg-zinc-950/50 border border-zinc-800/50 rounded-2xl p-4 focus:outline-none focus:border-sky-400 transition-all font-mono text-xs resize-none text-white"
+              className="w-full h-24 bg-white dark:bg-zinc-950/50 border border-zinc-200 dark:border-zinc-800/50 rounded-2xl p-4 focus:outline-none focus:border-sky-500 dark:focus:border-sky-400 transition-all font-mono text-xs resize-none text-zinc-900 dark:text-white"
             />
 
             {/* Subsection Layout and Images */}
@@ -89,8 +89,8 @@ export default function SubSectionsEditor({
                       className={cn(
                         "px-2.5 py-1 text-[10px] font-bold rounded-lg border transition-all cursor-pointer",
                         isSelected
-                          ? "bg-sky-400 text-black border-sky-400 font-extrabold"
-                          : "bg-zinc-950 text-zinc-400 border-zinc-800 hover:border-zinc-700"
+                          ? "bg-sky-500 text-white dark:bg-sky-400 dark:text-black border-sky-500 dark:border-sky-400 font-extrabold"
+                          : "bg-white dark:bg-zinc-950 text-zinc-700 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
                       )}
                     >
                       {opt.name}
@@ -100,7 +100,7 @@ export default function SubSectionsEditor({
               </div>
 
               {s.imageLayoutType && s.imageLayoutType !== '' && (
-                <div className="p-4 bg-zinc-950/40 border border-zinc-800 rounded-2xl space-y-3 mt-2">
+                <div className="p-4 bg-white dark:bg-zinc-950/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl space-y-3 mt-2">
                   <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">
                     Изображения дополнения (нажмите для выбора)
                   </span>

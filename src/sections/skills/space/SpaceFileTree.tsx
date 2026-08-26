@@ -107,10 +107,10 @@ function TreeNode({
           className={cn(
             'group flex items-center justify-between py-1 px-2 rounded-md cursor-pointer transition-all duration-150 select-none',
             selectionMode && (isFolderFullySelected || isSelected)
-              ? 'bg-violet-500/20 text-violet-200 border border-violet-500/30'
+              ? 'bg-violet-500/20 text-violet-700 dark:text-violet-200 border border-violet-500/30'
               : isFolderPartiallySelected
-              ? 'bg-violet-500/10 text-violet-300'
-              : 'hover:bg-zinc-800/60 text-zinc-300'
+              ? 'bg-violet-500/10 text-violet-600 dark:text-violet-300'
+              : 'hover:bg-zinc-100 dark:hover:bg-zinc-800/60 text-zinc-700 dark:text-zinc-300'
           )}
         >
           <div className="flex items-center gap-1.5 min-w-0 flex-1">
@@ -121,7 +121,7 @@ function TreeNode({
                   ? 'bg-violet-500 border-violet-500'
                   : isFolderPartiallySelected
                   ? 'bg-violet-500/40 border-violet-500/60'
-                  : 'border-zinc-600'
+                  : 'border-zinc-300 dark:border-zinc-600'
               )}>
                 {(isFolderFullySelected || isSelected) && (
                   <svg className="w-2 h-2 text-white" viewBox="0 0 8 8" fill="none">
@@ -134,7 +134,7 @@ function TreeNode({
               </div>
             )}
             {!selectionMode && (
-              <span className="text-zinc-500 shrink-0">
+              <span className="text-zinc-400 dark:text-zinc-500 shrink-0">
                 {isExpanded
                   ? <ChevronDown className="w-3.5 h-3.5" />
                   : <ChevronRight className="w-3.5 h-3.5" />
@@ -142,11 +142,11 @@ function TreeNode({
               </span>
             )}
             {isExpanded
-              ? <FolderOpen className="w-4 h-4 text-amber-400 shrink-0" />
-              : <Folder className="w-4 h-4 text-amber-400/80 shrink-0" />
+              ? <FolderOpen className="w-4 h-4 text-amber-500 dark:text-amber-400 shrink-0" />
+              : <Folder className="w-4 h-4 text-amber-500/80 dark:text-amber-400/80 shrink-0" />
             }
             <span className="truncate text-xs font-medium">{node.name}</span>
-            <span className="text-[10px] text-zinc-600 font-mono shrink-0 ml-1">{folderFileCount}</span>
+            <span className="text-[10px] text-zinc-400 dark:text-zinc-600 font-mono shrink-0 ml-1">{folderFileCount}</span>
           </div>
         </div>
         {isExpanded && node.children && (
@@ -181,16 +181,16 @@ function TreeNode({
       className={cn(
         'group flex items-center gap-2 py-1 px-2 rounded-md cursor-pointer transition-all duration-150 select-none text-xs',
         isActive && !selectionMode
-          ? 'bg-violet-600/30 text-violet-200 border border-violet-500/30 font-medium'
+          ? 'bg-violet-500/15 dark:bg-violet-600/30 text-violet-700 dark:text-violet-200 border border-violet-500/30 font-medium'
           : isSelected && selectionMode
-          ? 'bg-violet-500/20 text-violet-200 border border-violet-500/30'
-          : 'text-zinc-400 hover:bg-zinc-800/40 hover:text-zinc-200'
+          ? 'bg-violet-500/20 text-violet-700 dark:text-violet-200 border border-violet-500/30'
+          : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/40 hover:text-zinc-950 dark:hover:text-zinc-200'
       )}
     >
       {selectionMode && (
         <div className={cn(
           'w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-all',
-          isSelected ? 'bg-violet-500 border-violet-500' : 'border-zinc-600'
+          isSelected ? 'bg-violet-500 border-violet-500' : 'border-zinc-300 dark:border-zinc-600'
         )}>
           {isSelected && (
             <svg className="w-2 h-2 text-white" viewBox="0 0 8 8" fill="none">

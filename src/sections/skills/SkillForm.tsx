@@ -160,41 +160,41 @@ export default function SkillForm({
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="relative w-full max-w-6xl h-[95vh] bg-zinc-950 border border-purple-900/50 rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col"
+        className="relative w-full max-w-6xl h-[95vh] bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-purple-900/50 rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col text-zinc-900 dark:text-white"
       >
-        <div className="px-8 py-6 border-b border-zinc-900 flex items-center justify-between shrink-0">
+        <div className="px-8 py-6 border-b border-zinc-200 dark:border-zinc-900 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <Package className="w-8 h-8 text-purple-400" />
-            <h2 className="text-2xl font-black tracking-tighter text-white">
+            <Package className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+            <h2 className="text-2xl font-black tracking-tighter text-zinc-900 dark:text-white">
               {skill ? 'РЕДАКТИРОВАТЬ ПРОСТРАНСТВО СКИЛЛОВ' : 'СОЗДАТЬ НОВОЕ ПРОСТРАНСТВО'}
             </h2>
           </div>
-          <button type="button" onClick={() => setShowConfirmClose(true)} className="p-2 hover:bg-zinc-900 rounded-2xl text-zinc-500 cursor-pointer">
+          <button type="button" onClick={() => setShowConfirmClose(true)} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-2xl text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 cursor-pointer transition-colors">
             <X size={24} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6">
-          <div className="p-6 bg-purple-950/20 border border-purple-800/40 rounded-3xl space-y-4">
+          <div className="p-6 bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800/40 rounded-3xl space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <label className="text-sm font-bold text-purple-300 uppercase tracking-wider flex items-center gap-2">
-                <Package className="w-4 h-4 text-purple-400" />
+              <label className="text-sm font-bold text-purple-800 dark:text-purple-300 uppercase tracking-wider flex items-center gap-2">
+                <Package className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                 <span>Конструктор Пространства (.MD, .ZIP или ручное создание)</span>
               </label>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => zipInputRef.current?.click()}
-                  className="px-4 py-2 bg-purple-900/60 hover:bg-purple-800/80 border border-purple-700/50 text-purple-200 font-bold text-xs rounded-xl flex items-center gap-2 transition-colors cursor-pointer"
+                  className="px-4 py-2 bg-purple-100 dark:bg-purple-900/60 hover:bg-purple-200 dark:hover:bg-purple-800/80 border border-purple-300 dark:border-purple-700/50 text-purple-700 dark:text-purple-200 font-bold text-xs rounded-xl flex items-center gap-2 transition-colors cursor-pointer"
                 >
-                  <Upload className="w-4 h-4 text-purple-400" />
+                  <Upload className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                   <span>Загрузить .MD / .ZIP</span>
                 </button>
                 {fileStructure.length > 0 && (
                   <button
                     type="button"
                     onClick={handleClearZip}
-                    className="px-3 py-2 bg-red-950/50 hover:bg-red-900/80 border border-red-800/50 text-red-300 font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                    className="px-3 py-2 bg-red-50 dark:bg-red-950/50 hover:bg-red-100 dark:hover:bg-red-900/80 border border-red-200 dark:border-red-800/50 text-red-600 dark:text-red-300 font-bold text-xs rounded-xl transition-colors cursor-pointer"
                   >
                     Очистить всё
                   </button>
@@ -220,32 +220,32 @@ export default function SkillForm({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-400">Название пакета</label>
+            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-400">Название пакета</label>
             <input
               required
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Например: Antigravity Skills Bundle / Frontend Toolkit..."
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl py-4 px-6 focus:outline-none focus:border-purple-400 transition-all font-bold text-white"
+              className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl py-4 px-6 focus:outline-none focus:border-purple-500 transition-all font-bold text-zinc-900 dark:text-white"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-400">Описание пакета</label>
+            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-400">Описание пакета</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Что входит в этот набор скиллов и как им пользоваться..."
-              className="w-full h-28 bg-zinc-900 border border-zinc-800 rounded-2xl py-4 px-6 focus:outline-none focus:border-purple-400 transition-all text-sm leading-relaxed resize-none text-white"
+              className="w-full h-28 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl py-4 px-6 focus:outline-none focus:border-purple-500 transition-all text-sm leading-relaxed resize-none text-zinc-900 dark:text-white"
             />
           </div>
 
           <div className="space-y-3">
-            <label className="text-sm font-medium text-zinc-400">
+            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-400">
               Тип пакета
               {skillTypes.length > 0 && (
-                <span className="ml-2 text-purple-400 font-bold">
+                <span className="ml-2 text-purple-600 dark:text-purple-400 font-bold">
                   ({skillTypes.length} выбрано)
                 </span>
               )}
@@ -262,14 +262,14 @@ export default function SkillForm({
                       relative flex items-center gap-2.5 px-4 py-3 rounded-2xl border text-sm font-bold
                       transition-all duration-150 cursor-pointer text-left
                       ${selected
-                        ? 'bg-purple-900/60 border-purple-500/80 text-purple-200 shadow-[0_0_12px_rgba(147,51,234,0.2)]'
-                        : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-purple-700/50 hover:text-white'
+                        ? 'bg-purple-50 dark:bg-purple-900/60 border-purple-500/80 text-purple-700 dark:text-purple-200 shadow-sm'
+                        : 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-purple-300 dark:hover:border-purple-700/50 hover:text-zinc-900 dark:hover:text-white'
                       }
                     `}
                   >
                     <span className={`
                       w-4 h-4 rounded-md border-2 flex items-center justify-center shrink-0 transition-all
-                      ${selected ? 'bg-purple-500 border-purple-500' : 'border-zinc-600'}
+                      ${selected ? 'bg-purple-500 border-purple-500' : 'border-zinc-300 dark:border-zinc-600'}
                     `}>
                       {selected && (
                         <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 10 8" fill="none">
@@ -287,11 +287,11 @@ export default function SkillForm({
 
           {/* Поддерживаемый ИИ / Платформа */}
           <div className="space-y-3">
-            <label className="text-sm font-medium text-zinc-400 flex items-center gap-2">
-              <Cpu size={16} className="text-sky-400" />
+            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-400 flex items-center gap-2">
+              <Cpu size={16} className="text-sky-500 dark:text-sky-400" />
               <span>Поддерживаемый ИИ / Платформа</span>
               {targetAis.length > 0 && (
-                <span className="ml-1 text-sky-400 font-bold">
+                <span className="ml-1 text-sky-600 dark:text-sky-400 font-bold">
                   ({targetAis.includes('universal') ? 'Универсальный' : `${targetAis.length} выбрано`})
                 </span>
               )}
@@ -308,17 +308,17 @@ export default function SkillForm({
                       relative flex items-center gap-2.5 px-4 py-3 rounded-2xl border text-sm font-bold
                       transition-all duration-150 cursor-pointer text-left
                       ${selected
-                        ? 'bg-sky-950/60 border-sky-500/80 text-sky-200 shadow-[0_0_12px_rgba(56,189,248,0.2)]'
-                        : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-sky-700/50 hover:text-white'
+                        ? 'bg-sky-50 dark:bg-sky-950/60 border-sky-500/80 text-sky-700 dark:text-sky-200 shadow-sm'
+                        : 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-sky-300 dark:hover:border-sky-700/50 hover:text-zinc-900 dark:hover:text-white'
                       }
                     `}
                   >
                     <span className={`
                       w-4 h-4 rounded-md border-2 flex items-center justify-center shrink-0 transition-all
-                      ${selected ? 'bg-sky-400 border-sky-400 text-black' : 'border-zinc-600'}
+                      ${selected ? 'bg-sky-500 border-sky-500 text-white' : 'border-zinc-300 dark:border-zinc-600'}
                     `}>
                       {selected && (
-                        <svg className="w-2.5 h-2.5 text-black" viewBox="0 0 10 8" fill="none">
+                        <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 10 8" fill="none">
                           <path d="M1 4l3 3 5-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
                       )}
@@ -332,12 +332,12 @@ export default function SkillForm({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-400">Теги</label>
-            <div className="min-h-[56px] bg-zinc-900 border border-zinc-800 rounded-2xl p-3 flex flex-wrap gap-2 content-start">
+            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-400">Теги</label>
+            <div className="min-h-[56px] bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 flex flex-wrap gap-2 content-start">
               {tags.map((t) => (
-                <span key={t} className="px-3 py-1 bg-purple-900/40 text-purple-300 border border-purple-700/50 text-xs font-bold rounded-full flex items-center gap-1.5">
+                <span key={t} className="px-3 py-1 bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-700/50 text-xs font-bold rounded-full flex items-center gap-1.5">
                   #{t}
-                  <button type="button" onClick={() => removeTag(t)} className="hover:text-white cursor-pointer">
+                  <button type="button" onClick={() => removeTag(t)} className="hover:text-zinc-900 dark:hover:text-white cursor-pointer">
                     <X size={12} />
                   </button>
                 </span>
@@ -348,42 +348,42 @@ export default function SkillForm({
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={handleTagKeyDown}
                 placeholder="Добавить тег..."
-                className="bg-transparent border-none focus:outline-none text-sm font-medium flex-1 min-w-[80px] text-white"
+                className="bg-transparent border-none focus:outline-none text-sm font-medium flex-1 min-w-[80px] text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500"
               />
             </div>
           </div>
 
-          <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-3xl flex items-center justify-between">
+          <div className="p-6 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl flex items-center justify-between">
             <div className="space-y-1">
-              <h3 className="text-sm font-bold text-white uppercase tracking-widest">Публичный пакет</h3>
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-widest">Публичный пакет</h3>
               <p className="text-xs text-zinc-500">Доступен ли данный набор скиллов остальным пользователям.</p>
             </div>
             <button
               type="button"
               onClick={() => setIsPublic(!isPublic)}
-              className={`w-14 h-8 rounded-full transition-all relative cursor-pointer ${isPublic ? 'bg-purple-500' : 'bg-zinc-800'}`}
+              className={`w-14 h-8 rounded-full transition-all relative cursor-pointer ${isPublic ? 'bg-purple-500' : 'bg-zinc-200 dark:bg-zinc-800'}`}
             >
               <motion.div animate={{ x: isPublic ? 24 : 4 }} className="absolute top-1 w-6 h-6 bg-white rounded-full shadow-lg" />
             </button>
           </div>
           
-          <div className="flex items-center justify-between p-6 bg-zinc-900/50 rounded-2xl border border-zinc-800/50">
+          <div className="flex items-center justify-between p-6 bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800/50">
             <div>
-              <h3 className="text-sm font-bold text-white mb-1">Источник скилла</h3>
-              <p className="text-xs text-zinc-400">Укажите, вы ли автор этого скилла, или он найден в сети</p>
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-white mb-1">Источник скилла</h3>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">Укажите, вы ли автор этого скилла, или он найден в сети</p>
             </div>
-            <div className="flex bg-zinc-950 p-1 rounded-xl border border-zinc-800 shrink-0">
+            <div className="flex bg-zinc-200 dark:bg-zinc-950 p-1 rounded-xl border border-zinc-300 dark:border-zinc-800 shrink-0">
               <button
                 type="button"
                 onClick={() => setSkillOrigin('own')}
-                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${skillOrigin === 'own' ? 'bg-purple-500 text-white shadow-md shadow-purple-500/20' : 'text-zinc-400 hover:text-white'}`}
+                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${skillOrigin === 'own' ? 'bg-purple-600 dark:bg-purple-500 text-white shadow-md' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'}`}
               >
                 Авторский
               </button>
               <button
                 type="button"
                 onClick={() => setSkillOrigin('web')}
-                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${skillOrigin === 'web' ? 'bg-purple-500 text-white shadow-md shadow-purple-500/20' : 'text-zinc-400 hover:text-white'}`}
+                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${skillOrigin === 'web' ? 'bg-purple-600 dark:bg-purple-500 text-white shadow-md' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'}`}
               >
                 Из сети
               </button>
@@ -391,14 +391,14 @@ export default function SkillForm({
           </div>
         </form>
 
-        <div className="p-8 border-t border-zinc-900 bg-zinc-950 shrink-0 flex items-center justify-end gap-4">
-          <button type="button" onClick={() => setShowConfirmClose(true)} className="px-8 py-4 text-zinc-500 font-bold hover:text-white transition-all cursor-pointer">
+        <div className="p-8 border-t border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-950 shrink-0 flex items-center justify-end gap-4">
+          <button type="button" onClick={() => setShowConfirmClose(true)} className="px-8 py-4 text-zinc-500 font-bold hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer">
             Отмена
           </button>
           <button
             onClick={handleSubmit}
             disabled={isSaving}
-            className="px-10 py-4 bg-purple-500 text-white font-bold rounded-2xl transition-all shadow-xl shadow-purple-500/20 disabled:opacity-50 cursor-pointer hover:bg-purple-400"
+            className="px-10 py-4 bg-purple-600 dark:bg-purple-500 text-white font-bold rounded-2xl transition-all shadow-xl shadow-purple-500/20 disabled:opacity-50 cursor-pointer hover:bg-purple-500 dark:hover:bg-purple-400"
           >
             {isSaving ? 'Сохранение...' : 'Сохранить пакет'}
           </button>

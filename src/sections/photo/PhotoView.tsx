@@ -229,60 +229,60 @@ export default function PhotoView({
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black/90 backdrop-blur-xl" />
       <motion.div
         initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 100 }}
-        className="relative w-full max-w-7xl max-h-[95vh] bg-zinc-950 border border-zinc-900 rounded-[3rem] shadow-2xl overflow-hidden flex flex-col min-h-0"
+        className="relative w-full max-w-7xl max-h-[95vh] bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-900 rounded-[3rem] shadow-2xl overflow-hidden flex flex-col min-h-0 text-zinc-900 dark:text-zinc-100"
       >
         {/* Header */}
-        <div className="p-8 sm:p-10 border-b border-zinc-900 flex flex-wrap items-center justify-between gap-4 shrink-0">
+        <div className="p-8 sm:p-10 border-b border-zinc-200 dark:border-zinc-900 flex flex-wrap items-center justify-between gap-4 shrink-0">
           <div className="space-y-2 min-w-0 flex-1">
             <div className="flex items-center gap-3 flex-wrap">
-              <span className="px-3 py-1 bg-sky-400/10 text-sky-400 text-[10px] font-black uppercase tracking-widest rounded-full">{prompt.category}</span>
+              <span className="px-3 py-1 bg-sky-500/10 text-sky-600 dark:text-sky-400 text-[10px] font-black uppercase tracking-widest rounded-full">{prompt.category}</span>
               {prompt.promptOrigin && (
                 <span className={cn("px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full",
-                  prompt.promptOrigin === 'web' ? "bg-amber-400/10 text-amber-400" : "bg-emerald-400/10 text-emerald-400"
+                  prompt.promptOrigin === 'web' ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                 )}>
                   {prompt.promptOrigin === 'web' ? "Из сети" : "Авторский"}
                 </span>
               )}
               <div className="flex gap-1.5 flex-wrap">
-                {prompt.tags?.map(t => <span key={t} className="text-[10px] font-bold text-zinc-600">#{t}</span>)}
+                {prompt.tags?.map(t => <span key={t} className="text-[10px] font-bold text-zinc-400 dark:text-zinc-600">#{t}</span>)}
               </div>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tighter text-white break-words">{prompt.title}</h2>
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tighter text-zinc-900 dark:text-white break-words">{prompt.title}</h2>
           </div>
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             {showDeleteConfirm ? (
-              <div className="flex items-center gap-2 bg-red-950/80 border border-red-500/30 px-4 py-1.5 rounded-2xl animate-pulse">
-                <span className="text-xs font-bold text-red-300">Точно удалить?</span>
+              <div className="flex items-center gap-2 bg-red-50 dark:bg-red-950/80 border border-red-200 dark:border-red-500/30 px-4 py-1.5 rounded-2xl animate-pulse">
+                <span className="text-xs font-bold text-red-600 dark:text-red-300">Точно удалить?</span>
                 <button type="button" onClick={onDelete} className="px-3 py-1 bg-red-500 text-white rounded-lg text-xs font-bold hover:bg-red-600 cursor-pointer">Да</button>
-                <button type="button" onClick={() => setShowDeleteConfirm(false)} className="px-3 py-1 bg-zinc-800 text-zinc-400 rounded-lg text-xs font-bold hover:bg-zinc-700 cursor-pointer">Нет</button>
+                <button type="button" onClick={() => setShowDeleteConfirm(false)} className="px-3 py-1 bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-400 rounded-lg text-xs font-bold hover:bg-zinc-300 dark:hover:bg-zinc-700 cursor-pointer">Нет</button>
               </div>
             ) : showDuplicateConfirm ? (
-              <div className="flex items-center gap-2 bg-sky-950/80 border border-sky-500/30 px-4 py-1.5 rounded-2xl">
-                <span className="text-xs font-bold text-sky-300">Создать копию?</span>
+              <div className="flex items-center gap-2 bg-sky-50 dark:bg-sky-950/80 border border-sky-200 dark:border-sky-500/30 px-4 py-1.5 rounded-2xl">
+                <span className="text-xs font-bold text-sky-700 dark:text-sky-300">Создать копию?</span>
                 <button type="button" onClick={() => { onDuplicate(); setShowDuplicateConfirm(false); }} className="px-3 py-1 bg-sky-400 text-black rounded-lg text-xs font-bold hover:bg-sky-300 cursor-pointer">Да</button>
-                <button type="button" onClick={() => setShowDuplicateConfirm(false)} className="px-3 py-1 bg-zinc-800 text-zinc-400 rounded-lg text-xs font-bold hover:bg-zinc-700 cursor-pointer">Нет</button>
+                <button type="button" onClick={() => setShowDuplicateConfirm(false)} className="px-3 py-1 bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-400 rounded-lg text-xs font-bold hover:bg-zinc-300 dark:hover:bg-zinc-700 cursor-pointer">Нет</button>
               </div>
             ) : (
               <>
                 {canEdit && (
                   <>
-                    <button type="button" title="Редактировать" onClick={onEdit} className="p-3 hover:bg-zinc-900 rounded-2xl text-zinc-400 hover:text-white transition-all cursor-pointer"><Edit size={20} /></button>
-                    <button type="button" title="Дублировать" onClick={() => setShowDuplicateConfirm(true)} className="p-3 hover:bg-zinc-900 rounded-2xl text-zinc-400 hover:text-white transition-all cursor-pointer"><CopyPlus size={20} /></button>
-                    <button type="button" title="Удалить" onClick={() => setShowDeleteConfirm(true)} className="p-3 hover:bg-zinc-900 rounded-2xl text-zinc-400 hover:text-red-400 transition-all cursor-pointer"><Trash2 size={20} /></button>
+                    <button type="button" title="Редактировать" onClick={onEdit} className="p-3 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-2xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer"><Edit size={20} /></button>
+                    <button type="button" title="Дублировать" onClick={() => setShowDuplicateConfirm(true)} className="p-3 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-2xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer"><CopyPlus size={20} /></button>
+                    <button type="button" title="Удалить" onClick={() => setShowDeleteConfirm(true)} className="p-3 hover:bg-rose-50 dark:hover:bg-zinc-900 rounded-2xl text-zinc-500 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-all cursor-pointer"><Trash2 size={20} /></button>
                   </>
                 )}
-                <button type="button" title="Скачать как .md" onClick={handleDownloadMd} className="p-3 hover:bg-zinc-900 rounded-2xl text-zinc-400 hover:text-white transition-all cursor-pointer"><Download size={20} /></button>
-                <button type="button" title="Поделиться (JSON)" onClick={() => void shareJson()} className="p-3 hover:bg-zinc-900 rounded-2xl text-zinc-400 hover:text-white transition-all cursor-pointer"><Share2 size={20} /></button>
+                <button type="button" title="Скачать как .md" onClick={handleDownloadMd} className="p-3 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-2xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer"><Download size={20} /></button>
+                <button type="button" title="Поделиться (JSON)" onClick={() => void shareJson()} className="p-3 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-2xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer"><Share2 size={20} /></button>
               </>
             )}
-            <button type="button" onClick={onClose} className="p-3 hover:bg-zinc-900 rounded-2xl text-zinc-400 transition-all cursor-pointer"><X size={24} /></button>
+            <button type="button" onClick={onClose} className="p-3 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-2xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer"><X size={24} /></button>
           </div>
         </div>
 
         {/* Body */}
         <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
           {/* Left: Media */}
-          <div className="w-full lg:w-1/2 min-h-0 p-8 sm:p-10 overflow-y-auto border-b lg:border-b-0 lg:border-r border-zinc-900 shrink-0 lg:shrink">
+          <div className="w-full lg:w-1/2 min-h-0 p-8 sm:p-10 overflow-y-auto border-b lg:border-b-0 lg:border-r border-zinc-200 dark:border-zinc-900 shrink-0 lg:shrink">
             <div className="space-y-8">
               {renderLayout()}
 
@@ -291,7 +291,7 @@ export default function PhotoView({
                   <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3">Ещё фото</p>
                   <div className="flex gap-3 overflow-x-auto pb-2">
                     {extras.map((src, i) => (
-                      <button key={i} type="button" onClick={() => setLightbox(i)} className="shrink-0 w-28 h-28 rounded-2xl overflow-hidden border border-zinc-800 hover:border-sky-400/50 transition-colors cursor-pointer">
+                      <button key={i} type="button" onClick={() => setLightbox(i)} className="shrink-0 w-28 h-28 rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 hover:border-sky-400/50 transition-colors cursor-pointer">
                         <img src={src} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                       </button>
                     ))}
@@ -300,9 +300,9 @@ export default function PhotoView({
               )}
 
               {prompt.usageNotes?.trim() && (
-                <div className="rounded-[1.5rem] border border-zinc-800 bg-zinc-900/90 p-5 sm:p-6 space-y-3">
-                  <h3 className="text-xs font-black text-sky-400 uppercase tracking-widest">Комментарии к промпту</h3>
-                  <p className="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed">{prompt.usageNotes.trim()}</p>
+                <div className="rounded-[1.5rem] border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/90 p-5 sm:p-6 space-y-3 shadow-sm dark:shadow-none">
+                  <h3 className="text-xs font-black text-sky-600 dark:text-sky-400 uppercase tracking-widest">Комментарии к промпту</h3>
+                  <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed">{prompt.usageNotes.trim()}</p>
                 </div>
               )}
             </div>
@@ -324,12 +324,12 @@ export default function PhotoView({
                 {activeTab !== 'main' && (prompt.subSections[activeTab as number]?.text ?? '').trim() !== '' && (
                   <div className="flex flex-wrap items-center justify-end gap-2">
                     <button type="button" title="Копировать лишь Дополнение" onClick={() => onCopy((prompt.subSections[activeTab as number]?.text ?? '').trim())}
-                      className="p-3 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700 hover:text-white transition-colors cursor-pointer">
+                      className="p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-950 dark:hover:text-white transition-colors cursor-pointer">
                       <Copy size={18} />
                     </button>
                     <button type="button" title="Копировать дополнение + основное"
                       onClick={() => onCopy(`${prompt.mainPrompt.trim()}\n\n${(prompt.subSections[activeTab as number]?.text ?? '').trim()}`)}
-                      className="p-3 rounded-xl bg-zinc-800 border border-sky-400/40 text-sky-400 hover:bg-sky-400/15 transition-colors cursor-pointer">
+                      className="p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-sky-400/40 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-400/15 transition-colors cursor-pointer">
                       <CopyPlus size={18} />
                     </button>
                   </div>
@@ -337,10 +337,10 @@ export default function PhotoView({
 
                 {/* Tabs */}
                 <div>
-                  <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-4">Варианты промпта</p>
+                  <p className="text-[10px] font-bold text-zinc-500 dark:text-zinc-600 uppercase tracking-widest mb-4">Варианты промпта</p>
                   <div className="flex flex-col gap-3 w-full">
                     <button type="button" onClick={() => setActiveTab('main')}
-                      className={`p-4 rounded-[1.8rem] font-bold text-sm text-left transition-all duration-200 cursor-pointer flex items-center justify-between gap-4 border w-full ${activeTab === 'main' ? 'bg-sky-400 text-black border-sky-400 shadow-lg shadow-sky-400/20' : 'bg-zinc-900 text-zinc-300 border-zinc-800 hover:bg-zinc-850 hover:text-white'}`}>
+                      className={`p-4 rounded-[1.8rem] font-bold text-sm text-left transition-all duration-200 cursor-pointer flex items-center justify-between gap-4 border w-full ${activeTab === 'main' ? 'bg-sky-400 text-black border-sky-400 shadow-lg shadow-sky-400/20' : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-zinc-950 dark:hover:text-white shadow-sm dark:shadow-none'}`}>
                       <span className="break-words flex-1 leading-snug">Основной промпт</span>
                       <MiniLayoutPreview layout={prompt.imageLayoutType || (prompt.imageBefore && prompt.imageAfter ? 'slider' : 'single')} imageBefore={prompt.imageBefore} imageAfter={prompt.imageAfter} additionalImages={prompt.additionalImages} />
                     </button>
@@ -348,7 +348,7 @@ export default function PhotoView({
                       const subLayout = s.imageLayoutType || (s.imageBefore && s.imageAfter ? 'slider' : 'single');
                       return (
                         <button key={i} type="button" onClick={() => setActiveTab(i)}
-                          className={`p-4 rounded-[1.8rem] font-bold text-sm text-left transition-all duration-200 cursor-pointer flex items-center justify-between gap-4 border w-full ${activeTab === i ? 'bg-sky-400 text-black border-sky-400 shadow-lg shadow-sky-400/20' : 'bg-zinc-900 text-zinc-300 border-zinc-800 hover:bg-zinc-850 hover:text-white'}`}>
+                          className={`p-4 rounded-[1.8rem] font-bold text-sm text-left transition-all duration-200 cursor-pointer flex items-center justify-between gap-4 border w-full ${activeTab === i ? 'bg-sky-400 text-black border-sky-400 shadow-lg shadow-sky-400/20' : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-zinc-950 dark:hover:text-white shadow-sm dark:shadow-none'}`}>
                           <span className="break-words flex-1 leading-snug">{s.title?.trim() || `Вариант ${i + 1}`}</span>
                           <MiniLayoutPreview layout={subLayout} imageBefore={s.imageBefore} imageAfter={s.imageAfter} additionalImages={s.additionalImages} />
                         </button>
@@ -359,28 +359,28 @@ export default function PhotoView({
               </div>
 
               {/* Author */}
-              <div className="border-t border-zinc-900 pt-8 space-y-4">
+              <div className="border-t border-zinc-200 dark:border-zinc-900 pt-8 space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-400">
+                  <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-600 dark:text-zinc-400">
                     {prompt.authorName?.[0] || '?'}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-bold text-zinc-300 uppercase tracking-widest truncate">{prompt.authorName || 'Автор'}</p>
-                    <p className="text-[10px] text-zinc-600 font-medium truncate">{prompt.authorEmail}</p>
+                    <p className="text-xs font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest truncate">{prompt.authorName || 'Автор'}</p>
+                    <p className="text-[10px] text-zinc-500 dark:text-zinc-600 font-medium truncate">{prompt.authorEmail}</p>
                   </div>
                   {prompt.authorEmail === 'evergardenforwork@gmail.com' && (
-                    <span className="ml-auto px-2 py-0.5 bg-sky-400/20 text-sky-400 text-[9px] font-black uppercase tracking-widest rounded shrink-0">Admin</span>
+                    <span className="ml-auto px-2 py-0.5 bg-sky-400/20 text-sky-600 dark:text-sky-400 text-[9px] font-black uppercase tracking-widest rounded shrink-0">Admin</span>
                   )}
                 </div>
               </div>
 
               {/* AI Assistant Placeholder */}
-              <div className="mt-8 border border-zinc-900/50 bg-zinc-900/20 backdrop-blur-md rounded-[2rem] p-8 flex flex-col items-center justify-center text-center">
-                <div className="w-16 h-16 rounded-full bg-sky-400/10 flex items-center justify-center text-sky-400 mb-4 shadow-[0_0_30px_rgba(56,189,248,0.15)]">
+              <div className="mt-8 border border-zinc-200 dark:border-zinc-900/50 bg-zinc-50 dark:bg-zinc-900/20 backdrop-blur-md rounded-[2rem] p-8 flex flex-col items-center justify-center text-center">
+                <div className="w-16 h-16 rounded-full bg-sky-400/10 flex items-center justify-center text-sky-500 dark:text-sky-400 mb-4 shadow-[0_0_30px_rgba(56,189,248,0.15)]">
                   <Sparkles size={32} />
                 </div>
-                <h3 className="text-xl font-black text-white mb-1 tracking-tight">ИИ-ассистент</h3>
-                <p className="text-[10px] font-black text-sky-400 uppercase tracking-widest mb-3">В разработке</p>
+                <h3 className="text-xl font-black text-zinc-900 dark:text-white mb-1 tracking-tight">ИИ-ассистент</h3>
+                <p className="text-[10px] font-black text-sky-600 dark:text-sky-400 uppercase tracking-widest mb-3">В разработке</p>
                 <p className="text-sm font-medium text-zinc-500">Здесь будет умный помощник для работы с промптами</p>
               </div>
 

@@ -112,21 +112,21 @@ export default function SkillsSection({
         </div>
 
         {/* Lower row: Skill Types & Target AI filters */}
-        <div className="flex flex-col gap-3 pt-3 border-t border-zinc-900/60">
+        <div className="flex flex-col gap-3 pt-3 border-t border-zinc-200 dark:border-zinc-900/60">
           {/* Skill Type Pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
-            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider shrink-0 mr-1">Тип:</span>
+            <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider shrink-0 mr-1">Тип:</span>
             <button
               onClick={() => skillFilters.setSelectedSkillTypes([])}
               className={cn(
                 "px-3 py-1.5 text-xs font-bold rounded-xl border shrink-0 transition-all cursor-pointer flex items-center gap-1",
                 skillFilters.selectedSkillTypes.length === 0
                   ? "bg-purple-600 text-white border-purple-500 font-black shadow-md shadow-purple-500/20"
-                  : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-zinc-200"
+                  : "bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-zinc-950 dark:hover:text-zinc-200"
               )}
             >
               <span>Все</span>
-              <span className="text-[10px] bg-black/30 px-1.5 py-0.5 rounded-md">{skillFilters.skillTypeCounts.all}</span>
+              <span className="text-[10px] bg-zinc-100 dark:bg-black/30 px-1.5 py-0.5 rounded-md text-zinc-700 dark:text-zinc-300">{skillFilters.skillTypeCounts.all}</span>
             </button>
             {SKILL_TYPE_OPTIONS.map((opt) => {
               const count = skillFilters.skillTypeCounts[opt.value] || 0;
@@ -143,13 +143,13 @@ export default function SkillsSection({
                     "px-3 py-1.5 text-xs font-bold rounded-xl border shrink-0 transition-all cursor-pointer flex items-center gap-1.5",
                     active
                       ? "bg-purple-600 text-white border-purple-500 font-black shadow-md shadow-purple-500/20"
-                      : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-zinc-200"
+                      : "bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-zinc-950 dark:hover:text-zinc-200"
                   )}
                 >
                   <span>{opt.emoji}</span>
                   <span>{opt.label}</span>
                   {count > 0 && (
-                    <span className={cn("text-[10px] px-1.5 py-0.5 rounded-md", active ? "bg-white/20 text-white" : "bg-zinc-800 text-zinc-500")}>
+                    <span className={cn("text-[10px] px-1.5 py-0.5 rounded-md", active ? "bg-white/20 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-500")}>
                       {count}
                     </span>
                   )}
@@ -160,8 +160,8 @@ export default function SkillsSection({
 
           {/* Target AI Pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
-            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
-              <Cpu size={13} className="text-sky-400" /> ИИ:
+            <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
+              <Cpu size={13} className="text-sky-500 dark:text-sky-400" /> ИИ:
             </span>
             <button
               onClick={() => skillFilters.setSelectedTargetAi('all')}
@@ -169,11 +169,11 @@ export default function SkillsSection({
                 "px-3 py-1.5 text-xs font-bold rounded-xl border shrink-0 transition-all cursor-pointer flex items-center gap-1",
                 skillFilters.selectedTargetAi === 'all'
                   ? "bg-sky-500 text-black border-sky-400 font-black shadow-md shadow-sky-400/20"
-                  : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-zinc-200"
+                  : "bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-zinc-950 dark:hover:text-zinc-200"
               )}
             >
               <span>Все</span>
-              <span className="text-[10px] bg-black/30 px-1.5 py-0.5 rounded-md">{skillFilters.targetAiCounts.all}</span>
+              <span className="text-[10px] bg-zinc-100 dark:bg-black/30 px-1.5 py-0.5 rounded-md text-zinc-700 dark:text-zinc-300">{skillFilters.targetAiCounts.all}</span>
             </button>
             {TARGET_AI_OPTIONS.map((opt) => {
               const count = skillFilters.targetAiCounts[opt.value] || 0;
@@ -186,13 +186,13 @@ export default function SkillsSection({
                     "px-3 py-1.5 text-xs font-bold rounded-xl border shrink-0 transition-all cursor-pointer flex items-center gap-1.5",
                     active
                       ? "bg-sky-500 text-black border-sky-400 font-black shadow-md shadow-sky-400/20"
-                      : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-zinc-200"
+                      : "bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-zinc-950 dark:hover:text-zinc-200"
                   )}
                 >
                   <span>{opt.emoji}</span>
                   <span>{opt.label}</span>
                   {count > 0 && (
-                    <span className={cn("text-[10px] px-1.5 py-0.5 rounded-md", active ? "bg-black/25 text-black" : "bg-zinc-800 text-zinc-500")}>
+                    <span className={cn("text-[10px] px-1.5 py-0.5 rounded-md", active ? "bg-black/25 text-black" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-500")}>
                       {count}
                     </span>
                   )}

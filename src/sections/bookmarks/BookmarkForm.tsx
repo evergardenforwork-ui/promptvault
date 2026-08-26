@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   X, 
@@ -207,19 +207,19 @@ export default function BookmarkForm({
           initial={{ opacity: 0, scale: 0.95, y: 16 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 16 }}
-          className="relative w-full max-w-2xl bg-zinc-900 border border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-2xl z-10 space-y-6 max-h-[92vh] overflow-y-auto"
+          className="relative w-full max-w-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-2xl z-10 space-y-6 max-h-[92vh] overflow-y-auto text-zinc-900 dark:text-zinc-100"
         >
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+          <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+              <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-600 dark:text-cyan-400">
                 <Globe size={22} />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">
+                <h2 className="text-xl font-bold text-zinc-900 dark:text-white">
                   {initialData ? 'Редактировать закладку' : 'Добавить сайт / закладку'}
                 </h2>
-                <p className="text-xs text-zinc-400">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
                   Сохранение ссылки, скриншота и организация по папкам
                 </p>
               </div>
@@ -228,7 +228,7 @@ export default function BookmarkForm({
             <button
               type="button"
               onClick={handleSafeClose}
-              className="p-2 text-zinc-400 hover:text-white rounded-xl hover:bg-zinc-800 transition-all cursor-pointer"
+              className="p-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
             >
               <X size={20} />
             </button>
@@ -237,11 +237,11 @@ export default function BookmarkForm({
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* URL Input */}
             <div>
-              <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
-                Ссылка на сайт (URL) <span className="text-red-400">*</span>
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-400 uppercase tracking-wider mb-2">
+                Ссылка на сайт (URL) <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <Link2 className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={16} />
+                <Link2 className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
                 <input
                   type="text"
                   required
@@ -249,7 +249,7 @@ export default function BookmarkForm({
                   value={url}
                   onChange={e => { setUrl(e.target.value); setIsDirty(true); }}
                   onBlur={handleUrlBlur}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl py-3 pl-11 pr-4 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400 transition-all font-mono"
+                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl py-3 pl-11 pr-4 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-cyan-500 transition-all font-mono"
                 />
               </div>
             </div>
@@ -257,8 +257,8 @@ export default function BookmarkForm({
             {/* Title & Favicon */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="sm:col-span-2">
-                <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
-                  Название сайта <span className="text-red-400">*</span>
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-400 uppercase tracking-wider mb-2">
+                  Название сайта <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -266,20 +266,20 @@ export default function BookmarkForm({
                   placeholder="например, Mobbin — UI Patterns"
                   value={title}
                   onChange={e => { setTitle(e.target.value); setIsDirty(true); }}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400 transition-all"
+                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-cyan-500 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-400 uppercase tracking-wider mb-2">
                   Favicon / Иконка
                 </label>
                 <div className="flex items-center gap-2">
-                  <div className="w-11 h-11 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-center p-2 flex-shrink-0 overflow-hidden">
+                  <div className="w-11 h-11 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center p-2 flex-shrink-0 overflow-hidden">
                     {favicon ? (
                       <img src={favicon} alt="" className="w-full h-full object-contain" />
                     ) : (
-                      <Globe size={18} className="text-zinc-600" />
+                      <Globe size={18} className="text-zinc-400" />
                     )}
                   </div>
                   <input
@@ -287,7 +287,7 @@ export default function BookmarkForm({
                     placeholder="URL иконки..."
                     value={favicon || ''}
                     onChange={e => { setFavicon(e.target.value); setIsDirty(true); }}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-3 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-cyan-400 transition-all"
+                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-3 py-2.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-cyan-500 transition-all"
                   />
                 </div>
               </div>
@@ -298,14 +298,14 @@ export default function BookmarkForm({
               {/* Folder Selector */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
-                    Папка / Раздел <span className="text-red-400">*</span>
+                  <label className="text-xs font-bold text-zinc-700 dark:text-zinc-400 uppercase tracking-wider">
+                    Папка / Раздел <span className="text-red-500">*</span>
                   </label>
                   {onOpenCreateFolderModal && (
                     <button
                       type="button"
                       onClick={onOpenCreateFolderModal}
-                      className="text-[11px] text-cyan-400 hover:text-cyan-300 font-semibold cursor-pointer"
+                      className="text-[11px] text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 font-semibold cursor-pointer"
                     >
                       + Создать папку
                     </button>
@@ -315,10 +315,10 @@ export default function BookmarkForm({
                   <select
                     value={folder}
                     onChange={e => { setFolder(e.target.value); setIsDirty(true); }}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-400 transition-all cursor-pointer"
+                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all cursor-pointer"
                   >
                     {allFolderNames.map(fName => (
-                      <option key={fName} value={fName}>
+                      <option key={fName} value={fName} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">
                         📁 {fName}
                       </option>
                     ))}
@@ -329,14 +329,14 @@ export default function BookmarkForm({
                     placeholder="Или введите новое имя папки..."
                     value={folder}
                     onChange={e => { setFolder(e.target.value); setIsDirty(true); }}
-                    className="w-full bg-zinc-950/60 border border-zinc-800/60 rounded-xl px-3 py-1.5 text-xs text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-cyan-400 transition-all"
+                    className="w-full bg-zinc-50 dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800/60 rounded-xl px-3 py-1.5 text-xs text-zinc-800 dark:text-zinc-300 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-cyan-500 transition-all"
                   />
                 </div>
               </div>
 
               {/* Subcategory / Tab inside folder */}
               <div>
-                <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-400 uppercase tracking-wider mb-2">
                   Подкатегория / Фильтр
                 </label>
                 <div className="space-y-2">
@@ -345,7 +345,7 @@ export default function BookmarkForm({
                     placeholder="например, 1С База, UI Kits, Отчеты..."
                     value={category}
                     onChange={e => { setCategory(e.target.value); setIsDirty(true); }}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400 transition-all"
+                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-cyan-500 transition-all"
                   />
                   {categoriesInFolder.length > 0 && (
                     <div className="flex items-center gap-1 flex-wrap">
@@ -357,8 +357,8 @@ export default function BookmarkForm({
                           onClick={() => { setCategory(c); setIsDirty(true); }}
                           className={`text-[10px] px-2 py-0.5 rounded-md border transition-all cursor-pointer ${
                             category === c
-                              ? 'bg-purple-500/20 border-purple-500/40 text-purple-300'
-                              : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-white'
+                              ? 'bg-purple-50 dark:bg-purple-500/20 border-purple-300 dark:border-purple-500/40 text-purple-700 dark:text-purple-300'
+                              : 'bg-zinc-100 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                           }`}
                         >
                           {c}
@@ -372,7 +372,7 @@ export default function BookmarkForm({
 
             {/* Description */}
             <div>
-              <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-400 uppercase tracking-wider mb-2">
                 Описание / Заметки к сайту
               </label>
               <textarea
@@ -380,17 +380,17 @@ export default function BookmarkForm({
                 placeholder="Зачем нужен этот сервис, полезные ссылки внутри, логины/заметки..."
                 value={description}
                 onChange={e => { setDescription(e.target.value); setIsDirty(true); }}
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400 transition-all resize-none"
+                className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-cyan-500 transition-all resize-none"
               />
             </div>
 
             {/* Screenshot / Image Preview */}
             <div>
-              <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-400 uppercase tracking-wider mb-2">
                 Скриншот или Баннер сайта
               </label>
               {image ? (
-                <div className="relative rounded-2xl border border-zinc-800 overflow-hidden h-40 group">
+                <div className="relative rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden h-40 group">
                   <img src={image} alt="Превью" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                     <button
@@ -412,11 +412,11 @@ export default function BookmarkForm({
               ) : (
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-zinc-800 hover:border-cyan-500/50 rounded-2xl p-6 text-center cursor-pointer transition-all bg-zinc-950/40 hover:bg-zinc-950 group"
+                  className="border-2 border-dashed border-zinc-300 dark:border-zinc-800 hover:border-cyan-500/50 rounded-2xl p-6 text-center cursor-pointer transition-all bg-zinc-50 dark:bg-zinc-950/40 hover:bg-zinc-100 dark:hover:bg-zinc-950 group"
                 >
-                  <ImageIcon className="mx-auto text-zinc-600 group-hover:text-cyan-400 mb-2 transition-colors" size={28} />
-                  <p className="text-xs text-zinc-400 font-semibold">Нажмите для загрузки скриншота</p>
-                  <p className="text-[11px] text-zinc-600 mt-1">PNG, JPG, WebP до 5MB</p>
+                  <ImageIcon className="mx-auto text-zinc-400 dark:text-zinc-600 group-hover:text-cyan-500 mb-2 transition-colors" size={28} />
+                  <p className="text-xs text-zinc-600 dark:text-zinc-400 font-semibold">Нажмите для загрузки скриншота</p>
+                  <p className="text-[11px] text-zinc-400 dark:text-zinc-600 mt-1">PNG, JPG, WebP до 5MB</p>
                 </div>
               )}
               <input
@@ -430,12 +430,12 @@ export default function BookmarkForm({
 
             {/* Tags */}
             <div>
-              <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-400 uppercase tracking-wider mb-2">
                 Теги (через Enter)
               </label>
               <div className="flex items-center gap-2 mb-2">
                 <div className="relative flex-1">
-                  <TagIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500" size={14} />
+                  <TagIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" size={14} />
                   <input
                     type="text"
                     placeholder="Добавить тег..."
@@ -447,13 +447,13 @@ export default function BookmarkForm({
                         handleAddTag();
                       }
                     }}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-2 pl-9 pr-3 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400 transition-all"
+                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl py-2 pl-9 pr-3 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-cyan-500 transition-all"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={handleAddTag}
-                  className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-200 transition-all cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-xs font-semibold text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-transparent transition-all cursor-pointer"
                 >
                   + Тег
                 </button>
@@ -464,13 +464,13 @@ export default function BookmarkForm({
                   {tags.map(t => (
                     <span
                       key={t}
-                      className="text-xs px-2.5 py-1 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-300 flex items-center gap-1.5"
+                      className="text-xs px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5"
                     >
                       #{t}
                       <button
                         type="button"
                         onClick={() => handleRemoveTag(t)}
-                        className="text-zinc-500 hover:text-red-400 cursor-pointer"
+                        className="text-zinc-400 hover:text-red-500 cursor-pointer"
                       >
                         ×
                       </button>
@@ -481,11 +481,11 @@ export default function BookmarkForm({
             </div>
 
             {/* Public checkbox */}
-            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-zinc-950 border border-zinc-800">
+            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
               <div className="flex items-center gap-2.5">
-                {isPublic ? <Unlock size={16} className="text-emerald-400" /> : <Lock size={16} className="text-amber-400" />}
+                {isPublic ? <Unlock size={16} className="text-emerald-500 dark:text-emerald-400" /> : <Lock size={16} className="text-amber-500 dark:text-amber-400" />}
                 <div>
-                  <p className="text-xs font-bold text-white">
+                  <p className="text-xs font-bold text-zinc-900 dark:text-white">
                     {isPublic ? 'Публичная закладка' : 'Приватная закладка'}
                   </p>
                   <p className="text-[11px] text-zinc-500">
@@ -502,12 +502,12 @@ export default function BookmarkForm({
             </div>
 
             {/* Actions Bar */}
-            <div className="flex items-center justify-between pt-4 border-t border-zinc-800">
+            <div className="flex items-center justify-between pt-4 border-t border-zinc-200 dark:border-zinc-800">
               {initialData && onDelete ? (
                 <button
                   type="button"
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="px-4 py-2.5 rounded-2xl bg-red-600/10 hover:bg-red-600/20 text-red-400 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
+                  className="px-4 py-2.5 rounded-2xl bg-red-50 dark:bg-red-600/10 hover:bg-red-100 dark:hover:bg-red-600/20 text-red-600 dark:text-red-400 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <Trash2 size={15} />
                   <span>Удалить</span>
@@ -518,7 +518,7 @@ export default function BookmarkForm({
                 <button
                   type="button"
                   onClick={handleSafeClose}
-                  className="px-5 py-3 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-bold transition-all cursor-pointer"
+                  className="px-5 py-3 rounded-2xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-xs font-bold transition-all cursor-pointer"
                 >
                   Отмена
                 </button>

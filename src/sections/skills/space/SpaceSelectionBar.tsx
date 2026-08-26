@@ -24,23 +24,23 @@ export default function SpaceSelectionBar({
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-3 bg-zinc-900/95 backdrop-blur-xl border border-violet-500/30 rounded-2xl shadow-2xl shadow-black/60"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-3 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200 dark:border-violet-500/30 rounded-2xl shadow-2xl shadow-black/20 dark:shadow-black/60 text-zinc-900 dark:text-white"
         >
           <button
             onClick={onCancel}
-            className="p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-xl transition-all cursor-pointer"
+            className="p-1.5 text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-all cursor-pointer"
             title="Отмена"
           >
             <X className="w-4 h-4" />
           </button>
 
-          <div className="w-px h-5 bg-zinc-700" />
+          <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-700" />
 
           <div className="flex items-center gap-2">
-            <CheckSquare className="w-4 h-4 text-violet-400" />
-            <span className="text-sm font-medium text-zinc-300">
+            <CheckSquare className="w-4 h-4 text-violet-500 dark:text-violet-400" />
+            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
               Выбрано:{' '}
-              <span className="text-white font-bold">{selectedCount}</span>
+              <span className="text-zinc-950 dark:text-white font-bold">{selectedCount}</span>
               {' '}
               <span className="text-zinc-500 text-xs">
                 {selectedCount === 1 ? 'элемент' : selectedCount < 5 ? 'элемента' : 'элементов'}
@@ -48,7 +48,7 @@ export default function SpaceSelectionBar({
             </span>
           </div>
 
-          <div className="w-px h-5 bg-zinc-700" />
+          <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-700" />
 
           <button
             onClick={onDownload}
@@ -57,7 +57,7 @@ export default function SpaceSelectionBar({
               'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer',
               selectedCount > 0
                 ? 'bg-violet-600 hover:bg-violet-500 text-white shadow-lg shadow-violet-600/30'
-                : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
+                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed'
             )}
           >
             <Download className="w-4 h-4" />

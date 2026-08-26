@@ -189,12 +189,12 @@ export default function PhotoCard({
       case 'split-vertical':
         return (
           <div className="flex flex-col gap-0.5 w-full h-full">
-            <div className="flex-1 overflow-hidden bg-zinc-900">
+            <div className="flex-1 overflow-hidden bg-zinc-100 dark:bg-zinc-900">
               {prompt.imageBefore && (
                 <img src={prompt.imageBefore} alt="" className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" referrerPolicy="no-referrer" />
               )}
             </div>
-            <div className="flex-1 overflow-hidden bg-zinc-900">
+            <div className="flex-1 overflow-hidden bg-zinc-100 dark:bg-zinc-900">
               {prompt.imageAfter && (
                 <img src={prompt.imageAfter} alt="" className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" referrerPolicy="no-referrer" />
               )}
@@ -204,12 +204,12 @@ export default function PhotoCard({
       case 'split-horizontal':
         return (
           <div className="flex gap-0.5 w-full h-full">
-            <div className="flex-1 overflow-hidden bg-zinc-900">
+            <div className="flex-1 overflow-hidden bg-zinc-100 dark:bg-zinc-900">
               {prompt.imageBefore && (
                 <img src={prompt.imageBefore} alt="" className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" referrerPolicy="no-referrer" />
               )}
             </div>
-            <div className="flex-1 overflow-hidden bg-zinc-900">
+            <div className="flex-1 overflow-hidden bg-zinc-100 dark:bg-zinc-900">
               {prompt.imageAfter && (
                 <img src={prompt.imageAfter} alt="" className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" referrerPolicy="no-referrer" />
               )}
@@ -219,18 +219,18 @@ export default function PhotoCard({
       case 'split-1-2':
         return (
           <div className="flex gap-0.5 w-full h-full">
-            <div className="w-1/2 overflow-hidden bg-zinc-900">
+            <div className="w-1/2 overflow-hidden bg-zinc-100 dark:bg-zinc-900">
               {prompt.imageBefore && (
                 <img src={prompt.imageBefore} alt="" className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" referrerPolicy="no-referrer" />
               )}
             </div>
             <div className="w-1/2 flex flex-col gap-0.5">
-              <div className="flex-1 overflow-hidden bg-zinc-900">
+              <div className="flex-1 overflow-hidden bg-zinc-100 dark:bg-zinc-900">
                 {prompt.imageAfter && (
                   <img src={prompt.imageAfter} alt="" className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" referrerPolicy="no-referrer" />
                 )}
               </div>
-              <div className="flex-1 overflow-hidden bg-zinc-900">
+              <div className="flex-1 overflow-hidden bg-zinc-100 dark:bg-zinc-900">
                 {prompt.additionalImages?.[0] && (
                   <img src={prompt.additionalImages[0]} alt="" className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" referrerPolicy="no-referrer" />
                 )}
@@ -242,18 +242,18 @@ export default function PhotoCard({
         return (
           <div className="flex flex-col gap-0.5 w-full h-full">
             <div className="flex-1 flex gap-0.5">
-              <div className="flex-1 overflow-hidden bg-zinc-900">
+              <div className="flex-1 overflow-hidden bg-zinc-100 dark:bg-zinc-900">
                 {prompt.imageBefore && (
                   <img src={prompt.imageBefore} alt="" className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" referrerPolicy="no-referrer" />
                 )}
               </div>
-              <div className="flex-1 overflow-hidden bg-zinc-900">
+              <div className="flex-1 overflow-hidden bg-zinc-100 dark:bg-zinc-900">
                 {prompt.imageAfter && (
                   <img src={prompt.imageAfter} alt="" className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" referrerPolicy="no-referrer" />
                 )}
               </div>
             </div>
-            <div className="flex-1 overflow-hidden bg-zinc-900">
+            <div className="flex-1 overflow-hidden bg-zinc-100 dark:bg-zinc-900">
               {prompt.additionalImages?.[0] && (
                 <img src={prompt.additionalImages[0]} alt="" className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" referrerPolicy="no-referrer" />
               )}
@@ -278,7 +278,7 @@ export default function PhotoCard({
   const imageArea = (
     <div
       className={cn(
-        'relative bg-zinc-800 overflow-hidden shrink-0 transition-shadow duration-200',
+        'relative bg-zinc-100 dark:bg-zinc-800 overflow-hidden shrink-0 transition-shadow duration-200',
         viewMode === 'list' ? 'w-48 h-full rounded-2xl' : 'aspect-[16/10] w-full'
       )}
     >

@@ -72,9 +72,9 @@
 ## Spacing, Grid & Layout System
 
 - **Базовая единица**: 4px (Tailwind: `p-1` = 4px)
-- **Сетка карточек**: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`
+- **Сетка карточек (Responsive)**: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6` (авто-переключение в 4 колонки на экранах ≥1280px/1536px и при зуме)
 - **Сайдбар**: фиксированная ширина ~280px (слева)
-- **Контент**: `max-w-7xl`, центрированный, с отступами `px-4 md:px-8`
+- **Контент**: `max-w-[1680px]`, центрированный, с отступами `px-6 py-8`
 - **Модалки**: `max-w-2xl` или `max-w-4xl` для форм с изображениями
 
 ## Border Radius & Elevation

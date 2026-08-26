@@ -9,6 +9,7 @@
 
 | Тег / Хеш | Дата | Название / Назначение | Описание |
 | :--- | :--- | :--- | :--- |
+| `86c101a` | 2026-08-26 | **🖥️ Responsive 4-Column Grid & Expanded Layout for Wide / Zoomed Screens** | Расширен максимальный контейнер приложения с 1280px до `max-w-[1680px]` и внедрена адаптивная 4-колоночная сетка (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`) во все хабы (`Skills`, `Prompts`, `Commands`, `Git`, `Bookmarks`). Теперь при уменьшении масштаба браузера (80%, 67%) или на больших экранах отображаются 4 полноценные карточки в ряд без пустых полей. |
 | `4a89578` | 2026-08-26 | **🌐 Hierarchical Bookmark Tree (Infinite Folders) & Multi-Input AI Smart Parser** | Реализована браузерная древовидная иерархия закладок с бесконечной вложенностью (`folder: "A / B / C"`), интерактивными хлебными крошками (`📁 Все закладки > 🤖 AI > 📷 Фото`), компактной сеткой подпапок со счётчиками сайтов и древовидным селектором в форме. Обновлен Gemini 3.1 AI Smart Parser: единая форма с одновременным анализом ссылки, текста и до 4 скриншотов. 100% совместимость с БД и Full-Media ZIP бэкапом. |
 | `05be164` | 2026-08-26 | **🚀 Dual-Engine Architecture (Cloud Supabase ☁️ / Zero-Config Local SQLite 💻) & Full-Media Backup** | Разработана универсальная двухрежимная архитектура: Cloud-режим (Supabase PostgreSQL + Storage) для онлайна и Zero-Config Local-режим (SQLite `better-sqlite3` + `data/uploads/`) для автономной работы и передачи проекта друзьям без настройки Supabase. Реализован Full-Media умный экспорт/импорт (выгрузка и упаковка бинарных картинок в ZIP, авто-подмена путей) и по-пространственный экспорт («Экспорт в ZIP» конкретного воркспейса). |
 | `9d3c52a` | 2026-08-26 | **🧹 Clean Workspaces Sidebar UI** | Очищено боковое меню «Библиотека»: убраны устаревшие рудиментарные блоки первой вкладки (фильтры избранного, категории промптов и облако тегов), которые уже присутствуют на главной рабочей панели каждого хаба. Сайдбар полностью сфокусирован на управлении рабочими пространствами, статистике и администрировании. |
@@ -32,6 +33,18 @@
 ---
 
 ## 🗓️ Хронологический журнал изменений
+
+### 🖥️ 2026-08-26 — Responsive 4-Column Grid & Expanded Layout for Wide / Zoomed Screens
+- **Расширение контейнера приложения (`src/App.tsx`)**:
+  - Заменено фиксированное ограничение `max-w-7xl` (1280px) на плавное адаптивное расширение `max-w-[1680px]`.
+  - Устранены избыточные пустые поля по краям на мониторах с разрешением 1080p, 2K, 4K и при уменьшении масштаба браузера (80%, 67%).
+- **Адаптивная 4-колоночная сетка во всех хабах**:
+  - [`SkillsSection.tsx`](src/sections/skills/SkillsSection.tsx): `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`
+  - [`PromptsSection.tsx`](src/sections/prompts/PromptsSection.tsx): `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`
+  - [`CommandsSection.tsx`](src/sections/commands/CommandsSection.tsx): `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`
+  - [`BookmarksSection.tsx`](src/sections/bookmarks/BookmarksSection.tsx) и [`GitProjectsSection.tsx`](src/sections/git/GitProjectsSection.tsx) унифицированы в общую 4-колоночную систему.
+- **Сохранение пропорций и стабильности верстки**:
+  - Карточки сохраняют идеальную ширину (~350–420px), не сжимаются и не ломают внутренние бейджи и кнопки.
 
 ### 🌐 2026-08-26 — Hierarchical Bookmark Folders (Infinite Tree) & Multi-Input AI Smart Parser
 - **Древовидная иерархия закладок с бесконечной вложенностью (`src/sections/bookmarks/`)**:

@@ -760,7 +760,7 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 px-6 py-8 overflow-y-auto">
-        <div className="max-w-7xl mx-auto space-y-8">
+        <div className="max-w-[1680px] mx-auto space-y-8">
           {activeSection === 'prompts' && (
             <PromptsSection
               prompts={displayedPrompts}
